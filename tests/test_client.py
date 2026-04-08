@@ -223,7 +223,8 @@ class TestAsyncKoreClientCore:
                 await kore.save(f"SDK async pagination item {i} marker ASDKPG")
             result = await kore.search("ASDKPG", limit=2, offset=1, semantic=False)
             assert isinstance(result, MemorySearchResponse)
-            assert result.offset == 1
+            with pytest.deprecated_call(match="deprecated"):
+                assert result.offset == 1
 
     @pytest.mark.anyio
     async def test_timeline_ritorna_modello(self):

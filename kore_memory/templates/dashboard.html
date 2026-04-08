@@ -675,6 +675,41 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible) { outline: none; }
       <div id="timeline-list"></div>
     </section>
 
+    <!-- PAGE: Analytics -->
+    <section class="page" data-page="analytics">
+      <div class="stats-grid" id="analytics-summary"></div>
+      <div class="grid-2 mb-24">
+        <div class="card">
+          <div class="card-title">Memory Health (Decay)</div>
+          <div id="analytics-decay" style="display:flex;align-items:center;gap:24px;min-height:140px"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Categories</div>
+          <div id="analytics-categories"></div>
+        </div>
+      </div>
+      <div class="grid-2 mb-24">
+        <div class="card">
+          <div class="card-title">Importance Distribution</div>
+          <div id="analytics-importance"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Access Patterns</div>
+          <div id="analytics-access"></div>
+        </div>
+      </div>
+      <div class="grid-2 mb-24">
+        <div class="card">
+          <div class="card-title">Top Tags</div>
+          <div id="analytics-tags" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Growth (Last 30 Days)</div>
+          <div id="analytics-growth" style="min-height:120px;display:flex;align-items:flex-end;gap:2px"></div>
+        </div>
+      </div>
+    </section>
+
     <!-- PAGE: Maintenance -->
     <section class="page" data-page="maintenance">
       <div class="action-grid mb-24">
@@ -870,6 +905,7 @@ const PAGES = [
   { id: 'graph', label: 'Graph', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>' },
   { id: 'sessions', label: 'Sessions', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>' },
   { id: 'timeline', label: 'Timeline', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' },
+  { id: 'analytics', label: 'Analytics', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>' },
   { id: 'maintenance', label: 'Maintenance', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>' },
   { id: 'settings', label: 'Settings', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>' },
 ];
@@ -987,6 +1023,7 @@ function loadPageData(pageId) {
     case 'tags': return loadTags();
     case 'graph': return loadGraph();
     case 'sessions': return loadSessions();
+    case 'analytics': return loadAnalytics();
     case 'maintenance': return loadMaintenance();
     case 'settings': return loadSettings();
   }
@@ -1819,6 +1856,125 @@ function runMaintenanceAction(action) {
       case 'autotune': toast('Auto-tune: ' + result.boosted + ' boosted, ' + result.reduced + ' reduced', 'success'); break;
     }
   }).catch(function(e) { toast('Error: ' + e.message, 'error'); });
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PAGE: Analytics
+   ═══════════════════════════════════════════════════════════════════════ */
+function loadAnalytics() {
+  api.get('/analytics').then(function(data) {
+    /* ── Summary cards ──────────────────────────────────────────────── */
+    safeRender('#analytics-summary',
+      '<div class="stat-card"><div class="stat-label">Total memories</div><div class="stat-value accent">' + data.total_memories + '</div></div>' +
+      '<div class="stat-card"><div class="stat-label">Compressed</div><div class="stat-value">' + data.compressed_memories + '</div></div>' +
+      '<div class="stat-card"><div class="stat-label">Archived</div><div class="stat-value">' + data.archived_memories + '</div></div>' +
+      '<div class="stat-card"><div class="stat-label">Relations</div><div class="stat-value">' + data.total_relations + '</div></div>' +
+      '<div class="stat-card"><div class="stat-label">Avg decay</div><div class="stat-value" style="color:' + decayColor(data.decay_analysis.avg_decay) + '">' + (data.decay_analysis.avg_decay * 100).toFixed(0) + '%</div></div>' +
+      '<div class="stat-card"><div class="stat-label">Avg access</div><div class="stat-value">' + (data.access_patterns.avg_access || 0) + '</div></div>'
+    );
+
+    /* ── Decay donut (CSS ring) ─────────────────────────────────────── */
+    var da = data.decay_analysis;
+    var daTotal = (da.healthy + da.fading + da.critical) || 1;
+    var pctH = ((da.healthy / daTotal) * 100).toFixed(0);
+    var pctF = ((da.fading / daTotal) * 100).toFixed(0);
+    var pctC = ((da.critical / daTotal) * 100).toFixed(0);
+    var degH = (da.healthy / daTotal) * 360;
+    var degF = (da.fading / daTotal) * 360;
+
+    safeRender('#analytics-decay',
+      '<div style="position:relative;width:120px;height:120px;flex-shrink:0">' +
+        '<div style="width:120px;height:120px;border-radius:50%;background:conic-gradient(var(--success) 0deg ' + degH + 'deg, var(--warning) ' + degH + 'deg ' + (degH + degF) + 'deg, var(--danger) ' + (degH + degF) + 'deg 360deg);display:flex;align-items:center;justify-content:center">' +
+          '<div style="width:72px;height:72px;border-radius:50%;background:var(--bg-secondary);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--text)">' + daTotal + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div style="display:flex;flex-direction:column;gap:10px">' +
+        '<div style="display:flex;align-items:center;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:var(--success)"></div><span style="font-size:13px">Healthy (&gt;70%)</span><strong style="margin-left:auto">' + da.healthy + ' <span style="color:var(--text-dim);font-weight:400">(' + pctH + '%)</span></strong></div>' +
+        '<div style="display:flex;align-items:center;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:var(--warning)"></div><span style="font-size:13px">Fading (30-70%)</span><strong style="margin-left:auto">' + da.fading + ' <span style="color:var(--text-dim);font-weight:400">(' + pctF + '%)</span></strong></div>' +
+        '<div style="display:flex;align-items:center;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:var(--danger)"></div><span style="font-size:13px">Critical (&lt;30%)</span><strong style="margin-left:auto">' + da.critical + ' <span style="color:var(--text-dim);font-weight:400">(' + pctC + '%)</span></strong></div>' +
+      '</div>'
+    );
+
+    /* ── Categories bar chart ───────────────────────────────────────── */
+    var cats = data.categories || {};
+    var catEntries = Object.entries(cats).sort(function(a, b) { return b[1] - a[1]; });
+    var maxCat = catEntries.length ? catEntries[0][1] : 1;
+    if (catEntries.length) {
+      var ch = '';
+      catEntries.forEach(function(entry) {
+        var cat = entry[0], count = entry[1];
+        ch += '<div class="cat-bar-row"><span class="cat-bar-label">' + esc(cat) + '</span>' +
+          '<div class="cat-bar-track"><div class="cat-bar-fill" style="width:' + (count / maxCat * 100).toFixed(0) + '%;background:' + (CAT_COLORS[cat] || 'var(--accent)') + '"></div></div>' +
+          '<span class="cat-bar-count">' + count + '</span></div>';
+      });
+      safeRender('#analytics-categories', ch);
+    } else {
+      safeRender('#analytics-categories', '<div class="empty-state"><p>No data</p></div>');
+    }
+
+    /* ── Importance distribution ─────────────────────────────────────── */
+    var impDist = data.importance_distribution || {};
+    var impMax = Math.max.apply(null, Object.values(impDist).concat([1]));
+    var impLabels = ['1', '2', '3', '4', '5'];
+    var impColors = ['var(--text-dim)', 'var(--warning)', 'var(--accent)', 'var(--success)', '#f59e0b'];
+    var ih = '';
+    impLabels.forEach(function(lev, idx) {
+      var count = impDist[lev] || 0;
+      ih += '<div class="cat-bar-row"><span class="cat-bar-label" style="min-width:24px;text-align:center">' + lev + '</span>' +
+        '<div class="cat-bar-track"><div class="cat-bar-fill" style="width:' + (count / impMax * 100).toFixed(0) + '%;background:' + impColors[idx] + '"></div></div>' +
+        '<span class="cat-bar-count">' + count + '</span></div>';
+    });
+    safeRender('#analytics-importance', ih);
+
+    /* ── Access patterns ─────────────────────────────────────────────── */
+    var ap = data.access_patterns || {};
+    var apLabels = [
+      { key: 'never_accessed', label: 'Never', color: 'var(--text-dim)' },
+      { key: 'low_access', label: 'Low (1-5)', color: 'var(--warning)' },
+      { key: 'medium_access', label: 'Medium (6-20)', color: 'var(--accent)' },
+      { key: 'high_access', label: 'High (>20)', color: 'var(--success)' }
+    ];
+    var apMax = Math.max.apply(null, apLabels.map(function(a) { return ap[a.key] || 0; }).concat([1]));
+    var ah = '';
+    apLabels.forEach(function(item) {
+      var count = ap[item.key] || 0;
+      ah += '<div class="cat-bar-row"><span class="cat-bar-label" style="min-width:90px">' + item.label + '</span>' +
+        '<div class="cat-bar-track"><div class="cat-bar-fill" style="width:' + (count / apMax * 100).toFixed(0) + '%;background:' + item.color + '"></div></div>' +
+        '<span class="cat-bar-count">' + count + '</span></div>';
+    });
+    safeRender('#analytics-access', ah);
+
+    /* ── Top tags ────────────────────────────────────────────────────── */
+    var tags = data.top_tags || [];
+    if (tags.length) {
+      var th = '';
+      var tagMax = tags[0].count;
+      tags.forEach(function(t) {
+        var opacity = 0.4 + (t.count / tagMax) * 0.6;
+        th += '<span style="display:inline-block;padding:4px 10px;border-radius:var(--radius-full);background:var(--accent-muted);color:var(--accent);font-size:12px;font-weight:500;opacity:' + opacity.toFixed(2) + '">' + esc(t.tag) + ' <span style="color:var(--text-dim)">' + t.count + '</span></span>';
+      });
+      safeRender('#analytics-tags', th);
+    } else {
+      safeRender('#analytics-tags', '<div class="empty-state" style="padding:16px"><p>No tags</p></div>');
+    }
+
+    /* ── Growth sparkline (bar chart, 30 giorni) ─────────────────────── */
+    var growth = data.growth_last_30d || [];
+    if (growth.length) {
+      var gMax = Math.max.apply(null, growth.map(function(g) { return g.count; }).concat([1]));
+      var gh = '';
+      growth.forEach(function(g) {
+        var pct = (g.count / gMax * 100).toFixed(0);
+        gh += '<div title="' + esc(g.date) + ': ' + g.count + '" style="flex:1;min-width:6px;max-width:18px;height:' + Math.max(pct, 4) + '%;background:var(--accent);border-radius:2px 2px 0 0;transition:opacity var(--transition);cursor:default" onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1"></div>';
+      });
+      safeRender('#analytics-growth', gh);
+    } else {
+      safeRender('#analytics-growth', '<div class="empty-state" style="width:100%;text-align:center"><p>No data in last 30 days</p></div>');
+    }
+
+  }).catch(function(e) {
+    toast('Error loading analytics: ' + e.message, 'error');
+  });
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
