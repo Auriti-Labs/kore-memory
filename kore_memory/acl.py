@@ -25,9 +25,7 @@ def _ensure_acl_table() -> None:
                 PRIMARY KEY (memory_id, agent_id)
             )
         """)
-        conn.execute(
-            "CREATE INDEX IF NOT EXISTS idx_acl_agent ON memory_acl (agent_id)"
-        )
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_acl_agent ON memory_acl (agent_id)")
 
 
 def grant_access(

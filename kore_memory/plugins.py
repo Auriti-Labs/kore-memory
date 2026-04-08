@@ -79,6 +79,7 @@ def clear_plugins() -> None:
 
 # Hook dispatch functions
 
+
 def run_pre_save(content: str, category: str, importance: int | None, agent_id: str) -> dict[str, Any]:
     """Run all pre_save hooks. Returns merged overrides."""
     overrides: dict[str, Any] = {}

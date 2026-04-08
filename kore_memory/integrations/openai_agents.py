@@ -44,9 +44,7 @@ def kore_agent_tools(
         List of FunctionTool ready to be passed to Agent(tools=[...]).
     """
     if not _HAS_OPENAI_AGENTS:
-        raise ImportError(
-            "OpenAI Agents SDK not installed. Install with: pip install openai-agents"
-        )
+        raise ImportError("OpenAI Agents SDK not installed. Install with: pip install openai-agents")
 
     client = KoreClient(
         base_url=base_url,

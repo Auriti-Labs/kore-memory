@@ -81,7 +81,7 @@ jobs:
             ${{ runner.os }}-pip-3.12-
 
       - name: Install dependencies
-        run: pip install -e ".[dev,mcp]"
+        run: pip install -e ".[semantic,dev,mcp]"
 
       - name: Run tests with coverage
         run: pytest tests/ -v --cov=kore_memory --cov-report=xml --cov-report=term-missing
