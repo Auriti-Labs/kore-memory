@@ -30,7 +30,7 @@ jobs:
             ${{ runner.os }}-pip-${{ matrix.python-version }}-
 
       - name: Install dependencies
-        run: pip install -e ".[dev]"
+        run: pip install -e ".[dev,mcp]"
 
       - name: Run tests
         run: pytest tests/ -v --tb=short
@@ -57,7 +57,7 @@ jobs:
           key: ${{ runner.os }}-semantic-${{ hashFiles('pyproject.toml') }}
 
       - name: Install with semantic
-        run: pip install -e ".[semantic,dev]"
+        run: pip install -e ".[semantic,dev,mcp]"
 
       - name: Run tests with embeddings
         run: pytest tests/ -v --tb=short
@@ -81,7 +81,7 @@ jobs:
             ${{ runner.os }}-pip-3.12-
 
       - name: Install dependencies
-        run: pip install -e ".[dev,mcp]"
+        run: pip install -e ".[semantic,dev,mcp]"
 
       - name: Run tests with coverage
         run: pytest tests/ -v --cov=kore_memory --cov-report=xml --cov-report=term-missing

@@ -44,9 +44,7 @@ def kore_toolset(
         FunctionToolset with tools: kore_save, kore_search, kore_timeline, kore_delete.
     """
     if not _HAS_PYDANTIC_AI:
-        raise ImportError(
-            "PydanticAI not installed. Install with: pip install pydantic-ai"
-        )
+        raise ImportError("PydanticAI not installed. Install with: pip install pydantic-ai")
 
     client = KoreClient(
         base_url=base_url,
@@ -163,10 +161,7 @@ def create_kore_tools(
     def timeline(subject: str, limit: int = 10) -> list[dict]:
         """Timeline of a subject."""
         response = client.timeline(subject=subject, limit=limit)
-        return [
-            {"id": r.id, "content": r.content, "created_at": str(r.created_at)}
-            for r in response.results
-        ]
+        return [{"id": r.id, "content": r.content, "created_at": str(r.created_at)} for r in response.results]
 
     def delete(memory_id: int) -> bool:
         """Delete a memory."""

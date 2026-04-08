@@ -45,8 +45,9 @@ def search_memories(
     # similarity (semantic) × decay × importance_weight
     alive = [r for r in results if not should_forget(r.decay_score or 1.0)]
     alive.sort(
-        key=lambda r: (r.score if r.score and r.score > 0 else 1.0)
-        * effective_score(r.decay_score or 1.0, r.importance),
+        key=lambda r: (
+            (r.score if r.score and r.score > 0 else 1.0) * effective_score(r.decay_score or 1.0, r.importance)
+        ),
         reverse=True,
     )
 

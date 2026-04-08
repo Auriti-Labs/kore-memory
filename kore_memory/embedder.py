@@ -71,11 +71,7 @@ def _truncate(text: str, max_chars: int = MAX_EMBED_CHARS) -> str:
 
 def _has_asymmetric_support(model: SentenceTransformer) -> bool:
     """Check if model supports encode_query/encode_document (v5+ with prompts)."""
-    return (
-        hasattr(model, "encode_query")
-        and hasattr(model, "prompts")
-        and bool(model.prompts)
-    )
+    return hasattr(model, "encode_query") and hasattr(model, "prompts") and bool(model.prompts)
 
 
 def embed(text: str) -> list[float]:

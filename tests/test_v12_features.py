@@ -4,6 +4,7 @@ Verifica: SDK importance fix, GET /memories/{id}, cursor pagination,
 integrazioni PydanticAI/OpenAI/LangChain, MCP HTTP transport.
 """
 
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from fastapi.testclient import TestClient
@@ -234,7 +235,9 @@ class TestOptionalDependencies:
     def test_pydantic_ai_in_pyproject(self):
         """pyproject.toml deve avere la dipendenza opzionale pydantic-ai."""
         import tomllib
-        with open("pyproject.toml", "rb") as f:
+
+        pyproject_path = Path(__file__).resolve().parents[1] / "pyproject.toml"
+        with pyproject_path.open("rb") as f:
             data = tomllib.load(f)
         optional = data["project"]["optional-dependencies"]
         assert "pydantic-ai" in optional
@@ -242,7 +245,9 @@ class TestOptionalDependencies:
     def test_openai_agents_in_pyproject(self):
         """pyproject.toml deve avere la dipendenza opzionale openai-agents."""
         import tomllib
-        with open("pyproject.toml", "rb") as f:
+
+        pyproject_path = Path(__file__).resolve().parents[1] / "pyproject.toml"
+        with pyproject_path.open("rb") as f:
             data = tomllib.load(f)
         optional = data["project"]["optional-dependencies"]
         assert "openai-agents" in optional

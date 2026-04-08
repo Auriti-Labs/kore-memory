@@ -838,7 +838,10 @@ async def stream_search(
     async def event_stream():
         # Phase 1: FTS5 results (fast)
         fts_results, _, fts_total = search_memories(
-            query=q, limit=limit, semantic=False, agent_id=agent_id,
+            query=q,
+            limit=limit,
+            semantic=False,
+            agent_id=agent_id,
         )
         fts_data = {
             "results": [r.model_dump(mode="json") for r in fts_results],
@@ -853,7 +856,10 @@ async def stream_search(
         # Phase 2: Semantic results (slower, may overlap with FTS)
         try:
             sem_results, _, sem_total = search_memories(
-                query=q, limit=limit, semantic=True, agent_id=agent_id,
+                query=q,
+                limit=limit,
+                semantic=True,
+                agent_id=agent_id,
             )
             # Deduplicate — exclude IDs already sent in FTS phase
             fts_ids = {r.id for r in fts_results}
@@ -910,9 +916,7 @@ def gdpr_delete_agent(
 
     with get_connection() as conn:
         # Count before deletion
-        mem_count = conn.execute(
-            "SELECT COUNT(*) FROM memories WHERE agent_id = ?", (target_agent,)
-        ).fetchone()[0]
+        mem_count = conn.execute("SELECT COUNT(*) FROM memories WHERE agent_id = ?", (target_agent,)).fetchone()[0]
 
         # Delete in dependency order
         # Tags and relations cascade from memories, but be explicit
@@ -946,13 +950,9 @@ def gdpr_delete_agent(
         # Delete FTS entries (triggers handle this on memory delete)
         conn.execute("DELETE FROM memories WHERE agent_id = ?", (target_agent,))
 
-        session_count = conn.execute(
-            "DELETE FROM sessions WHERE agent_id = ?", (target_agent,)
-        ).rowcount
+        session_count = conn.execute("DELETE FROM sessions WHERE agent_id = ?", (target_agent,)).rowcount
 
-        event_count = conn.execute(
-            "DELETE FROM event_logs WHERE agent_id = ?", (target_agent,)
-        ).rowcount
+        event_count = conn.execute("DELETE FROM event_logs WHERE agent_id = ?", (target_agent,)).rowcount
 
     return GDPRDeleteResponse(
         deleted_memories=mem_count,

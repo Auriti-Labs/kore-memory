@@ -37,7 +37,7 @@ async def test_dashboard_returns_html(client):
 
 @pytest.mark.anyio
 async def test_dashboard_contains_all_sections(client):
-    """L'HTML deve contenere tutte le 8 pagine della dashboard."""
+    """L'HTML deve contenere tutte le 9 pagine della dashboard."""
     resp = await client.get("/dashboard")
     html = resp.text
     # Ogni pagina è identificata da data-page="..." nel nuovo layout
@@ -48,6 +48,7 @@ async def test_dashboard_contains_all_sections(client):
         'data-page="graph"',
         'data-page="sessions"',
         'data-page="timeline"',
+        'data-page="analytics"',
         'data-page="maintenance"',
         'data-page="settings"',
     ]
@@ -98,3 +99,4 @@ async def test_dashboard_contains_js_api_helpers(client):
     assert "function loadMemories(" in html
     assert "function loadOverview(" in html
     assert "function loadGraph(" in html
+    assert "function loadAnalytics(" in html

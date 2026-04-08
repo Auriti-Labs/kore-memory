@@ -252,7 +252,8 @@ class TestSyncSearch:
             kore.save(f"Memoria offset sincrono {i} SYNCOFF1")
         result = kore.search("SYNCOFF1", offset=1, semantic=False)
         assert isinstance(result, MemorySearchResponse)
-        assert result.offset == 1
+        with pytest.deprecated_call(match="deprecated"):
+            assert result.offset == 1
 
 
 # ── Test: timeline() ──────────────────────────────────────────────────────────

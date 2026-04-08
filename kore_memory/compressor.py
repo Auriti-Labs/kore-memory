@@ -72,12 +72,15 @@ def _run_compression_inner(agent_id: str = "default") -> CompressionResult:
         if new_id:
             merged += len(cluster)
             created += 1
-            emit(MEMORY_COMPRESSED, {
-                "id": new_id,
-                "agent_id": agent_id,
-                "merged_ids": [m["id"] for m in cluster],
-                "cluster_size": len(cluster),
-            })
+            emit(
+                MEMORY_COMPRESSED,
+                {
+                    "id": new_id,
+                    "agent_id": agent_id,
+                    "merged_ids": [m["id"] for m in cluster],
+                    "cluster_size": len(cluster),
+                },
+            )
 
     return CompressionResult(
         clusters_found=len(clusters),
@@ -210,7 +213,7 @@ def _cluster_full_matrix(
             continue
 
         # Vectorized: find all j > i with similarity >= threshold
-        sims = sim_matrix[i, i + 1:]
+        sims = sim_matrix[i, i + 1 :]
         similar_mask = sims >= SIMILARITY_THRESHOLD
         similar_indices = np.where(similar_mask)[0] + (i + 1)
 
@@ -250,7 +253,7 @@ def _cluster_chunked(
                 continue
 
             # Only look at j > global_i to avoid double-counting
-            sims = sim_block[local_i, global_i + 1:]
+            sims = sim_block[local_i, global_i + 1 :]
             similar_mask = sims >= SIMILARITY_THRESHOLD
             similar_indices = np.where(similar_mask)[0] + (global_i + 1)
 
