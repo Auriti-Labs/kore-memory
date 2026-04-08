@@ -57,7 +57,7 @@ jobs:
           key: ${{ runner.os }}-semantic-${{ hashFiles('pyproject.toml') }}
 
       - name: Install with semantic
-        run: pip install -e ".[semantic,dev]"
+        run: pip install -e ".[semantic,dev,mcp]"
 
       - name: Run tests with embeddings
         run: pytest tests/ -v --tb=short
