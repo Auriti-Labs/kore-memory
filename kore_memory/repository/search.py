@@ -13,7 +13,6 @@ from ..decay import should_forget
 from ..models import MemoryRecord
 from .memory import _embeddings_available
 
-
 # ── Helpers status/conditions (Correction C: forgotten è una condition, non uno status) ──
 
 
@@ -198,8 +197,16 @@ def _count_active_memories(
     include_historical: bool = False,
 ) -> int:
     """Count total active memories matching query (for pagination total)."""
-    validity_filter = "" if include_historical else "AND (m.valid_to IS NULL OR m.valid_to > datetime('now')) AND m.invalidated_at IS NULL"
-    validity_filter_direct = "" if include_historical else "AND (valid_to IS NULL OR valid_to > datetime('now')) AND invalidated_at IS NULL"
+    _vf = (
+        "AND (m.valid_to IS NULL OR m.valid_to > datetime('now'))"
+        " AND m.invalidated_at IS NULL"
+    )
+    validity_filter = "" if include_historical else _vf
+    _vfd = (
+        "AND (valid_to IS NULL OR valid_to > datetime('now'))"
+        " AND invalidated_at IS NULL"
+    )
+    validity_filter_direct = "" if include_historical else _vfd
 
     with get_connection() as conn:
         safe_query = _sanitize_fts_query(query)

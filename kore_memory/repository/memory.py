@@ -71,7 +71,6 @@ def save_memory(
 
     import json as _json
     provenance_json = _json.dumps(req.provenance.model_dump()) if req.provenance else None
-    metadata_json = _json.dumps(req.metadata) if req.metadata else None
     now = datetime.now(UTC).isoformat()
 
     with get_connection() as conn:

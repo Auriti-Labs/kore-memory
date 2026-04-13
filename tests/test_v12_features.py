@@ -7,6 +7,7 @@ integrazioni PydanticAI/OpenAI/LangChain, MCP HTTP transport.
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import pytest
 from fastapi.testclient import TestClient
 
 from kore_memory.client import AsyncKoreClient, KoreClient
@@ -213,12 +214,14 @@ class TestIntegrationImports:
 class TestMCPTransportArgs:
     def test_main_accepts_transport_arg(self):
         """mcp_server.main() deve accettare --transport."""
+        pytest.importorskip("mcp", reason="mcp package not installed (optional dependency)")
         from kore_memory.mcp_server import main
         # Verifica che main sia definita (non possiamo eseguirla senza bloccare)
         assert callable(main)
 
     def test_mcp_server_has_argparse(self):
         """Il modulo mcp_server deve usare argparse per il parsing degli argomenti."""
+        pytest.importorskip("mcp", reason="mcp package not installed (optional dependency)")
         import inspect
 
         import kore_memory.mcp_server as mcp_mod
