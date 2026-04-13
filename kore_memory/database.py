@@ -157,8 +157,10 @@ def init_db() -> None:
             CREATE INDEX IF NOT EXISTS idx_memories_expires ON memories (expires_at) WHERE expires_at IS NOT NULL;
             CREATE INDEX IF NOT EXISTS idx_memories_archived ON memories (archived_at) WHERE archived_at IS NOT NULL;
             CREATE INDEX IF NOT EXISTS idx_memories_valid_to ON memories (valid_to) WHERE valid_to IS NOT NULL;
-            CREATE INDEX IF NOT EXISTS idx_memories_supersedes ON memories (supersedes_id) WHERE supersedes_id IS NOT NULL;
-            CREATE INDEX IF NOT EXISTS idx_memories_invalidated ON memories (invalidated_at) WHERE invalidated_at IS NOT NULL;
+            CREATE INDEX IF NOT EXISTS idx_memories_supersedes
+                ON memories (supersedes_id) WHERE supersedes_id IS NOT NULL;
+            CREATE INDEX IF NOT EXISTS idx_memories_invalidated
+                ON memories (invalidated_at) WHERE invalidated_at IS NOT NULL;
 
             -- Indice composito per query search e decay_pass (agent + attive + ordinamento)
             CREATE INDEX IF NOT EXISTS idx_agent_decay_active
