@@ -95,10 +95,7 @@ def _semantic_candidates(
         return []
 
     # Filtra sé stessa e applica soglia similarità
-    candidates = [
-        (mid, score) for mid, score in top_ids
-        if mid != memory_id and score >= _cfg.CONFLICT_SIMILARITY
-    ]
+    candidates = [(mid, score) for mid, score in top_ids if mid != memory_id and score >= _cfg.CONFLICT_SIMILARITY]
     if not candidates:
         return []
 

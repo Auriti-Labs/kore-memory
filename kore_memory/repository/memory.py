@@ -49,6 +49,7 @@ def save_memory(
 
     # Inferenza memory_type dalla category se non fornito esplicitamente
     from ..models import infer_memory_type
+
     memory_type = req.memory_type or infer_memory_type(req.category)
 
     embedding_blob = None
@@ -70,6 +71,7 @@ def save_memory(
     valid_to = req.valid_to.astimezone(UTC).strftime(_fmt) if req.valid_to else None
 
     import json as _json
+
     provenance_json = _json.dumps(req.provenance.model_dump()) if req.provenance else None
     now = datetime.now(UTC).isoformat()
 
@@ -153,6 +155,7 @@ def save_memory(
     if _cfg.CONFLICT_SYNC:
         try:
             from ..conflict_detector import detect_conflicts
+
             conflicts = detect_conflicts(
                 memory_id=row_id,
                 content=req.content,
@@ -431,9 +434,21 @@ def export_memories(agent_id: str = "default") -> list[dict]:
 
 _VALID_CATEGORIES = {
     # Categorie generali
-    "general", "project", "trading", "finance", "person", "preference", "task", "decision",
+    "general",
+    "project",
+    "trading",
+    "finance",
+    "person",
+    "preference",
+    "task",
+    "decision",
     # Categorie coding memory mode (v2.1)
-    "architectural_decision", "root_cause", "runbook", "regression_note", "tech_debt", "api_contract",
+    "architectural_decision",
+    "root_cause",
+    "runbook",
+    "regression_note",
+    "tech_debt",
+    "api_contract",
 }
 
 

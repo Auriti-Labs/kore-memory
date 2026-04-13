@@ -56,6 +56,7 @@ def _compute_conditions(row) -> list[str]:
         # Stale = scade nei prossimi 7 giorni ma non ancora scaduta
         now_str = datetime.now(UTC).isoformat()
         from datetime import timedelta
+
         stale_threshold = (datetime.now(UTC) + timedelta(days=7)).isoformat()
         if now_str < valid_to <= stale_threshold:
             conditions.append("stale")
@@ -97,12 +98,20 @@ def search_memories(
 
     if semantic and _embeddings_available():
         results = _semantic_search(
-            query, fetch_limit, category, agent_id, cursor,
+            query,
+            fetch_limit,
+            category,
+            agent_id,
+            cursor,
             include_historical=include_historical,
         )
     else:
         results = _fts_search(
-            query, fetch_limit, category, agent_id, cursor,
+            query,
+            fetch_limit,
+            category,
+            agent_id,
+            cursor,
             include_historical=include_historical,
         )
 
@@ -112,11 +121,10 @@ def search_memories(
 
     # Re-rank con Ranking Engine v1 (baseline_v1)
     from ..ranking import rank_results
+
     results = rank_results(results)
 
-    total_count = _count_active_memories(
-        query, category, agent_id, include_historical=include_historical
-    )
+    total_count = _count_active_memories(query, category, agent_id, include_historical=include_historical)
 
     page = results[: limit + 1]
     has_more = len(page) > limit
@@ -197,15 +205,9 @@ def _count_active_memories(
     include_historical: bool = False,
 ) -> int:
     """Count total active memories matching query (for pagination total)."""
-    _vf = (
-        "AND (m.valid_to IS NULL OR m.valid_to > datetime('now'))"
-        " AND m.invalidated_at IS NULL"
-    )
+    _vf = "AND (m.valid_to IS NULL OR m.valid_to > datetime('now')) AND m.invalidated_at IS NULL"
     validity_filter = "" if include_historical else _vf
-    _vfd = (
-        "AND (valid_to IS NULL OR valid_to > datetime('now'))"
-        " AND invalidated_at IS NULL"
-    )
+    _vfd = "AND (valid_to IS NULL OR valid_to > datetime('now')) AND invalidated_at IS NULL"
     validity_filter_direct = "" if include_historical else _vfd
 
     with get_connection() as conn:
@@ -272,13 +274,15 @@ def _fts_search(
 ) -> list[MemoryRecord]:
     """Full-text search via SQLite FTS5 con prefix wildcards, scoped to agent."""
     # Filtro validity: escludi scadute e superseded salvo include_historical
-    validity_fts = "" if include_historical else (
-        "AND (m.valid_to IS NULL OR m.valid_to > datetime('now')) "
-        "AND m.invalidated_at IS NULL"
+    validity_fts = (
+        ""
+        if include_historical
+        else ("AND (m.valid_to IS NULL OR m.valid_to > datetime('now')) AND m.invalidated_at IS NULL")
     )
-    validity_direct = "" if include_historical else (
-        "AND (valid_to IS NULL OR valid_to > datetime('now')) "
-        "AND invalidated_at IS NULL"
+    validity_direct = (
+        ""
+        if include_historical
+        else ("AND (valid_to IS NULL OR valid_to > datetime('now')) AND invalidated_at IS NULL")
     )
 
     with get_connection() as conn:
@@ -334,8 +338,8 @@ def _fts_search(
                 ORDER BY decay_score DESC, id DESC
                 LIMIT :limit
             """
-            escaped_query = "" if query.strip() == "*" else (
-                query.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+            escaped_query = (
+                "" if query.strip() == "*" else (query.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_"))
             )
             params = {"query": f"%{escaped_query}%", "limit": limit, "agent_id": agent_id}
 
@@ -344,9 +348,7 @@ def _fts_search(
             params["cursor_id"] = cursor[1]
 
         category_filter = (
-            "AND m.category = :category" if safe_query and category
-            else "AND category = :category" if category
-            else ""
+            "AND m.category = :category" if safe_query and category else "AND category = :category" if category else ""
         )
         if category:
             params["category"] = category
@@ -381,9 +383,10 @@ def _semantic_search(
     id_score_map = {mem_id: score for mem_id, score in top_ids}
     placeholders = ",".join("?" for _ in top_ids)
 
-    validity_clause = "" if include_historical else (
-        "AND (valid_to IS NULL OR valid_to > datetime('now')) "
-        "AND invalidated_at IS NULL"
+    validity_clause = (
+        ""
+        if include_historical
+        else ("AND (valid_to IS NULL OR valid_to > datetime('now')) AND invalidated_at IS NULL")
     )
 
     cursor_filter = ""

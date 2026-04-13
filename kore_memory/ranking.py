@@ -32,13 +32,13 @@ from .models import MemoryRecord
 # di search farebbe scalare memorie "importanti" su memorie perfettamente rilevanti.
 # task_relevance (Wave 2) e graph_centrality (Wave 3) sono 0.0 in Wave 1.
 _WEIGHTS = {
-    "similarity": 0.50,       # segnale principale: pertinenza alla query
-    "decay_score": 0.25,      # memoria non dimenticata
-    "confidence": 0.20,       # attendibilità del contenuto
-    "importance_n": 0.00,     # non influenza il ranking di search (v2.1)
-    "task_relevance": 0.00,   # Wave 2: sempre 0.0 in Wave 1
-    "graph_centrality": 0.00, # Wave 3: sempre 0.0 in Wave 1
-    "freshness": 0.05,        # quanto è recente la memoria
+    "similarity": 0.50,  # segnale principale: pertinenza alla query
+    "decay_score": 0.25,  # memoria non dimenticata
+    "confidence": 0.20,  # attendibilità del contenuto
+    "importance_n": 0.00,  # non influenza il ranking di search (v2.1)
+    "task_relevance": 0.00,  # Wave 2: sempre 0.0 in Wave 1
+    "graph_centrality": 0.00,  # Wave 3: sempre 0.0 in Wave 1
+    "freshness": 0.05,  # quanto è recente la memoria
 }
 
 # Penalità per conflitto irrisolto (memory_b_id ha conflitti non risolti)
@@ -68,13 +68,13 @@ def compute_score(record: MemoryRecord, conflict_ids: set[int] | None = None) ->
     freshness = _compute_freshness(record.created_at)
 
     raw = (
-        similarity        * _WEIGHTS["similarity"] +
-        decay             * _WEIGHTS["decay_score"] +
-        confidence        * _WEIGHTS["confidence"] +
-        importance_n      * _WEIGHTS["importance_n"] +
-        0.0               * _WEIGHTS["task_relevance"] +   # Wave 2
-        0.0               * _WEIGHTS["graph_centrality"] + # Wave 3
-        freshness         * _WEIGHTS["freshness"]
+        similarity * _WEIGHTS["similarity"]
+        + decay * _WEIGHTS["decay_score"]
+        + confidence * _WEIGHTS["confidence"]
+        + importance_n * _WEIGHTS["importance_n"]
+        + 0.0 * _WEIGHTS["task_relevance"]  # Wave 2
+        + 0.0 * _WEIGHTS["graph_centrality"]  # Wave 3
+        + freshness * _WEIGHTS["freshness"]
     )
 
     if conflict_ids and record.id in conflict_ids:

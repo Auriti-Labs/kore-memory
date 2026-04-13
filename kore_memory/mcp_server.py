@@ -512,7 +512,7 @@ def _wrap_bearer_auth(app, token: str):
                     headers={"WWW-Authenticate": "Bearer"},
                 )
 
-            provided = auth[len("Bearer "):]
+            provided = auth[len("Bearer ") :]
             if not _secrets.compare_digest(provided.encode(), token.encode()):
                 return JSONResponse({"error": "Invalid token"}, status_code=403)
 
@@ -538,11 +538,13 @@ def _add_health_route() -> None:
         @mcp.custom_route("/mcp/health", methods=["GET"])
         async def mcp_health(_req: Request) -> JSONResponse:
             uptime = round(_time.monotonic() - _SERVER_START_TIME, 1)
-            return JSONResponse({
-                "status": "ok",
-                "uptime_seconds": uptime,
-                "version": _cfg.VERSION,
-            })
+            return JSONResponse(
+                {
+                    "status": "ok",
+                    "uptime_seconds": uptime,
+                    "version": _cfg.VERSION,
+                }
+            )
     except Exception as exc:
         logger.warning("Impossibile registrare /mcp/health: %s", exc)
 
@@ -583,7 +585,10 @@ def main():
         timeout = _cfg.MCP_TIMEOUT_SECONDS
         logger.info(
             "Avvio MCP server transport=%s host=%s port=%d timeout=%ss auth=%s",
-            args.transport, args.host, args.port, timeout,
+            args.transport,
+            args.host,
+            args.port,
+            timeout,
             "bearer" if token else "none (locale)",
         )
         _add_health_route()
@@ -592,6 +597,7 @@ def main():
             # Token configurato → costruiamo l'app manualmente e aggiungiamo
             # il middleware Bearer prima di passare a uvicorn
             import uvicorn
+
             app = mcp.streamable_http_app() if args.transport == "streamable-http" else mcp.sse_app()
             _wrap_bearer_auth(app, token)
             try:
