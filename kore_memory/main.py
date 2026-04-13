@@ -77,6 +77,7 @@ from .repository import (
     get_session_memories,
     get_session_summary,
     get_tags,
+    get_memory_history,
     get_timeline,
     import_memories,
     list_agents,
@@ -264,8 +265,13 @@ def save(
     Use X-Session-Id header to associate the memory with a conversation session."""
     _check_rate_limit(_get_client_ip(request), "/save")
     session_id = _validate_session_id(request.headers.get("X-Session-Id"))
-    memory_id, importance = save_memory(req, agent_id=agent_id, session_id=session_id)
-    return MemorySaveResponse(id=memory_id, importance=importance)
+    memory_id, importance, conflicts = save_memory(req, agent_id=agent_id, session_id=session_id)
+    return MemorySaveResponse(
+        id=memory_id,
+        importance=importance,
+        conflicts_detected=conflicts,
+        superseded_id=req.supersedes_id,
+    )
 
 
 @app.post("/save/batch", response_model=BatchSaveResponse, status_code=201)
@@ -278,7 +284,7 @@ def save_batch(
     """Save multiple memories in a single request (max 100). Uses batch embedding."""
     _check_rate_limit(_get_client_ip(request), "/save")
     results = save_memory_batch(req.memories, agent_id=agent_id)
-    saved = [MemorySaveResponse(id=mid, importance=imp) for mid, imp in results]
+    saved = [MemorySaveResponse(id=mid, importance=imp) for mid, imp, *_ in results]
     return BatchSaveResponse(saved=saved, total=len(saved))
 
 
@@ -397,6 +403,22 @@ def get_single(
     if not memory:
         raise HTTPException(status_code=404, detail="Memory not found")
     return memory
+
+
+@app.get("/memories/{memory_id}/history", response_model=list[MemoryRecord])
+def get_history(
+    memory_id: int,
+    _: str = _Auth,
+    agent_id: str = _Agent,
+) -> list[MemoryRecord]:
+    """
+    Restituisce la catena di supersessioni per una memoria, dal predecessore più vecchio
+    al nodo di partenza. Utile per navigare l'evoluzione di una memoria nel tempo.
+    """
+    chain = get_memory_history(memory_id, agent_id=agent_id)
+    if not chain:
+        raise HTTPException(status_code=404, detail="Memory not found")
+    return chain
 
 
 @app.put("/memories/{memory_id}", response_model=MemorySaveResponse)

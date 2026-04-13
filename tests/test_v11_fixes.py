@@ -32,7 +32,7 @@ def _save(content: str, **kwargs) -> int:
     """Salva una memoria e ritorna l'id."""
     from kore_memory.models import MemorySaveRequest
     req = MemorySaveRequest(content=content, **kwargs)
-    mid, _ = save_memory(req, agent_id="test-v11")
+    mid, _, _conflicts = save_memory(req, agent_id="test-v11")
     return mid
 
 

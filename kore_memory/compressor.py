@@ -337,7 +337,7 @@ def _merge_cluster(cluster: list[dict], agent_id: str = "default") -> int | None
         category=merged_category,
         importance=merged_importance,
     )
-    new_id, _ = save_memory(req, agent_id=agent_id)
+    new_id, _, _conflicts = save_memory(req, agent_id=agent_id)
 
     # Migrate tags and relations from originals to the new record, then mark as compressed
     ids = [m["id"] for m in cluster]

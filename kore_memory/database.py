@@ -135,7 +135,16 @@ def init_db() -> None:
                 archived_at     TEXT    DEFAULT NULL,
                 session_id      TEXT    DEFAULT NULL,
                 created_at      TEXT    NOT NULL DEFAULT (datetime('now')),
-                updated_at      TEXT    NOT NULL DEFAULT (datetime('now'))
+                updated_at      TEXT    NOT NULL DEFAULT (datetime('now')),
+                -- Campi temporali v2.1
+                valid_from      TEXT    DEFAULT NULL,
+                valid_to        TEXT    DEFAULT NULL,
+                invalidated_at  TEXT    DEFAULT NULL,
+                supersedes_id   INTEGER DEFAULT NULL REFERENCES memories(id) ON DELETE SET NULL,
+                confidence      REAL    DEFAULT 1.0 CHECK (confidence >= 0.0 AND confidence <= 1.0),
+                provenance      TEXT    DEFAULT NULL,
+                memory_type     TEXT    DEFAULT 'semantic'
+                                CHECK (memory_type IN ('episodic','semantic','procedural','meta'))
             );
 
             CREATE INDEX IF NOT EXISTS idx_memories_agent      ON memories (agent_id);
@@ -147,6 +156,9 @@ def init_db() -> None:
             CREATE INDEX IF NOT EXISTS idx_memories_created_at ON memories (created_at DESC);
             CREATE INDEX IF NOT EXISTS idx_memories_expires ON memories (expires_at) WHERE expires_at IS NOT NULL;
             CREATE INDEX IF NOT EXISTS idx_memories_archived ON memories (archived_at) WHERE archived_at IS NOT NULL;
+            CREATE INDEX IF NOT EXISTS idx_memories_valid_to ON memories (valid_to) WHERE valid_to IS NOT NULL;
+            CREATE INDEX IF NOT EXISTS idx_memories_supersedes ON memories (supersedes_id) WHERE supersedes_id IS NOT NULL;
+            CREATE INDEX IF NOT EXISTS idx_memories_invalidated ON memories (invalidated_at) WHERE invalidated_at IS NOT NULL;
 
             -- Indice composito per query search e decay_pass (agent + attive + ordinamento)
             CREATE INDEX IF NOT EXISTS idx_agent_decay_active
@@ -216,6 +228,23 @@ def init_db() -> None:
             CREATE INDEX IF NOT EXISTS idx_event_logs_agent   ON event_logs (agent_id);
             CREATE INDEX IF NOT EXISTS idx_event_logs_event   ON event_logs (event);
             CREATE INDEX IF NOT EXISTS idx_event_logs_created ON event_logs (created_at DESC);
+
+            -- Conflitti tra memorie (v2.1)
+            CREATE TABLE IF NOT EXISTS memory_conflicts (
+                id            TEXT    PRIMARY KEY,
+                memory_a_id   INTEGER NOT NULL REFERENCES memories(id) ON DELETE CASCADE,
+                memory_b_id   INTEGER NOT NULL REFERENCES memories(id) ON DELETE CASCADE,
+                conflict_type TEXT    NOT NULL DEFAULT 'factual'
+                              CHECK (conflict_type IN ('factual','temporal','preference','structural')),
+                detected_at   TEXT    NOT NULL DEFAULT (datetime('now')),
+                resolved_at   TEXT    DEFAULT NULL,
+                resolved_by   TEXT    DEFAULT NULL,
+                resolution    TEXT    DEFAULT NULL,
+                agent_id      TEXT    NOT NULL DEFAULT 'default'
+            );
+            CREATE INDEX IF NOT EXISTS idx_conflicts_agent    ON memory_conflicts (agent_id, resolved_at);
+            CREATE INDEX IF NOT EXISTS idx_conflicts_memory_a ON memory_conflicts (memory_a_id);
+            CREATE INDEX IF NOT EXISTS idx_conflicts_memory_b ON memory_conflicts (memory_b_id);
         """)
 
         # Create sqlite-vec virtual table if extension is available
@@ -231,14 +260,32 @@ def init_db() -> None:
             except Exception:
                 pass  # extension not loaded on this connection
 
-        # Migrazione: aggiungi expires_at se mancante (DB pre-esistenti)
+        # Migrazione idempotente per DB pre-esistenti
         cols = {row[1] for row in conn.execute("PRAGMA table_info(memories)").fetchall()}
-        if "expires_at" not in cols:
-            conn.execute("ALTER TABLE memories ADD COLUMN expires_at TEXT DEFAULT NULL")
-        if "archived_at" not in cols:
-            conn.execute("ALTER TABLE memories ADD COLUMN archived_at TEXT DEFAULT NULL")
-        if "session_id" not in cols:
-            conn.execute("ALTER TABLE memories ADD COLUMN session_id TEXT DEFAULT NULL")
+
+        # Colonne pre-v2.1 (backward compat)
+        _legacy_migrations = {
+            "expires_at": "ALTER TABLE memories ADD COLUMN expires_at TEXT DEFAULT NULL",
+            "archived_at": "ALTER TABLE memories ADD COLUMN archived_at TEXT DEFAULT NULL",
+            "session_id": "ALTER TABLE memories ADD COLUMN session_id TEXT DEFAULT NULL",
+        }
+        for col, sql in _legacy_migrations.items():
+            if col not in cols:
+                conn.execute(sql)
+
+        # Colonne v2.1 — temporal memory layer
+        _v21_migrations = {
+            "valid_from": "ALTER TABLE memories ADD COLUMN valid_from TEXT DEFAULT NULL",
+            "valid_to": "ALTER TABLE memories ADD COLUMN valid_to TEXT DEFAULT NULL",
+            "invalidated_at": "ALTER TABLE memories ADD COLUMN invalidated_at TEXT DEFAULT NULL",
+            "supersedes_id": "ALTER TABLE memories ADD COLUMN supersedes_id INTEGER DEFAULT NULL",
+            "confidence": "ALTER TABLE memories ADD COLUMN confidence REAL DEFAULT 1.0",
+            "provenance": "ALTER TABLE memories ADD COLUMN provenance TEXT DEFAULT NULL",
+            "memory_type": "ALTER TABLE memories ADD COLUMN memory_type TEXT DEFAULT 'semantic'",
+        }
+        for col, sql in _v21_migrations.items():
+            if col not in cols:
+                conn.execute(sql)
 
 
 @contextmanager

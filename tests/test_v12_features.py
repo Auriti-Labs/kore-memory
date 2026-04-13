@@ -22,7 +22,7 @@ client = TestClient(app)
 def _save(content: str, **kwargs) -> int:
     """Salva una memoria e ritorna l'id."""
     req = MemorySaveRequest(content=content, **kwargs)
-    mid, _ = save_memory(req, agent_id="test-v12")
+    mid, _, _conflicts = save_memory(req, agent_id="test-v12")
     return mid
 
 

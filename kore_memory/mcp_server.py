@@ -65,7 +65,7 @@ def memory_save(
     Categories: general, project, trading, finance, person, preference, task, decision.
     """
     req = MemorySaveRequest(content=content, category=category, importance=importance or None)
-    mem_id, imp = save_memory(req, agent_id=_sanitize_agent_id(agent_id))
+    mem_id, imp, _ = save_memory(req, agent_id=_sanitize_agent_id(agent_id))
     return {"id": mem_id, "importance": imp, "message": "Memory saved"}
 
 
@@ -235,7 +235,7 @@ def memory_save_batch(
                 category=mem.get("category", "general"),
                 importance=raw_imp if raw_imp and raw_imp >= 1 else None,
             )
-            mem_id, imp = save_memory(req, agent_id=_sanitize_agent_id(agent_id))
+            mem_id, imp, _ = save_memory(req, agent_id=_sanitize_agent_id(agent_id))
             saved.append({"id": mem_id, "importance": imp})
         except Exception:
             errors += 1

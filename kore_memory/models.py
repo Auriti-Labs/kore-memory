@@ -9,6 +9,7 @@ from typing import Literal
 from pydantic import BaseModel, Field, field_validator
 
 Category = Literal[
+    # Categorie generali
     "general",
     "project",
     "trading",
@@ -17,7 +18,49 @@ Category = Literal[
     "preference",
     "task",
     "decision",
+    # Categorie coding memory mode (v2.1)
+    "architectural_decision",
+    "root_cause",
+    "runbook",
+    "regression_note",
+    "tech_debt",
+    "api_contract",
 ]
+
+MemoryType = Literal["episodic", "semantic", "procedural", "meta"]
+
+# Mapping canonico category → memory_type (usato per inferenza automatica)
+_CATEGORY_TYPE_MAP: dict[str, MemoryType] = {
+    "architectural_decision": "semantic",
+    "root_cause": "episodic",
+    "runbook": "procedural",
+    "regression_note": "episodic",
+    "tech_debt": "semantic",
+    "api_contract": "semantic",
+    "decision": "semantic",
+    "task": "episodic",
+    "general": "semantic",
+    "project": "semantic",
+    "preference": "semantic",
+    "person": "semantic",
+    "trading": "semantic",
+    "finance": "semantic",
+}
+
+
+def infer_memory_type(category: str) -> MemoryType:
+    """Inferisce memory_type dalla category se non fornito esplicitamente."""
+    return _CATEGORY_TYPE_MAP.get(category, "semantic")
+
+
+class ProvenanceSchema(BaseModel):
+    """Provenienza di una memoria: chi l'ha creata, come, da dove."""
+    source_type: Literal["agent", "file", "import", "api"] = "agent"
+    source_ref: str | None = None
+    author_agent: str | None = None
+    session_id: str | None = None
+    created_via: str | None = None
+    external_id: str | None = None
 
 
 class MemorySaveRequest(BaseModel):
@@ -41,6 +84,14 @@ class MemorySaveRequest(BaseModel):
     category: Category = Field("general")
     importance: int | None = Field(None, ge=1, le=5, description="None=auto-scored, 1-5=explicit")
     ttl_hours: int | None = Field(None, ge=1, le=8760, description="Time-to-live in ore (max 1 anno)")
+    # Campi temporali v2.1
+    valid_from: datetime | None = Field(None, description="Inizio validità della memoria")
+    valid_to: datetime | None = Field(None, description="Fine validità: None = nessuna scadenza")
+    supersedes_id: int | None = Field(None, description="ID della memoria sostituita da questa")
+    confidence: float = Field(1.0, ge=0.0, le=1.0, description="Confidenza nella correttezza (0.0-1.0)")
+    provenance: ProvenanceSchema | None = Field(None, description="Provenienza della memoria")
+    memory_type: MemoryType | None = Field(None, description="Tipo cognitivo: None = inferito dalla category")
+    metadata: dict | None = Field(None, description="Campi strutturati specifici per category (coding mode)")
 
     @field_validator("content")
     @classmethod
@@ -54,6 +105,10 @@ class MemoryUpdateRequest(BaseModel):
     content: str | None = Field(None, min_length=3, max_length=4000)
     category: Category | None = None
     importance: int | None = Field(None, ge=1, le=5)
+    # Campi temporali v2.1
+    valid_to: datetime | None = Field(None, description="Aggiorna la scadenza della memoria")
+    confidence: float | None = Field(None, ge=0.0, le=1.0)
+    provenance: ProvenanceSchema | None = None
 
     @field_validator("content")
     @classmethod
@@ -73,9 +128,13 @@ class MemoryRecord(BaseModel):
                     "category": "project",
                     "importance": 4,
                     "decay_score": 0.95,
+                    "memory_type": "semantic",
+                    "confidence": 1.0,
+                    "status": "active",
+                    "conditions": [],
                     "created_at": "2026-01-15T10:30:00",
                     "updated_at": "2026-01-15T10:30:00",
-                    "score": 3.8,
+                    "score": None,
                 }
             ]
         }
@@ -88,13 +147,28 @@ class MemoryRecord(BaseModel):
     decay_score: float = 1.0
     created_at: datetime
     updated_at: datetime
+    # score è un campo runtime — calcolato durante il retrieval, mai persistito in DB
     score: float | None = None
+    # Campi temporali v2.1
+    memory_type: str = "semantic"
+    confidence: float = 1.0
+    valid_from: datetime | None = None
+    valid_to: datetime | None = None
+    supersedes_id: int | None = None
+    provenance: dict | None = None
+    # Stato derivato (non persistito) — calcolato da _compute_memory_status()
+    status: str = "active"
+    conditions: list[str] = Field(default_factory=list)
 
 
 class MemorySaveResponse(BaseModel):
     id: int
     importance: int
     message: str = "Memory saved"
+    # Lista di conflict ID rilevati al save (lista vuota = nessun conflitto)
+    conflicts_detected: list[str] = Field(default_factory=list)
+    # ID della memoria superseded (se supersedes_id era presente nella request)
+    superseded_id: int | None = None
 
 
 class MemorySearchResponse(BaseModel):
@@ -102,6 +176,8 @@ class MemorySearchResponse(BaseModel):
     total: int
     cursor: str | None = Field(None, description="Opaque cursor for next page (base64)")
     has_more: bool = False
+    # Profilo di ranking usato per ordinare i risultati
+    ranking_profile: str = "default_v1"
     # Deprecated fields kept for backwards compatibility
     offset: int = Field(0, deprecated=True, description="Deprecated: use cursor instead")
 

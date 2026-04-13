@@ -64,6 +64,17 @@ ENTITY_EXTRACTION = os.getenv("KORE_ENTITY_EXTRACTION", "0") == "1"
 
 AUDIT_LOG = os.getenv("KORE_AUDIT_LOG", "0") == "1"
 
+# ── Conflict Detection ───────────────────────────────────────────────────────
+
+# Soglia similarità coseno per candidato conflitto (default calcolato empiricamente)
+CONFLICT_SIMILARITY = float(os.getenv("KORE_CONFLICT_SIMILARITY", "0.75"))
+# Confidence minima della memoria nuova per attivare il conflict check
+CONFLICT_MIN_CONFIDENCE = float(os.getenv("KORE_CONFLICT_MIN_CONFIDENCE", "0.70"))
+# Esecuzione sincrona (True) vs asincrona (False)
+CONFLICT_SYNC = os.getenv("KORE_CONFLICT_SYNC", "true").lower() == "true"
+# Numero massimo di memorie candidate da scansionare
+CONFLICT_MAX_CANDIDATES = int(os.getenv("KORE_CONFLICT_MAX_CANDIDATES", "10"))
+
 # ── Version ───────────────────────────────────────────────────────────────────
 
 VERSION = "2.0.0"

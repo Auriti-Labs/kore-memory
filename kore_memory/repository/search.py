@@ -5,12 +5,71 @@ FTS5, semantic search, tag search, timeline.
 
 from __future__ import annotations
 
+import json
 from datetime import UTC, datetime
 
 from ..database import get_connection
-from ..decay import effective_score, should_forget
+from ..decay import should_forget
 from ..models import MemoryRecord
 from .memory import _embeddings_available
+
+
+# ── Helpers status/conditions (Correction C: forgotten è una condition, non uno status) ──
+
+
+def _compute_memory_status(row) -> str:
+    """
+    Deriva lo status strutturale della memoria dal suo stato nel DB.
+    Mutually exclusive, priorità: superseded > archived > expired > compressed > active.
+    """
+    if _row_field(row, "invalidated_at"):
+        return "superseded"
+    if _row_field(row, "archived_at"):
+        return "archived"
+    valid_to = _row_field(row, "valid_to")
+    if valid_to and valid_to < datetime.now(UTC).isoformat():
+        return "expired"
+    if _row_field(row, "compressed_into"):
+        return "compressed"
+    return "active"
+
+
+def _compute_conditions(row) -> list[str]:
+    """
+    Deriva le condizioni osservate della memoria.
+    Possono coesistere con qualsiasi status.
+    'forgotten' è una condition (non uno status) — la memoria rimane active.
+    """
+    conditions: list[str] = []
+    decay = float(_row_field(row, "decay_score") or 1.0)
+    confidence = float(_row_field(row, "confidence") or 1.0)
+
+    if decay < 0.05:
+        conditions.append("forgotten")
+    elif 0.05 <= decay < 0.30:
+        conditions.append("fading")
+
+    if confidence < 0.50:
+        conditions.append("low_confidence")
+
+    valid_to = _row_field(row, "valid_to")
+    if valid_to:
+        # Stale = scade nei prossimi 7 giorni ma non ancora scaduta
+        now_str = datetime.now(UTC).isoformat()
+        from datetime import timedelta
+        stale_threshold = (datetime.now(UTC) + timedelta(days=7)).isoformat()
+        if now_str < valid_to <= stale_threshold:
+            conditions.append("stale")
+
+    return conditions
+
+
+def _row_field(row, field: str):
+    """Accesso sicuro a campo row — None se il campo non esiste (compatibilità DB precedenti)."""
+    try:
+        return row[field]
+    except (IndexError, KeyError):
+        return None
 
 
 def search_memories(
@@ -20,6 +79,8 @@ def search_memories(
     semantic: bool = True,
     agent_id: str = "default",
     cursor: tuple[float, int] | None = None,
+    include_historical: bool = False,
+    include_forgotten: bool = False,
 ) -> tuple[list[MemoryRecord], tuple[float, int] | None, int]:
     """
     Search memories with cursor-based pagination.
@@ -29,43 +90,44 @@ def search_memories(
     - next_cursor: (decay_score, id) for next page, or None if no more results
     - total_count: total matching memories in DB (not just page size)
 
-    Uses semantic (embedding) search when available,
-    falls back to FTS5 full-text search, then LIKE.
-    Filters out fully-decayed memories. Reinforces access count on results.
+    - include_historical: se True include memorie con valid_to scaduto
+    - include_forgotten: se True include memorie con decay_score < 0.05
     """
-    # Fetch extra results to ensure we have enough after filtering
-    fetch_limit = limit * 3
+    # Fetch abbastanza candidati per il re-ranking: min 30, max limit*10
+    fetch_limit = max(limit * 5, 30)
 
     if semantic and _embeddings_available():
-        results = _semantic_search(query, fetch_limit, category, agent_id, cursor)
+        results = _semantic_search(
+            query, fetch_limit, category, agent_id, cursor,
+            include_historical=include_historical,
+        )
     else:
-        results = _fts_search(query, fetch_limit, category, agent_id, cursor)
+        results = _fts_search(
+            query, fetch_limit, category, agent_id, cursor,
+            include_historical=include_historical,
+        )
 
-    # Filter forgotten memories, re-rank by combined score:
-    # similarity (semantic) × decay × importance_weight
-    alive = [r for r in results if not should_forget(r.decay_score or 1.0)]
-    alive.sort(
-        key=lambda r: (
-            (r.score if r.score and r.score > 0 else 1.0) * effective_score(r.decay_score or 1.0, r.importance)
-        ),
-        reverse=True,
+    # Filtra memorie forgottten salvo include_forgotten
+    if not include_forgotten:
+        results = [r for r in results if not should_forget(r.decay_score or 1.0)]
+
+    # Re-rank con Ranking Engine v1 (baseline_v1)
+    from ..ranking import rank_results
+    results = rank_results(results)
+
+    total_count = _count_active_memories(
+        query, category, agent_id, include_historical=include_historical
     )
 
-    # Get total count of matching active memories
-    total_count = _count_active_memories(query, category, agent_id)
-
-    # Take requested page + 1 to check if there are more results
-    page = alive[: limit + 1]
+    page = results[: limit + 1]
     has_more = len(page) > limit
     top = page[:limit]
 
-    # Generate next cursor if there are more results
     next_cursor = None
     if has_more and top:
         last = top[-1]
         next_cursor = (last.decay_score or 1.0, last.id)
 
-    # Reinforce access for retrieved memories
     if top:
         _reinforce([r.id for r in top])
 
@@ -129,12 +191,20 @@ def search_by_tag(tag: str, agent_id: str = "default", limit: int = 20) -> list[
 # ── Private helpers ──────────────────────────────────────────────────────────
 
 
-def _count_active_memories(query: str, category: str | None, agent_id: str) -> int:
+def _count_active_memories(
+    query: str,
+    category: str | None,
+    agent_id: str,
+    include_historical: bool = False,
+) -> int:
     """Count total active memories matching query (for pagination total)."""
+    validity_filter = "" if include_historical else "AND (m.valid_to IS NULL OR m.valid_to > datetime('now')) AND m.invalidated_at IS NULL"
+    validity_filter_direct = "" if include_historical else "AND (valid_to IS NULL OR valid_to > datetime('now')) AND invalidated_at IS NULL"
+
     with get_connection() as conn:
         safe_query = _sanitize_fts_query(query)
         if safe_query:
-            sql = """
+            sql = f"""
                 SELECT COUNT(*) FROM memories_fts
                 JOIN memories m ON memories_fts.rowid = m.id
                 WHERE memories_fts MATCH :query
@@ -143,11 +213,12 @@ def _count_active_memories(query: str, category: str | None, agent_id: str) -> i
                   AND m.archived_at IS NULL
                   AND m.decay_score >= 0.05
                   AND (m.expires_at IS NULL OR m.expires_at > datetime('now'))
+                  {validity_filter}
             """
             params: dict = {"query": safe_query, "agent_id": agent_id}
         else:
             escaped = query.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
-            sql = """
+            sql = f"""
                 SELECT COUNT(*) FROM memories
                 WHERE content LIKE :query ESCAPE '\\'
                   AND agent_id = :agent_id
@@ -155,11 +226,11 @@ def _count_active_memories(query: str, category: str | None, agent_id: str) -> i
                   AND archived_at IS NULL
                   AND decay_score >= 0.05
                   AND (expires_at IS NULL OR expires_at > datetime('now'))
+                  {validity_filter_direct}
             """
             params = {"query": f"%{escaped}%", "agent_id": agent_id}
 
         if category:
-            # Prefix m. for FTS JOIN, no prefix for direct LIKE query
             col_prefix = "m." if safe_query else ""
             sql = sql.rstrip() + f" AND {col_prefix}category = :category"
             params["category"] = category
@@ -190,14 +261,24 @@ def _fts_search(
     category: str | None,
     agent_id: str = "default",
     cursor: tuple[float, int] | None = None,
+    include_historical: bool = False,
 ) -> list[MemoryRecord]:
-    """Full-text search via SQLite FTS5 with prefix wildcards, scoped to agent."""
+    """Full-text search via SQLite FTS5 con prefix wildcards, scoped to agent."""
+    # Filtro validity: escludi scadute e superseded salvo include_historical
+    validity_fts = "" if include_historical else (
+        "AND (m.valid_to IS NULL OR m.valid_to > datetime('now')) "
+        "AND m.invalidated_at IS NULL"
+    )
+    validity_direct = "" if include_historical else (
+        "AND (valid_to IS NULL OR valid_to > datetime('now')) "
+        "AND invalidated_at IS NULL"
+    )
+
     with get_connection() as conn:
         safe_query = _sanitize_fts_query(query)
 
         cursor_filter = ""
         if cursor:
-            decay_score, last_id = cursor
             cursor_filter = (
                 "AND ((m.decay_score, m.id) < (:cursor_score, :cursor_id))"
                 if safe_query
@@ -205,10 +286,13 @@ def _fts_search(
             )
 
         if safe_query:
-            sql = """
+            sql = f"""
                 SELECT m.id, m.content, m.category, m.importance,
                        m.decay_score, m.access_count, m.last_accessed,
-                       m.created_at, m.updated_at, rank AS score
+                       m.created_at, m.updated_at, rank AS score,
+                       m.valid_from, m.valid_to, m.invalidated_at, m.supersedes_id,
+                       m.confidence, m.provenance, m.memory_type, m.archived_at,
+                       m.compressed_into
                 FROM memories_fts
                 JOIN memories m ON memories_fts.rowid = m.id
                 WHERE memories_fts MATCH :query
@@ -216,33 +300,36 @@ def _fts_search(
                   AND m.compressed_into IS NULL
                   AND m.archived_at IS NULL
                   AND (m.expires_at IS NULL OR m.expires_at > datetime('now'))
-                  {category_filter}
-                  {cursor_filter}
+                  {validity_fts}
+                  {{category_filter}}
+                  {{cursor_filter}}
                 ORDER BY m.decay_score DESC, m.id DESC
                 LIMIT :limit
             """
             params: dict = {"query": safe_query, "limit": limit, "agent_id": agent_id}
         else:
-            sql = """
+            sql = f"""
                 SELECT id, content, category, importance,
                        decay_score, access_count, last_accessed,
-                       created_at, updated_at, NULL AS score
+                       created_at, updated_at, NULL AS score,
+                       valid_from, valid_to, invalidated_at, supersedes_id,
+                       confidence, provenance, memory_type, archived_at,
+                       compressed_into
                 FROM memories
                 WHERE content LIKE :query ESCAPE '\\'
                   AND agent_id = :agent_id
                   AND compressed_into IS NULL
                   AND archived_at IS NULL
                   AND (expires_at IS NULL OR expires_at > datetime('now'))
-                  {category_filter}
-                  {cursor_filter}
+                  {validity_direct}
+                  {{category_filter}}
+                  {{cursor_filter}}
                 ORDER BY decay_score DESC, id DESC
                 LIMIT :limit
             """
-            # q=* → list all memories (global wildcard)
-            if query.strip() == "*":
-                escaped_query = ""
-            else:
-                escaped_query = query.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+            escaped_query = "" if query.strip() == "*" else (
+                query.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+            )
             params = {"query": f"%{escaped_query}%", "limit": limit, "agent_id": agent_id}
 
         if cursor:
@@ -250,12 +337,17 @@ def _fts_search(
             params["cursor_id"] = cursor[1]
 
         category_filter = (
-            "AND m.category = :category" if safe_query and category else "AND category = :category" if category else ""
+            "AND m.category = :category" if safe_query and category
+            else "AND category = :category" if category
+            else ""
         )
         if category:
             params["category"] = category
 
-        rows = conn.execute(sql.format(category_filter=category_filter, cursor_filter=cursor_filter), params).fetchall()
+        rows = conn.execute(
+            sql.format(category_filter=category_filter, cursor_filter=cursor_filter),
+            params,
+        ).fetchall()
 
     return [_row_to_record(r) for r in rows]
 
@@ -266,6 +358,7 @@ def _semantic_search(
     category: str | None,
     agent_id: str = "default",
     cursor: tuple[float, int] | None = None,
+    include_historical: bool = False,
 ) -> list[MemoryRecord]:
     """Semantic search with vector index, scoped to agent."""
     from ..embedder import embed_query
@@ -274,20 +367,22 @@ def _semantic_search(
     query_vec = embed_query(query)
     index = get_index()
 
-    # Batch vector search via in-memory index
     top_ids = index.search(query_vec, agent_id, category=category, limit=limit)
     if not top_ids:
         return []
 
-    # Load full records from DB with cursor filter
     id_score_map = {mem_id: score for mem_id, score in top_ids}
     placeholders = ",".join("?" for _ in top_ids)
+
+    validity_clause = "" if include_historical else (
+        "AND (valid_to IS NULL OR valid_to > datetime('now')) "
+        "AND invalidated_at IS NULL"
+    )
 
     cursor_filter = ""
     params = [id for id, _ in top_ids]
 
     with get_connection() as conn:
-        # Build query — parameter order: IN ids, category, cursor
         category_clause = "AND category = ?" if category else ""
         if category:
             params.append(category)
@@ -300,11 +395,15 @@ def _semantic_search(
         sql = f"""
             SELECT id, content, category, importance,
                    decay_score, access_count, last_accessed,
-                   created_at, updated_at
+                   created_at, updated_at,
+                   valid_from, valid_to, invalidated_at, supersedes_id,
+                   confidence, provenance, memory_type, archived_at,
+                   compressed_into
             FROM memories
             WHERE id IN ({placeholders})
               AND archived_at IS NULL
               AND (expires_at IS NULL OR expires_at > datetime('now'))
+              {validity_clause}
               {category_clause}
               {cursor_filter}
             ORDER BY decay_score DESC, id DESC
@@ -314,20 +413,10 @@ def _semantic_search(
     results = []
     for row in rows:
         sim = id_score_map.get(row["id"], 0.0)
-        results.append(
-            MemoryRecord(
-                id=row["id"],
-                content=row["content"],
-                category=row["category"],
-                importance=row["importance"],
-                decay_score=row["decay_score"],
-                created_at=row["created_at"],
-                updated_at=row["updated_at"],
-                score=round(sim, 4),
-            )
-        )
+        record = _row_to_record(row)
+        record.score = round(sim, 4)
+        results.append(record)
 
-    # Sort by descending score
     results.sort(key=lambda r: r.score or 0.0, reverse=True)
     return results
 
@@ -347,13 +436,33 @@ def _sanitize_fts_query(query: str) -> str:
 
 
 def _row_to_record(row) -> MemoryRecord:
+    """Costruisce MemoryRecord da una row SQLite, computando status e conditions."""
+    # Decodifica provenance da JSON se presente
+    provenance_raw = _row_field(row, "provenance")
+    provenance_dict = None
+    if provenance_raw:
+        try:
+            provenance_dict = json.loads(provenance_raw)
+        except (ValueError, TypeError):
+            pass
+
     return MemoryRecord(
         id=row["id"],
         content=row["content"],
         category=row["category"],
         importance=row["importance"],
-        decay_score=row["decay_score"] if "decay_score" in row.keys() else 1.0,
+        decay_score=_row_field(row, "decay_score") or 1.0,
         created_at=row["created_at"],
         updated_at=row["updated_at"],
-        score=row["score"],
+        score=_row_field(row, "score"),
+        # Campi temporali v2.1
+        memory_type=_row_field(row, "memory_type") or "semantic",
+        confidence=_row_field(row, "confidence") or 1.0,
+        valid_from=_row_field(row, "valid_from"),
+        valid_to=_row_field(row, "valid_to"),
+        supersedes_id=_row_field(row, "supersedes_id"),
+        provenance=provenance_dict,
+        # Campi derivati — non persistiti
+        status=_compute_memory_status(row),
+        conditions=_compute_conditions(row),
     )
