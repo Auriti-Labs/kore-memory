@@ -69,6 +69,8 @@ AUDIT_LOG = os.getenv("KORE_AUDIT_LOG", "0") == "1"
 MCP_PORT = int(os.getenv("KORE_MCP_PORT", "8766"))
 # Timeout in secondi per le connessioni streamable-http (usato nel client-side keepalive)
 MCP_TIMEOUT_SECONDS = int(os.getenv("KORE_MCP_TIMEOUT_SECONDS", "30"))
+# Bearer token per autenticazione HTTP remota (vuoto = nessun auth, solo locale)
+MCP_TOKEN = os.getenv("KORE_MCP_TOKEN", "")
 
 # ── Conflict Detection ───────────────────────────────────────────────────────
 
@@ -83,4 +85,4 @@ CONFLICT_MAX_CANDIDATES = int(os.getenv("KORE_CONFLICT_MAX_CANDIDATES", "10"))
 
 # ── Version ───────────────────────────────────────────────────────────────────
 
-VERSION = "2.0.0"
+VERSION = "2.1.0"

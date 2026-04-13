@@ -382,7 +382,7 @@ pip install kore-memory[mcp]
 kore-mcp
 ```
 
-### Available MCP Tools
+### Available MCP Tools (v2.1 — 17 tools)
 
 | Tool | Description |
 |---|---|
@@ -400,34 +400,72 @@ kore-mcp
 | `memory_cleanup` | Remove expired memories |
 | `memory_import` | Import memories from JSON |
 | `memory_export` | Export all active memories |
+| `memory_save_decision` | Save an ADR with rationale, alternatives, and author |
+| `memory_get_runbook` | Retrieve operational runbooks by trigger or component |
+| `memory_log_regression` | Track a regression with introduced/fixed version and test ref |
 
-### Claude Desktop Configuration
+### Claude Code (stdio — preset)
 
-Add to your `claude_desktop_config.json`:
+```bash
+# Copy the ready-made preset
+cp presets/claude-code/mcp.json ~/.claude/mcp.json
+```
+
+Or manually in `~/.claude/mcp.json`:
 
 ```json
 {
   "mcpServers": {
     "kore-memory": {
       "command": "kore-mcp",
-      "args": []
+      "args": [],
+      "env": { "KORE_LOCAL_ONLY": "1" }
     }
   }
 }
 ```
 
-### Cursor / Claude Code Configuration
+### Cursor (streamable-http — preset)
 
-Add to your `.claude/settings.json` or MCP config:
+```bash
+cp presets/cursor/mcp.json ~/.cursor/mcp.json
+```
 
-```json
-{
-  "mcpServers": {
-    "kore-memory": {
-      "command": "kore-mcp"
-    }
-  }
-}
+### Remote instance with Bearer Auth
+
+To expose the MCP server securely over the network:
+
+```bash
+export KORE_MCP_TOKEN=$(python3 -c "import secrets; print(secrets.token_urlsafe(32))")
+KORE_MCP_TOKEN=$KORE_MCP_TOKEN kore-mcp --transport streamable-http --host 0.0.0.0 --port 8766
+```
+
+The `/mcp/health` route is always exempt from auth. All other routes require `Authorization: Bearer <token>`.
+
+### Coding Memory Mode
+
+Three specialized tools for engineering workflows:
+
+```python
+# Architectural Decision Record
+memory_save_decision(
+    content="Use PostgreSQL instead of MySQL",
+    rationale="Better JSONB support and advanced query planner",
+    alternatives_considered="MySQL, SQLite, MongoDB",
+    decided_by="backend-team",
+    repo="my-project",
+)
+
+# Operational runbook retrieval
+memory_get_runbook(trigger="deploy failed", component="api-gateway")
+
+# Regression tracking
+memory_log_regression(
+    content="Race condition in SQLite connection pool",
+    introduced_in="v1.2.0",
+    fixed_in="v1.2.1",
+    test_ref="tests/test_database.py::test_concurrent_access",
+)
 ```
 
 ---
@@ -676,6 +714,12 @@ with KoreClient() as kore:
 - [x] CSP nonce-based security
 - [x] Event system (lifecycle hooks)
 - [x] Connection pooling
+- [x] Temporal memory layer (valid_from/to, supersession, history)
+- [x] Conflict Detection (FTS5/semantic + temporal overlap)
+- [x] Ranking Engine v1 (similarity × decay × confidence × freshness)
+- [x] MCP Bearer Auth for remote instances
+- [x] Coding Memory Mode (ADR, runbook, regression tracking)
+- [x] Presets for Claude Code and Cursor
 - [ ] PostgreSQL backend
 - [ ] Embeddings v2 (multilingual-e5-large)
 

@@ -501,3 +501,91 @@ class TestCodingMemoryMode:
         mem = get_memory(result["id"], agent_id="test-coding")
         assert mem is not None
         assert mem.memory_type == "procedural"
+
+
+class TestBearerAuthMiddleware:
+    """Test per il middleware Bearer token (#008)."""
+
+    def test_wrap_bearer_auth_blocks_missing_token(self):
+        """Richiesta senza Authorization viene rifiutata con 401."""
+        from starlette.applications import Starlette
+        from starlette.testclient import TestClient
+        from starlette.responses import PlainTextResponse
+        from starlette.routing import Route
+        from kore_memory.mcp_server import _wrap_bearer_auth
+
+        async def ok(_req):
+            return PlainTextResponse("ok")
+
+        app = Starlette(routes=[Route("/test", ok)])
+        _wrap_bearer_auth(app, "secret-token")
+
+        client = TestClient(app, raise_server_exceptions=False)
+        resp = client.get("/test")
+        assert resp.status_code == 401
+        assert "WWW-Authenticate" in resp.headers
+
+    def test_wrap_bearer_auth_blocks_wrong_token(self):
+        """Token errato → 403."""
+        from starlette.applications import Starlette
+        from starlette.testclient import TestClient
+        from starlette.responses import PlainTextResponse
+        from starlette.routing import Route
+        from kore_memory.mcp_server import _wrap_bearer_auth
+
+        async def ok(_req):
+            return PlainTextResponse("ok")
+
+        app = Starlette(routes=[Route("/test", ok)])
+        _wrap_bearer_auth(app, "correct-token")
+
+        client = TestClient(app, raise_server_exceptions=False)
+        resp = client.get("/test", headers={"Authorization": "Bearer wrong-token"})
+        assert resp.status_code == 403
+
+    def test_wrap_bearer_auth_allows_correct_token(self):
+        """Token corretto → 200."""
+        from starlette.applications import Starlette
+        from starlette.testclient import TestClient
+        from starlette.responses import PlainTextResponse
+        from starlette.routing import Route
+        from kore_memory.mcp_server import _wrap_bearer_auth
+
+        async def ok(_req):
+            return PlainTextResponse("ok")
+
+        app = Starlette(routes=[Route("/test", ok)])
+        _wrap_bearer_auth(app, "my-secret")
+
+        client = TestClient(app, raise_server_exceptions=False)
+        resp = client.get("/test", headers={"Authorization": "Bearer my-secret"})
+        assert resp.status_code == 200
+
+    def test_health_route_exempt_from_auth(self):
+        """/mcp/health è esente dal Bearer token."""
+        from starlette.applications import Starlette
+        from starlette.testclient import TestClient
+        from starlette.responses import JSONResponse
+        from starlette.routing import Route
+        from kore_memory.mcp_server import _wrap_bearer_auth
+
+        async def health(_req):
+            return JSONResponse({"status": "ok"})
+
+        app = Starlette(routes=[Route("/mcp/health", health)])
+        _wrap_bearer_auth(app, "any-token")
+
+        client = TestClient(app, raise_server_exceptions=False)
+        resp = client.get("/mcp/health")
+        assert resp.status_code == 200
+
+    def test_config_mcp_token_default_empty(self):
+        """KORE_MCP_TOKEN default è stringa vuota (nessun auth)."""
+        import os
+        os.environ.pop("KORE_MCP_TOKEN", None)
+        # Re-import per leggere il valore fresco non è necessario —
+        # verifichiamo solo che il default sia ""
+        import importlib
+        import kore_memory.config as cfg
+        importlib.reload(cfg)
+        assert cfg.MCP_TOKEN == ""

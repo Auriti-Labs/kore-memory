@@ -483,6 +483,46 @@ def health_resource() -> str:
     return f"Kore v{config.VERSION} — semantic_search={'enabled' if _embeddings_available() else 'disabled'}"
 
 
+# ── Bearer Auth Middleware (streamable-http remoto) ──────────────────────────
+
+
+def _wrap_bearer_auth(app, token: str):
+    """
+    Aggiunge un middleware Bearer token all'app Starlette.
+    /mcp/health è esente per permettere health-check senza credenziali.
+    """
+    import secrets as _secrets
+    from starlette.middleware.base import BaseHTTPMiddleware
+    from starlette.requests import Request
+    from starlette.responses import JSONResponse
+
+    class BearerAuthMiddleware(BaseHTTPMiddleware):
+        async def dispatch(self, request: Request, call_next):
+            # Health check esente da autenticazione
+            if request.url.path == "/mcp/health":
+                return await call_next(request)
+
+            auth = request.headers.get("Authorization", "")
+            if not auth.startswith("Bearer "):
+                return JSONResponse(
+                    {
+                        "error": "Missing Bearer token",
+                        "hint": "Authorization: Bearer <KORE_MCP_TOKEN>",
+                    },
+                    status_code=401,
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+
+            provided = auth[len("Bearer "):]
+            if not _secrets.compare_digest(provided.encode(), token.encode()):
+                return JSONResponse({"error": "Invalid token"}, status_code=403)
+
+            return await call_next(request)
+
+    app.add_middleware(BearerAuthMiddleware)
+    return app
+
+
 # ── Health endpoint (streamable-http) ────────────────────────────────────────
 
 
@@ -541,19 +581,45 @@ def main():
     )
 
     if args.transport in ("streamable-http", "sse"):
+        token = _cfg.MCP_TOKEN
         timeout = _cfg.MCP_TIMEOUT_SECONDS
         logger.info(
-            "Avvio MCP server transport=%s host=%s port=%d timeout=%ss",
+            "Avvio MCP server transport=%s host=%s port=%d timeout=%ss auth=%s",
             args.transport, args.host, args.port, timeout,
+            "bearer" if token else "none (locale)",
         )
         _add_health_route()
-        try:
-            mcp.run(transport=args.transport, host=args.host, port=args.port)
-        except KeyboardInterrupt:
-            logger.info("MCP server fermato (KeyboardInterrupt)")
-        except Exception as exc:
-            logger.error("MCP server crash: %s", exc, exc_info=True)
-            raise
+
+        if token:
+            # Token configurato → costruiamo l'app manualmente e aggiungiamo
+            # il middleware Bearer prima di passare a uvicorn
+            import uvicorn
+            if args.transport == "streamable-http":
+                app = mcp.streamable_http_app()
+            else:
+                app = mcp.sse_app()
+            _wrap_bearer_auth(app, token)
+            try:
+                uvicorn.run(app, host=args.host, port=args.port)
+            except KeyboardInterrupt:
+                logger.info("MCP server fermato (KeyboardInterrupt)")
+            except Exception as exc:
+                logger.error("MCP server crash: %s", exc, exc_info=True)
+                raise
+        else:
+            # Nessun token: avvio standard (localhost only raccomandato)
+            if args.host not in ("127.0.0.1", "localhost", "::1"):
+                logger.warning(
+                    "KORE_MCP_TOKEN non impostato — server esposto su %s senza autenticazione",
+                    args.host,
+                )
+            try:
+                mcp.run(transport=args.transport, host=args.host, port=args.port)
+            except KeyboardInterrupt:
+                logger.info("MCP server fermato (KeyboardInterrupt)")
+            except Exception as exc:
+                logger.error("MCP server crash: %s", exc, exc_info=True)
+                raise
     else:
         mcp.run()
 

@@ -11,6 +11,77 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.1.0] - 2026-04-13
+
+### Theme: "Temporal Intelligence"
+
+### Added
+
+#### Layer Temporale (#001–#004)
+- **`valid_from` / `valid_to`** — Validità temporale per ogni memoria. Memorie scadute (`valid_to < now`) vengono escluse automaticamente dalla ricerca
+- **`confidence`** — Grado di certezza della memoria (0.0–1.0, default 1.0). Usato dal Ranking Engine per il re-rank
+- **`provenance`** — Campo stringa opzionale per tracciare la fonte (es. "web-search", "user-input")
+- **`memory_type`** — Tipo semantico inferito dalla category: `episodic`, `semantic`, `procedural`, `conditional`. Inferito automaticamente alla creazione
+- **`supersedes_id`** — FK self-referenziale per sostituire versioni precedenti. La memoria superseded viene soft-invalidata (`invalidated_at`)
+- **`GET /memories/{id}/history`** — Cronologia completa della catena di supersessioni, ordinata dalla più vecchia alla più recente
+- **40 nuovi test** in `tests/test_v21_temporal.py`
+
+#### Conflict Detection (#005)
+- **Rilevamento automatico conflitti** — Attivo alla creazione di ogni memoria con `confidence >= KORE_CONFLICT_MIN_CONFIDENCE` (default 0.70)
+- **Strategia dual-track**: ricerca FTS5 (senza embedding) o semantica (con embedding) per trovare candidati simili
+- **Overlap temporale**: candidati filtrati per sovrapposizione `valid_from/valid_to`
+- **Tabella `memory_conflicts`**: ogni conflitto persistito con `conflict_type` ("temporal" o "factual")
+- **Campo `conflicts: list[str]`** nella risposta `POST /save` — IDs nel formato `"c-abc123"`
+- **Config**: `KORE_CONFLICT_SIMILARITY` (soglia coseno), `KORE_CONFLICT_MIN_CONFIDENCE`, `KORE_CONFLICT_SYNC`, `KORE_CONFLICT_MAX_CANDIDATES`
+- **17 test** in `tests/test_conflict_detection.py`
+
+#### Ranking Engine v1 (#006)
+- **Formula composite**: `similarity×0.50 + decay×0.25 + confidence×0.20 + freshness×0.05`
+- **FTS5 normalization**: tutti i match FTS5 ottengono similarity=1.0 (BM25 score è un filtro, non un rank)
+- **Freshness**: score lineare 1.0→0.0 su 365 giorni dalla creazione
+- **Conflict penalty**: memorie in conflitto scalate a ×0.60
+- **`ranking_profile`** restituito in ogni risultato di ricerca (`"default_v1"`)
+- **22 test** in `tests/test_ranking_engine.py`
+
+#### MCP Streamable-HTTP Hardening (#007)
+- **`GET /mcp/health`** — Endpoint health via `@mcp.custom_route`, esente da auth. Risponde con `{status, uptime_seconds, version}`
+- **`KORE_MCP_PORT`** — Porta MCP configurabile via env (default 8766)
+- **`KORE_MCP_TIMEOUT_SECONDS`** — Timeout connessioni HTTP (default 30s)
+- **Logging strutturato** — `logging.basicConfig` con format `[kore-mcp]`, log transport/host/port/auth all'avvio
+- **`KeyboardInterrupt` graceful** — Il server si chiude pulitamente con CTRL+C
+
+#### MCP Bearer Auth (#008)
+- **`KORE_MCP_TOKEN`** — Bearer token per autenticare il MCP server su rete remota
+- **`_wrap_bearer_auth(app, token)`** — Starlette middleware che valida `Authorization: Bearer <token>` con `secrets.compare_digest`
+- **`/mcp/health` esente** da autenticazione (health-check senza credenziali)
+- **Warning** se `--host` non è localhost e `KORE_MCP_TOKEN` non è impostato
+- **5 test** in `TestBearerAuthMiddleware`
+
+#### Presets (#009 — Claude Code, #010 — Cursor)
+- **`presets/claude-code/mcp.json`** — Configurazione MCP pronta per Claude Code (stdio, `KORE_LOCAL_ONLY=1`)
+- **`presets/claude-code/README.md`** — Quick Start in 3 comandi
+- **`presets/cursor/mcp.json`** — Configurazione MCP pronta per Cursor (streamable-http, porta 8766)
+- **`presets/cursor/README.md`** — Quick Start con troubleshooting
+
+#### Quick Start Documentation (#011)
+- **`docs/quickstart-v2.1.md`** — Guida completa alle 4 superfici di prodotto: REST API, Python SDK, MCP Server, JS/TS SDK
+- README aggiornato: sezione MCP con 17 tool, Bearer auth, Coding Memory Mode, presets
+- Roadmap aggiornata con feature Wave 1
+
+#### Coding Memory Mode Alpha (#012)
+- **`memory_save_decision`** — Salva ADR (Architectural Decision Record) con metadata: `rationale`, `alternatives_considered`, `decided_by`. Namespace `agent_id/repo`
+- **`memory_get_runbook`** — Recupera runbook operativi per trigger o componente. Ricerca FTS5 su category `"runbook"`
+- **`memory_log_regression`** — Traccia regressioni con `introduced_in`, `fixed_in`, `test_ref`. Category `"regression_note"`, importance 4, memory_type `"episodic"`
+- **6 test** in `TestCodingMemoryMode`
+
+### Stats
+- **522 test** totali (517 + 5 Bearer), tutti verdi
+- **Coverage**: ≥88%
+- **Nuovi file**: `kore_memory/conflict_detector.py`, `kore_memory/ranking.py`, `presets/`, `docs/quickstart-v2.1.md`
+- **Nuovi test**: `test_v21_temporal.py` (40), `test_conflict_detection.py` (17), `test_ranking_engine.py` (22), `TestMCPHardening` (6), `TestCodingMemoryMode` (6), `TestBearerAuthMiddleware` (5)
+
+---
+
 ## [2.0.0] - 2026-02-27
 
 ### Theme: "Intelligence"
