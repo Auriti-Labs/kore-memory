@@ -23,11 +23,11 @@ Il server si avvia automaticamente come processo figlio di Cursor.
 
 ## Tool disponibili
 
-Gli stessi 14 tool disponibili nel preset Claude Code:
+I 16 tool disponibili nel preset Claude Code:
 `memory_save`, `memory_search`, `memory_timeline`, `memory_save_batch`,
 `memory_update`, `memory_delete`, `memory_add_tags`, `memory_search_by_tag`,
 `memory_add_relation`, `memory_export`, `memory_import`, `memory_decay_run`,
-`memory_compress`, `memory_cleanup`.
+`memory_compress`, `memory_cleanup`, `memory_get_context`, `memory_explain`.
 
 ## Configurazione avanzata
 

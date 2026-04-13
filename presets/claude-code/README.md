@@ -35,6 +35,8 @@ claude
 | `memory_decay_run` | Ricalcola decay scores |
 | `memory_compress` | Comprimi memorie simili |
 | `memory_cleanup` | Elimina memorie scadute |
+| `memory_get_context` | Assembla context package ottimizzato per un task (budget token) |
+| `memory_explain` | Analisi completa di una memoria (status, conditions, score breakdown) |
 
 ## Configurazione avanzata
 

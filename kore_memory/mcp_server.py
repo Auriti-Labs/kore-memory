@@ -92,19 +92,25 @@ def memory_search(
     limit: int = 5,
     category: str = "",
     semantic: bool = True,
+    task: str = "",
+    ranking_profile: str = "default",
     agent_id: str = "default",
 ) -> dict:
     """
     Search memory. Supports semantic (embedding) and full-text search.
     Returns the most relevant memories sorted by score.
     Leave category empty to search across all categories.
+    Pass task to improve ranking with task_relevance signal (Wave 2).
+    ranking_profile: "default" or "coding" (optimized for software development tasks).
     """
-    results, next_cursor, total_count = search_memories(
+    results, next_cursor, total_count, _excluded = search_memories(
         query=query,
         limit=limit,
         category=category or None,
         semantic=semantic,
         agent_id=_sanitize_agent_id(agent_id),
+        task=task,
+        ranking_profile=ranking_profile,
     )
     return {
         "results": [
@@ -115,12 +121,15 @@ def memory_search(
                 "importance": r.importance,
                 "decay_score": r.decay_score,
                 "score": r.score,
+                "status": r.status,
+                "conditions": r.conditions,
                 "created_at": str(r.created_at),
             }
             for r in results
         ],
         "total": total_count,
         "has_more": next_cursor is not None,
+        "ranking_profile": ranking_profile,
     }
 
 
@@ -405,7 +414,7 @@ def memory_get_runbook(
     """
     sanitized = _sanitize_agent_id(f"{agent_id}/{repo}" if repo else agent_id)
     query = " ".join(filter(None, [trigger, component])) or "*"
-    results, _, total = search_memories(
+    results, _, total, _excluded = search_memories(
         query=query,
         limit=limit,
         category="runbook",
@@ -466,6 +475,150 @@ def memory_log_regression(
         "memory_type": "episodic",
         "conflicts_detected": conflicts,
         "message": "Regression logged",
+    }
+
+
+@mcp.tool()
+def memory_get_context(
+    task: str,
+    budget_tokens: int = 2000,
+    categories: str = "",
+    ranking_profile: str = "default",
+    agent_id: str = "",
+) -> dict:
+    """
+    Assemble a context package for the current task within a token budget.
+    Returns the most relevant memories structured for prompt injection.
+
+    Parameters:
+    - task: description of the current task (used for task_relevance ranking)
+    - budget_tokens: maximum tokens to use (default 2000, max 32000)
+    - categories: comma-separated list of categories to include (empty = all)
+      e.g. "facts,decisions,architectural_decision"
+    - ranking_profile: "default" or "coding" (optimized for software development)
+    - agent_id: agent namespace (empty = "default")
+
+    Invariants (Context Assembly Contract):
+    - budget_tokens_used is ALWAYS ≤ budget_tokens_requested
+    - Memories with confidence < 0.5 are excluded by default
+    - Unresolved conflicts are surfaced in conflicts[]
+    - If embedder unavailable: fallback to FTS5, degraded=True
+    """
+    from .context_assembler import assemble_context
+    from .models import ContextAssembleRequest
+
+    cat_list = [c.strip() for c in categories.split(",") if c.strip()] if categories else []
+    sanitized = _sanitize_agent_id(agent_id) if agent_id else "default"
+
+    req = ContextAssembleRequest(
+        task=task,
+        budget_tokens=budget_tokens,
+        categories=cat_list,
+        ranking_profile=ranking_profile,
+    )
+    response = assemble_context(req, agent_id=sanitized)
+
+    return {
+        "task": response.task,
+        "budget_tokens_requested": response.budget_tokens_requested,
+        "budget_tokens_used": response.budget_tokens_used,
+        "total_memories": response.total_memories,
+        "ranking_profile": response.ranking_profile,
+        "degraded": response.degraded,
+        "memories": [
+            {
+                "id": m.id,
+                "content": m.content,
+                "category": m.category,
+                "importance": m.importance,
+                "score": m.score,
+                "tokens_estimated": m.tokens_estimated,
+                "status": m.status,
+                "conditions": m.conditions,
+            }
+            for m in response.memories
+        ],
+        "conflicts": response.conflicts,
+    }
+
+
+@mcp.tool()
+def memory_explain(
+    memory_id: str,
+    agent_id: str = "",
+) -> dict:
+    """
+    Full analysis of a single memory: status, conditions, score breakdown,
+    unresolved conflicts, supersession chain, tags, provenance.
+    Useful for debugging why a memory was or wasn't recalled.
+
+    Parameters:
+    - memory_id: numeric ID of the memory (as string to avoid anyOf schema)
+    - agent_id: agent namespace (empty = "default")
+    """
+    from .database import get_connection
+    from .ranking import compute_score
+    from .repository import get_memory
+    from .repository.search import _load_conflicted_ids
+
+    sanitized = _sanitize_agent_id(agent_id) if agent_id else "default"
+    try:
+        mid = int(memory_id)
+    except ValueError:
+        return {"error": f"Invalid memory_id: {memory_id!r}"}
+
+    memory = get_memory(mid, agent_id=sanitized)
+    if not memory:
+        return {"error": f"Memory {mid} not found for agent {sanitized!r}"}
+
+    with get_connection() as conn:
+        row_extra = conn.execute(
+            "SELECT access_count, last_accessed FROM memories WHERE id = ? AND agent_id = ?",
+            (mid, sanitized),
+        ).fetchone()
+        conflict_rows = conn.execute(
+            """
+            SELECT id, conflict_type, resolved_at, detected_at
+            FROM memory_conflicts
+            WHERE (memory_a_id = ? OR memory_b_id = ?) AND agent_id = ?
+            ORDER BY detected_at DESC LIMIT 10
+            """,
+            (mid, mid, sanitized),
+        ).fetchall()
+        chain: list[int] = []
+        curr = memory.supersedes_id
+        seen: set[int] = {mid}
+        while curr and curr not in seen and len(chain) < 10:
+            chain.append(curr)
+            seen.add(curr)
+            prev = conn.execute("SELECT supersedes_id FROM memories WHERE id = ?", (curr,)).fetchone()
+            curr = prev[0] if prev else None
+        tag_rows = conn.execute("SELECT tag FROM memory_tags WHERE memory_id = ? ORDER BY tag", (mid,)).fetchall()
+
+    conflicted_ids = _load_conflicted_ids([mid], sanitized)
+    compute_score(memory, conflict_ids=conflicted_ids, explain=True)
+
+    return {
+        "id": memory.id,
+        "status": memory.status,
+        "conditions": memory.conditions,
+        "current_score": memory.score,
+        "score_breakdown": memory.explain or {},
+        "access_count": row_extra["access_count"] if row_extra else 0,
+        "last_accessed": row_extra["last_accessed"] if row_extra else None,
+        "conflicts": [
+            {
+                "conflict_id": r["id"],
+                "conflict_type": r["conflict_type"],
+                "resolved": r["resolved_at"] is not None,
+                "detected_at": r["detected_at"],
+            }
+            for r in conflict_rows
+        ],
+        "supersession_chain": chain,
+        "tags": [r["tag"] for r in tag_rows],
+        "memory_type": memory.memory_type,
+        "confidence": memory.confidence,
     }
 
 

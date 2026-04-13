@@ -1,0 +1,1648 @@
+{
+  "version": "1.0",
+  "description": "Dataset A — Temporal Coherence benchmark",
+  "memories": [
+    {
+      "content": "Architettura microservizi progetto alfa versione 0: componente A usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 1
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 1: componente B usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 2
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 2: componente C usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 3: componente D usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 4: componente E usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 5
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 5: componente F usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 1
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 6: componente G usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 2
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 7: componente H usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 8: componente I usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 9: componente J usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 5
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 10: componente K usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 1
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 11: componente L usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 2
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 12: componente M usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 13: componente N usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 14: componente O usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 5
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 15: componente P usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 1
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 16: componente Q usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 2
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 17: componente R usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 18: componente S usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 19: componente T usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 5
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 20: componente U usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 1
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 21: componente V usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 2
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 22: componente W usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 23: componente X usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 24: componente Y usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 5
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 25: componente Z usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 1
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 26: componente A usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 2
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 27: componente B usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 28: componente C usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 29: componente D usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 5
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 30: componente E usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 1
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 31: componente F usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 2
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 32: componente G usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 33: componente H usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 34: componente I usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 5
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 35: componente J usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 1
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 36: componente K usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 2
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 37: componente L usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 38: componente M usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 39: componente N usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 5
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 40: componente O usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 1
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 41: componente P usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 2
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 42: componente Q usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 43: componente R usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 44: componente S usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 5
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 45: componente T usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 1
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 46: componente U usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 2
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 47: componente V usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 48: componente W usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 49: componente X usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 5
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 50: componente Y usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 1
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 51: componente Z usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 2
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 52: componente A usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 53: componente B usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 54: componente C usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 5
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 55: componente D usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 1
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 56: componente E usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 2
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 57: componente F usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 58: componente G usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 59: componente H usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 5
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 60: componente I usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 1
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 61: componente J usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 2
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 62: componente K usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 63: componente L usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 64: componente M usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 5
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 65: componente N usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 1
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 66: componente O usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 2
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 67: componente P usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 68: componente Q usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 69: componente R usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 5
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 70: componente S usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 1
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 71: componente T usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 2
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 72: componente U usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 73: componente V usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 74: componente W usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 5
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 75: componente X usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 1
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 76: componente Y usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 2
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 77: componente Z usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 78: componente A usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 79: componente B usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 5
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 80: componente C usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 1
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 81: componente D usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 2
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 82: componente E usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 83: componente F usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 84: componente G usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 5
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 85: componente H usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 1
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 86: componente I usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 2
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 87: componente J usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 88: componente K usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 89: componente L usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 5
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 90: componente M usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 1
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 91: componente N usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 2
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 92: componente O usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 93: componente P usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 94: componente Q usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 5
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 95: componente R usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 1
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 96: componente S usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 2
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 97: componente T usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 98: componente U usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Architettura microservizi progetto alfa versione 99: componente V usa pattern CQRS",
+      "category": "architectural_decision",
+      "importance": 5
+    },
+    {
+      "content": "Decisione obsoleta numero 0: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 0: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 1: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 1: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 2: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 2: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 3: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 3: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 4: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 4: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 5: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 5: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 6: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 6: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 7: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 7: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 8: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 8: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 9: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 9: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 10: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 10: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 11: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 11: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 12: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 12: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 13: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 13: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 14: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 14: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 15: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 15: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 16: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 16: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 17: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 17: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 18: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 18: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 19: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 19: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 20: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 20: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 21: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 21: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 22: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 22: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 23: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 23: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 24: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 24: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 25: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 25: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 26: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 26: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 27: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 27: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 28: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 28: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 29: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 29: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 30: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 30: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 31: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 31: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 32: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 32: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 33: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 33: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 34: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 34: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 35: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 35: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 36: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 36: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 37: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 37: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 38: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 38: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 39: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 39: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 40: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 40: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 41: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 41: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 42: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 42: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 43: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 43: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 44: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 44: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 45: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 45: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 46: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 46: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 47: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 47: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 48: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 48: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione obsoleta numero 49: usare MongoDB per il servizio gamma",
+      "category": "architectural_decision",
+      "importance": 3,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Decisione aggiornata numero 49: usare PostgreSQL per il servizio gamma — migrazione completata",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Offerta promozionale scaduta numero 0: sconto 20 percento sul piano enterprise entro fine anno",
+      "category": "general",
+      "importance": 2,
+      "valid_to": "2026-04-03T14:13:28"
+    },
+    {
+      "content": "Offerta promozionale scaduta numero 1: sconto 20 percento sul piano enterprise entro fine anno",
+      "category": "general",
+      "importance": 2,
+      "valid_to": "2026-04-02T14:13:28"
+    },
+    {
+      "content": "Offerta promozionale scaduta numero 2: sconto 20 percento sul piano enterprise entro fine anno",
+      "category": "general",
+      "importance": 2,
+      "valid_to": "2026-04-01T14:13:28"
+    },
+    {
+      "content": "Offerta promozionale scaduta numero 3: sconto 20 percento sul piano enterprise entro fine anno",
+      "category": "general",
+      "importance": 2,
+      "valid_to": "2026-03-31T14:13:28"
+    },
+    {
+      "content": "Offerta promozionale scaduta numero 4: sconto 20 percento sul piano enterprise entro fine anno",
+      "category": "general",
+      "importance": 2,
+      "valid_to": "2026-03-30T14:13:28"
+    },
+    {
+      "content": "Offerta promozionale scaduta numero 5: sconto 20 percento sul piano enterprise entro fine anno",
+      "category": "general",
+      "importance": 2,
+      "valid_to": "2026-03-29T14:13:28"
+    },
+    {
+      "content": "Offerta promozionale scaduta numero 6: sconto 20 percento sul piano enterprise entro fine anno",
+      "category": "general",
+      "importance": 2,
+      "valid_to": "2026-03-28T14:13:28"
+    },
+    {
+      "content": "Offerta promozionale scaduta numero 7: sconto 20 percento sul piano enterprise entro fine anno",
+      "category": "general",
+      "importance": 2,
+      "valid_to": "2026-03-27T14:13:28"
+    },
+    {
+      "content": "Offerta promozionale scaduta numero 8: sconto 20 percento sul piano enterprise entro fine anno",
+      "category": "general",
+      "importance": 2,
+      "valid_to": "2026-03-26T14:13:28"
+    },
+    {
+      "content": "Offerta promozionale scaduta numero 9: sconto 20 percento sul piano enterprise entro fine anno",
+      "category": "general",
+      "importance": 2,
+      "valid_to": "2026-03-25T14:13:28"
+    },
+    {
+      "content": "Offerta promozionale scaduta numero 10: sconto 20 percento sul piano enterprise entro fine anno",
+      "category": "general",
+      "importance": 2,
+      "valid_to": "2026-03-24T14:13:28"
+    },
+    {
+      "content": "Offerta promozionale scaduta numero 11: sconto 20 percento sul piano enterprise entro fine anno",
+      "category": "general",
+      "importance": 2,
+      "valid_to": "2026-03-23T14:13:28"
+    },
+    {
+      "content": "Offerta promozionale scaduta numero 12: sconto 20 percento sul piano enterprise entro fine anno",
+      "category": "general",
+      "importance": 2,
+      "valid_to": "2026-03-22T14:13:28"
+    },
+    {
+      "content": "Offerta promozionale scaduta numero 13: sconto 20 percento sul piano enterprise entro fine anno",
+      "category": "general",
+      "importance": 2,
+      "valid_to": "2026-03-21T14:13:28"
+    },
+    {
+      "content": "Offerta promozionale scaduta numero 14: sconto 20 percento sul piano enterprise entro fine anno",
+      "category": "general",
+      "importance": 2,
+      "valid_to": "2026-03-20T14:13:28"
+    },
+    {
+      "content": "Offerta promozionale scaduta numero 15: sconto 20 percento sul piano enterprise entro fine anno",
+      "category": "general",
+      "importance": 2,
+      "valid_to": "2026-03-19T14:13:28"
+    },
+    {
+      "content": "Offerta promozionale scaduta numero 16: sconto 20 percento sul piano enterprise entro fine anno",
+      "category": "general",
+      "importance": 2,
+      "valid_to": "2026-03-18T14:13:28"
+    },
+    {
+      "content": "Offerta promozionale scaduta numero 17: sconto 20 percento sul piano enterprise entro fine anno",
+      "category": "general",
+      "importance": 2,
+      "valid_to": "2026-03-17T14:13:28"
+    },
+    {
+      "content": "Offerta promozionale scaduta numero 18: sconto 20 percento sul piano enterprise entro fine anno",
+      "category": "general",
+      "importance": 2,
+      "valid_to": "2026-03-16T14:13:28"
+    },
+    {
+      "content": "Offerta promozionale scaduta numero 19: sconto 20 percento sul piano enterprise entro fine anno",
+      "category": "general",
+      "importance": 2,
+      "valid_to": "2026-03-15T14:13:28"
+    },
+    {
+      "content": "Offerta promozionale scaduta numero 20: sconto 20 percento sul piano enterprise entro fine anno",
+      "category": "general",
+      "importance": 2,
+      "valid_to": "2026-03-14T14:13:28"
+    },
+    {
+      "content": "Offerta promozionale scaduta numero 21: sconto 20 percento sul piano enterprise entro fine anno",
+      "category": "general",
+      "importance": 2,
+      "valid_to": "2026-03-13T14:13:28"
+    },
+    {
+      "content": "Offerta promozionale scaduta numero 22: sconto 20 percento sul piano enterprise entro fine anno",
+      "category": "general",
+      "importance": 2,
+      "valid_to": "2026-03-12T14:13:28"
+    },
+    {
+      "content": "Offerta promozionale scaduta numero 23: sconto 20 percento sul piano enterprise entro fine anno",
+      "category": "general",
+      "importance": 2,
+      "valid_to": "2026-03-11T14:13:28"
+    },
+    {
+      "content": "Offerta promozionale scaduta numero 24: sconto 20 percento sul piano enterprise entro fine anno",
+      "category": "general",
+      "importance": 2,
+      "valid_to": "2026-03-10T14:13:28"
+    },
+    {
+      "content": "Offerta promozionale scaduta numero 25: sconto 20 percento sul piano enterprise entro fine anno",
+      "category": "general",
+      "importance": 2,
+      "valid_to": "2026-03-09T14:13:28"
+    },
+    {
+      "content": "Offerta promozionale scaduta numero 26: sconto 20 percento sul piano enterprise entro fine anno",
+      "category": "general",
+      "importance": 2,
+      "valid_to": "2026-03-08T14:13:28"
+    },
+    {
+      "content": "Offerta promozionale scaduta numero 27: sconto 20 percento sul piano enterprise entro fine anno",
+      "category": "general",
+      "importance": 2,
+      "valid_to": "2026-03-07T14:13:28"
+    },
+    {
+      "content": "Offerta promozionale scaduta numero 28: sconto 20 percento sul piano enterprise entro fine anno",
+      "category": "general",
+      "importance": 2,
+      "valid_to": "2026-03-06T14:13:28"
+    },
+    {
+      "content": "Offerta promozionale scaduta numero 29: sconto 20 percento sul piano enterprise entro fine anno",
+      "category": "general",
+      "importance": 2,
+      "valid_to": "2026-03-05T14:13:28"
+    },
+    {
+      "content": "Configurazione produzione conflittuale numero 0: timeout API impostato a 30 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione alternativa numero 0: timeout API impostato a 60 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione produzione conflittuale numero 1: timeout API impostato a 30 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione alternativa numero 1: timeout API impostato a 60 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione produzione conflittuale numero 2: timeout API impostato a 30 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione alternativa numero 2: timeout API impostato a 60 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione produzione conflittuale numero 3: timeout API impostato a 30 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione alternativa numero 3: timeout API impostato a 60 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione produzione conflittuale numero 4: timeout API impostato a 30 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione alternativa numero 4: timeout API impostato a 60 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione produzione conflittuale numero 5: timeout API impostato a 30 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione alternativa numero 5: timeout API impostato a 60 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione produzione conflittuale numero 6: timeout API impostato a 30 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione alternativa numero 6: timeout API impostato a 60 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione produzione conflittuale numero 7: timeout API impostato a 30 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione alternativa numero 7: timeout API impostato a 60 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione produzione conflittuale numero 8: timeout API impostato a 30 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione alternativa numero 8: timeout API impostato a 60 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione produzione conflittuale numero 9: timeout API impostato a 30 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione alternativa numero 9: timeout API impostato a 60 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione produzione conflittuale numero 10: timeout API impostato a 30 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione alternativa numero 10: timeout API impostato a 60 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione produzione conflittuale numero 11: timeout API impostato a 30 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione alternativa numero 11: timeout API impostato a 60 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione produzione conflittuale numero 12: timeout API impostato a 30 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione alternativa numero 12: timeout API impostato a 60 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione produzione conflittuale numero 13: timeout API impostato a 30 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione alternativa numero 13: timeout API impostato a 60 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione produzione conflittuale numero 14: timeout API impostato a 30 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione alternativa numero 14: timeout API impostato a 60 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione produzione conflittuale numero 15: timeout API impostato a 30 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione alternativa numero 15: timeout API impostato a 60 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione produzione conflittuale numero 16: timeout API impostato a 30 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione alternativa numero 16: timeout API impostato a 60 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione produzione conflittuale numero 17: timeout API impostato a 30 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione alternativa numero 17: timeout API impostato a 60 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione produzione conflittuale numero 18: timeout API impostato a 30 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione alternativa numero 18: timeout API impostato a 60 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione produzione conflittuale numero 19: timeout API impostato a 30 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Configurazione alternativa numero 19: timeout API impostato a 60 secondi per tutti i servizi",
+      "category": "architectural_decision",
+      "importance": 3
+    }
+  ],
+  "ground_truth": {
+    "queries": [],
+    "temporal_accuracy": {
+      "supersession_0": {
+        "expected_active": 101,
+        "expected_superseded": 100
+      },
+      "supersession_1": {
+        "expected_active": 103,
+        "expected_superseded": 102
+      },
+      "supersession_2": {
+        "expected_active": 105,
+        "expected_superseded": 104
+      },
+      "supersession_3": {
+        "expected_active": 107,
+        "expected_superseded": 106
+      },
+      "supersession_4": {
+        "expected_active": 109,
+        "expected_superseded": 108
+      },
+      "supersession_5": {
+        "expected_active": 111,
+        "expected_superseded": 110
+      },
+      "supersession_6": {
+        "expected_active": 113,
+        "expected_superseded": 112
+      },
+      "supersession_7": {
+        "expected_active": 115,
+        "expected_superseded": 114
+      },
+      "supersession_8": {
+        "expected_active": 117,
+        "expected_superseded": 116
+      },
+      "supersession_9": {
+        "expected_active": 119,
+        "expected_superseded": 118
+      },
+      "supersession_10": {
+        "expected_active": 121,
+        "expected_superseded": 120
+      },
+      "supersession_11": {
+        "expected_active": 123,
+        "expected_superseded": 122
+      },
+      "supersession_12": {
+        "expected_active": 125,
+        "expected_superseded": 124
+      },
+      "supersession_13": {
+        "expected_active": 127,
+        "expected_superseded": 126
+      },
+      "supersession_14": {
+        "expected_active": 129,
+        "expected_superseded": 128
+      },
+      "supersession_15": {
+        "expected_active": 131,
+        "expected_superseded": 130
+      },
+      "supersession_16": {
+        "expected_active": 133,
+        "expected_superseded": 132
+      },
+      "supersession_17": {
+        "expected_active": 135,
+        "expected_superseded": 134
+      },
+      "supersession_18": {
+        "expected_active": 137,
+        "expected_superseded": 136
+      },
+      "supersession_19": {
+        "expected_active": 139,
+        "expected_superseded": 138
+      },
+      "supersession_20": {
+        "expected_active": 141,
+        "expected_superseded": 140
+      },
+      "supersession_21": {
+        "expected_active": 143,
+        "expected_superseded": 142
+      },
+      "supersession_22": {
+        "expected_active": 145,
+        "expected_superseded": 144
+      },
+      "supersession_23": {
+        "expected_active": 147,
+        "expected_superseded": 146
+      },
+      "supersession_24": {
+        "expected_active": 149,
+        "expected_superseded": 148
+      },
+      "supersession_25": {
+        "expected_active": 151,
+        "expected_superseded": 150
+      },
+      "supersession_26": {
+        "expected_active": 153,
+        "expected_superseded": 152
+      },
+      "supersession_27": {
+        "expected_active": 155,
+        "expected_superseded": 154
+      },
+      "supersession_28": {
+        "expected_active": 157,
+        "expected_superseded": 156
+      },
+      "supersession_29": {
+        "expected_active": 159,
+        "expected_superseded": 158
+      },
+      "supersession_30": {
+        "expected_active": 161,
+        "expected_superseded": 160
+      },
+      "supersession_31": {
+        "expected_active": 163,
+        "expected_superseded": 162
+      },
+      "supersession_32": {
+        "expected_active": 165,
+        "expected_superseded": 164
+      },
+      "supersession_33": {
+        "expected_active": 167,
+        "expected_superseded": 166
+      },
+      "supersession_34": {
+        "expected_active": 169,
+        "expected_superseded": 168
+      },
+      "supersession_35": {
+        "expected_active": 171,
+        "expected_superseded": 170
+      },
+      "supersession_36": {
+        "expected_active": 173,
+        "expected_superseded": 172
+      },
+      "supersession_37": {
+        "expected_active": 175,
+        "expected_superseded": 174
+      },
+      "supersession_38": {
+        "expected_active": 177,
+        "expected_superseded": 176
+      },
+      "supersession_39": {
+        "expected_active": 179,
+        "expected_superseded": 178
+      },
+      "supersession_40": {
+        "expected_active": 181,
+        "expected_superseded": 180
+      },
+      "supersession_41": {
+        "expected_active": 183,
+        "expected_superseded": 182
+      },
+      "supersession_42": {
+        "expected_active": 185,
+        "expected_superseded": 184
+      },
+      "supersession_43": {
+        "expected_active": 187,
+        "expected_superseded": 186
+      },
+      "supersession_44": {
+        "expected_active": 189,
+        "expected_superseded": 188
+      },
+      "supersession_45": {
+        "expected_active": 191,
+        "expected_superseded": 190
+      },
+      "supersession_46": {
+        "expected_active": 193,
+        "expected_superseded": 192
+      },
+      "supersession_47": {
+        "expected_active": 195,
+        "expected_superseded": 194
+      },
+      "supersession_48": {
+        "expected_active": 197,
+        "expected_superseded": 196
+      },
+      "supersession_49": {
+        "expected_active": 199,
+        "expected_superseded": 198
+      }
+    }
+  },
+  "stats": {
+    "total": 270,
+    "active_baseline": 100,
+    "supersession_pairs": 50,
+    "expired": 30,
+    "conflict_overlaps": 20
+  }
+}

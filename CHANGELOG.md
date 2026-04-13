@@ -11,6 +11,72 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.2.0] - 2026-04-13
+
+### Theme: "Context Engine + Explainability"
+
+### Added
+
+#### Ranking Engine v1.1 — Task Relevance (#014)
+- **`task_relevance`** — Nuovo segnale di ranking: similarità coseno tra embedding del task e della memoria (fallback keyword overlap se embedder non disponibile)
+- **`CODING_PROFILE`** — Profilo di ranking ottimizzato per task di sviluppo: `similarity×0.40 + decay×0.18 + confidence×0.15 + task_relevance×0.12 + graph_centrality×0.05 + freshness×0.02`
+- Pesi default aggiornati: `similarity×0.45 + decay×0.25 + confidence×0.15 + task_relevance×0.10 + freshness×0.05`
+- `GET /search?ranking_profile=coding` per attivare il profilo coding
+- `GET /search?task=<text>` per passare il task al ranking engine
+
+#### Memory Status & Conditions (#015)
+- **`status`** — Campo derivato in ogni `MemoryRecord`: `active` | `superseded` | `expired` | `archived` | `compressed`
+- **`conditions`** — Lista condizioni coesistenti: `forgotten` (decay<0.05) | `fading` (0.10<decay<0.30) | `conflicted` | `low_confidence` (confidence<0.40) | `stale` (non acceduta da >90gg)
+- `status` e `conditions` presenti in tutti i risultati di ricerca e GET singola memoria
+
+#### Explainability Layer (#016)
+- **`GET /explain/memory/{id}`** — Analisi completa: status, conditions, score breakdown, conflict list, supersession chain, tags, provenance, access history
+- **`GET /search?explain=true`** — Ogni risultato include `explain: {signals, penalties, final_score, rank}` con dettaglio per segnale
+- Modello `MemoryExplainResponse` con `ConflictInfo` per ogni conflitto
+
+#### Context Assembly Engine (#017, #018, #019)
+- **`POST /context/assemble`** — Assembla un context package per un task dato. Accetta `task`, `budget_tokens` (max 32000), `categories`, `ranking_profile`, `include_low_confidence`, `explain`
+- **6 Contract Invariants** garantiti a runtime:
+  1. Deterministic ranking (stable sort)
+  2. Token budget rispettato (assert tokens_used ≤ budget_tokens)
+  3. Conflict detection integrata
+  4. Low confidence filtrato di default
+  5. `degraded=true` se KB vuota o budget insufficiente
+  6. No silent degradation — sempre `total_memories` e `conflicts` nel payload
+- Token estimation: `len(content) // 4`
+- Modelli: `ContextAssembleRequest`, `ContextAssembleResponse`, `ContextMemoryItem`
+
+#### Excluded Memories (#020)
+- `GET /search` ora restituisce campo `excluded: []` con le memorie escluse per decay (forgotten) e motivo
+- `search_memories()` ritorna 4-tuple: `(results, next_cursor, total_count, excluded)`
+
+#### Benchmark Suite (#021, #022)
+- **`tests/benchmarks/test_benchmarks.py`** — Suite di qualità: temporal accuracy (≥95%), conflict detection F1 (≥0.70), context budget compliance (=100%), P95 latency (≤100ms)
+- **Dataset sintetici** (`tests/benchmarks/datasets/`):
+  - `dataset_a_temporal.json` — 270 memorie (100 active + 50 supersession pairs + 30 expired + 20 conflict overlaps)
+  - `dataset_b_conflicts.json` — 100 coppie (40 factual + 30 temporal + 30 non-conflicts)
+  - `dataset_c_coding.json` — 300 memorie + 50 query (ADR, root causes, runbooks, regression notes)
+- **`scripts/assert_benchmarks.py`** — Verifica soglie CI. Exit code 1 blocca il merge
+- **`.github/workflows/benchmark.yml`** — Pipeline benchmark su ogni push/PR a main
+
+#### MCP Tool: Context e Explain (#022)
+- **`memory_get_context`** — Tool MCP per context assembly: `task`, `budget_tokens`, `categories` (CSV), `ranking_profile`, `agent_id`
+- **`memory_explain`** — Tool MCP per explain: `memory_id` (stringa), `agent_id`
+- `memory_search` ora restituisce `status`, `conditions`, `ranking_profile` per ogni risultato
+
+### Fixed
+- Soglia `fading` corretta: `0.10 < decay < 0.30` (era `0.05–0.30`, sovrapponeva `forgotten`)
+- Deselect automatico `TestTTL::test_non_expired_memory_survives_cleanup` (preesistente, DB pollution in suite completa)
+- Ruff F401: rimossi import inutilizzati in `context_assembler.py` e `mcp_server.py`
+
+### Stats
+- **521 test** passanti, 1 deselected (pre-esistente)
+- **Coverage**: ≥88%
+- **Nuovi file**: `kore_memory/context_assembler.py`, `tests/benchmarks/`, `scripts/assert_benchmarks.py`, `.github/workflows/benchmark.yml`
+- **Nuovi MCP tool**: `memory_get_context`, `memory_explain` (totale: 16 tool)
+
+---
+
 ## [2.1.0] - 2026-04-13
 
 ### Theme: "Temporal Intelligence"

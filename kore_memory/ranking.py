@@ -1,20 +1,27 @@
 """
-Kore — Ranking Engine v1 (baseline_v1)
+Kore — Ranking Engine v1.1 (Wave 2)
 Score composito calcolato a runtime durante il retrieval.
 
-Formula completa:
+Formula default_v1:
     final_score = (
-        similarity       * 0.35 +
-        decay_score      * 0.20 +
+        similarity       * 0.45 +
+        decay_score      * 0.25 +
         confidence       * 0.15 +
-        importance_n     * 0.10 +
-        task_relevance   * 0.10 +  # rimandato a Wave 2
-        graph_centrality * 0.05 +  # rimandato a Wave 3
-        freshness        * 0.05
+        task_relevance   * 0.10 +  # Wave 2: calcolato se task fornito
+        freshness        * 0.05 +
+        graph_centrality * 0.00    # Wave 3
     ) * conflict_penalty
 
-Wave 1 implementa: similarity, decay_score, confidence, importance_n, freshness.
-task_relevance e graph_centrality sono 0.0 in Wave 1.
+Formula coding_v1 (ottimizzata per task di sviluppo software):
+    final_score = (
+        similarity       * 0.40 +
+        decay_score      * 0.18 +
+        confidence       * 0.15 +
+        task_relevance   * 0.12 +
+        importance_n     * 0.08 +
+        graph_centrality * 0.05 +  # Wave 3: 0.0 fino a #028
+        freshness        * 0.02
+    ) * conflict_penalty
 
 NOTA: score non è persistito in DB — è un campo runtime presente
       solo nella risposta API, calcolato a ogni retrieval.
@@ -26,124 +33,238 @@ from datetime import UTC, datetime
 
 from .models import MemoryRecord
 
-# Pesi del profilo default_v1
-# NOTE: importance_n NON è incluso come segnale di search — l'importance è una qualità
-# assoluta della memoria, non di rilevanza alla query specifica. Includerla nel ranking
-# di search farebbe scalare memorie "importanti" su memorie perfettamente rilevanti.
-# task_relevance (Wave 2) e graph_centrality (Wave 3) sono 0.0 in Wave 1.
-_WEIGHTS = {
-    "similarity": 0.50,  # segnale principale: pertinenza alla query
-    "decay_score": 0.25,  # memoria non dimenticata
-    "confidence": 0.20,  # attendibilità del contenuto
-    "importance_n": 0.00,  # non influenza il ranking di search (v2.1)
-    "task_relevance": 0.00,  # Wave 2: sempre 0.0 in Wave 1
-    "graph_centrality": 0.00,  # Wave 3: sempre 0.0 in Wave 1
-    "freshness": 0.05,  # quanto è recente la memoria
+# ── Profili di ranking ───────────────────────────────────────────────────────
+
+# Pesi default_v1: bilanciati per uso generico
+_DEFAULT_WEIGHTS: dict[str, float] = {
+    "similarity": 0.45,
+    "decay_score": 0.25,
+    "confidence": 0.15,
+    "importance_n": 0.00,  # non usato nel ranking default (v2.1)
+    "task_relevance": 0.10,  # Wave 2: attivo con task fornito, 0.5 se assente
+    "graph_centrality": 0.00,  # Wave 3
+    "freshness": 0.05,
 }
 
-# Penalità per conflitto irrisolto (memory_b_id ha conflitti non risolti)
+# Pesi coding_v1: ottimizzati per sviluppo software (issue #019)
+CODING_PROFILE: dict[str, float] = {
+    "similarity": 0.40,
+    "decay_score": 0.18,
+    "confidence": 0.15,
+    "importance_n": 0.08,
+    "task_relevance": 0.12,
+    "graph_centrality": 0.05,  # Wave 3: rimane 0.0 finché centrality non è calcolata (#028)
+    "freshness": 0.02,
+}
+
+_PROFILES: dict[str, dict[str, float]] = {
+    "default": _DEFAULT_WEIGHTS,
+    "default_v1": _DEFAULT_WEIGHTS,
+    "coding": CODING_PROFILE,
+    "coding_v1": CODING_PROFILE,
+}
+
+# Penalità per conflitto irrisolto
 _CONFLICT_PENALTY = 0.60
 
-# Finestra temporale per il calcolo della freshness (365 giorni)
+# Finestra temporale freshness (365 giorni)
 _FRESHNESS_WINDOW_DAYS = 365
 
 RANKING_PROFILE = "default_v1"
 
 
-def compute_score(record: MemoryRecord, conflict_ids: set[int] | None = None) -> float:
+# ── Score computation ────────────────────────────────────────────────────────
+
+
+def compute_score(
+    record: MemoryRecord,
+    conflict_ids: set[int] | None = None,
+    task: str = "",
+    task_vec: list[float] | None = None,
+    embedding_map: dict[int, list[float]] | None = None,
+    ranking_profile: str = "default",
+    explain: bool = False,
+) -> float:
     """
-    Calcola lo score composito baseline_v1 per una memoria.
+    Calcola lo score composito per una memoria.
 
     Args:
         record: la memoria da valutare
-        conflict_ids: insieme di memory IDs con conflitti irrisolti
+        conflict_ids: IDs con conflitti irrisolti (per penalità)
+        task: testo del task corrente (per task_relevance)
+        task_vec: embedding pre-calcolato del task
+        embedding_map: mappa id → embedding delle memorie nel result set
+        ranking_profile: profilo pesi ("default" | "coding")
+        explain: se True, popola record.explain con il breakdown
 
     Returns:
         float in [0.0, 1.0]
     """
+    weights = _PROFILES.get(ranking_profile, _DEFAULT_WEIGHTS)
+
     similarity = _normalize_similarity(record.score)
     decay = float(record.decay_score or 1.0)
     confidence = float(record.confidence or 1.0)
-    importance_n = (record.importance - 1) / 4.0  # normalizza da [1,5] a [0,1]
+    importance_n = (record.importance - 1) / 4.0
     freshness = _compute_freshness(record.created_at)
+    task_rel = _compute_task_relevance(record, task, task_vec, embedding_map)
+    # graph_centrality rimandato a Wave 3
+    graph_centrality = 0.0
 
     raw = (
-        similarity * _WEIGHTS["similarity"]
-        + decay * _WEIGHTS["decay_score"]
-        + confidence * _WEIGHTS["confidence"]
-        + importance_n * _WEIGHTS["importance_n"]
-        + 0.0 * _WEIGHTS["task_relevance"]  # Wave 2
-        + 0.0 * _WEIGHTS["graph_centrality"]  # Wave 3
-        + freshness * _WEIGHTS["freshness"]
+        similarity * weights["similarity"]
+        + decay * weights["decay_score"]
+        + confidence * weights["confidence"]
+        + importance_n * weights["importance_n"]
+        + task_rel * weights["task_relevance"]
+        + graph_centrality * weights["graph_centrality"]
+        + freshness * weights["freshness"]
     )
 
+    conflict_penalty = 1.0
     if conflict_ids and record.id in conflict_ids:
         raw *= _CONFLICT_PENALTY
+        conflict_penalty = _CONFLICT_PENALTY
 
-    return round(min(max(raw, 0.0), 1.0), 6)
+    final_score = round(min(max(raw, 0.0), 1.0), 6)
+
+    if explain:
+        record.explain = {
+            "signals": {
+                "similarity": round(similarity, 4),
+                "decay": round(decay, 4),
+                "confidence": round(confidence, 4),
+                "importance": round(importance_n, 4),
+                "task_relevance": round(task_rel, 4),
+                "graph_centrality": round(graph_centrality, 4),
+                "freshness": round(freshness, 4),
+            },
+            "penalties": {
+                "conflict_penalty": round(conflict_penalty, 4),
+            },
+            "final_score": final_score,
+            "ranking_profile": ranking_profile,
+            "rank": 0,  # aggiornato da rank_results dopo il sort
+        }
+
+    return final_score
 
 
 def rank_results(
     results: list[MemoryRecord],
     conflict_ids: set[int] | None = None,
+    task: str = "",
+    task_vec: list[float] | None = None,
+    embedding_map: dict[int, list[float]] | None = None,
+    ranking_profile: str = "default",
+    explain: bool = False,
 ) -> list[MemoryRecord]:
     """
     Ordina una lista di MemoryRecord per score composito decrescente.
-    Aggiorna il campo `score` di ogni record con il valore calcolato.
-
-    Args:
-        results: lista di MemoryRecord già filtrata
-        conflict_ids: IDs con conflitti irrisolti (per penalità)
+    Aggiorna record.score e, se explain=True, record.explain.
 
     Returns:
-        Lista ordinata per score desc, con record.score aggiornato.
+        Lista ordinata per score desc.
     """
     for record in results:
-        record.score = compute_score(record, conflict_ids)
+        record.score = compute_score(
+            record,
+            conflict_ids=conflict_ids,
+            task=task,
+            task_vec=task_vec,
+            embedding_map=embedding_map,
+            ranking_profile=ranking_profile,
+            explain=explain,
+        )
 
     results.sort(key=lambda r: r.score or 0.0, reverse=True)
+
+    # Aggiorna rank dopo il sort (1-based)
+    if explain:
+        for i, record in enumerate(results):
+            if record.explain:
+                record.explain["rank"] = i + 1
+
     return results
+
+
+# ── Segnali helper ───────────────────────────────────────────────────────────
+
+
+def _compute_task_relevance(
+    record: MemoryRecord,
+    task: str,
+    task_vec: list[float] | None,
+    embedding_map: dict[int, list[float]] | None,
+) -> float:
+    """
+    Calcola la rilevanza della memoria rispetto al task corrente.
+
+    - Se task non fornito → 0.5 (neutro)
+    - Se embedding disponibile → cosine_similarity(task_vec, mem_embedding)
+    - Fallback → keyword overlap normalizzato
+    """
+    if not task or not task.strip():
+        return 0.5
+
+    # Prova cosine similarity con embedding
+    if task_vec and embedding_map and record.id in embedding_map:
+        return _cosine_similarity(task_vec, embedding_map[record.id])
+
+    # Fallback: keyword overlap normalizzato
+    return _keyword_overlap(task, record.content)
+
+
+def _keyword_overlap(task: str, content: str) -> float:
+    """
+    Overlap normalizzato tra parole del task e contenuto della memoria.
+    Restituisce [0.0, 1.0]. Ignora stopwords corte (len < 3).
+    """
+    task_tokens = {w.lower() for w in task.split() if len(w) >= 3}
+    if not task_tokens:
+        return 0.5
+
+    content_lower = content.lower()
+    hits = sum(1 for t in task_tokens if t in content_lower)
+    return min(1.0, hits / len(task_tokens))
+
+
+def _cosine_similarity(a: list[float], b: list[float]) -> float:
+    """Dot product di vettori normalizzati = cosine similarity."""
+    try:
+        import numpy as np
+
+        return float(np.dot(a, b))
+    except ImportError:
+        # Fallback puro Python (più lento ma funzionale)
+        dot = sum(x * y for x, y in zip(a, b))
+        return min(1.0, max(0.0, dot))
 
 
 def _normalize_similarity(score: float | None) -> float:
     """
-    Normalizza il punteggio di similarità/FTS a [0, 1].
+    Normalizza il punteggio di similarità a [0, 1].
 
-    Per FTS5 (score < 0): tutte le memorie che passano il filtro FTS5 sono
-    già state selezionate come rilevanti dalla query. Il rank BM25 di SQLite
-    non è un buon proxy di rilevanza relativa (penalizza i documenti con
-    keyword rare). Restituisce 1.0 per tutti i match FTS5 — il ranking
-    composito differenzia tramite decay, confidence e freshness.
-
-    Per cosine similarity (score in [0, 1]): usa il valore direttamente.
+    FTS5 (score < 0): tutti i match sono considerati rilevanti → 1.0
+    Cosine similarity (score in [0, 1]): usa il valore direttamente
+    None: assume rilevanza media (0.5)
     """
     if score is None:
-        return 0.5  # senza query → assume rilevanza media
-
+        return 0.5
     if score < 0:
-        # FTS5: il match garantisce rilevanza, tratta tutti come rilevanti
         return 1.0
-
     return min(1.0, float(score))
 
 
 def _compute_freshness(created_at) -> float:
     """
-    Calcola la freshness come decadimento lineare da 1.0 (appena creato)
+    Freshness come decadimento lineare da 1.0 (appena creato)
     a 0.0 (più vecchio di _FRESHNESS_WINDOW_DAYS giorni).
-
-    Args:
-        created_at: stringa ISO o datetime
-
-    Returns:
-        float in [0.0, 1.0]
     """
     if created_at is None:
         return 0.5
-
     try:
         if isinstance(created_at, str):
-            # Supporta formato ISO e formato SQLite
             created_at = created_at.replace("T", " ").split("+")[0].split(".")[0]
             dt = datetime.fromisoformat(created_at)
         else:

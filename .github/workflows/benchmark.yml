@@ -1,0 +1,48 @@
+name: Benchmark CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-bench-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-bench-
+
+      - name: Installa dipendenze
+        run: pip install -e ".[dev,mcp]" pytest-benchmark
+
+      - name: Esegui suite benchmark
+        run: |
+          pytest tests/benchmarks/ -v \
+            --benchmark-json=results.json \
+            --tb=short
+        env:
+          KORE_TEST_MODE: "1"
+
+      - name: Verifica soglie CI
+        run: python scripts/assert_benchmarks.py --results results.json --strict
+
+      - name: Upload risultati benchmark
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: benchmark-results
+          path: results.json

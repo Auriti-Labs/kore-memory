@@ -1,0 +1,1516 @@
+{
+  "version": "1.0",
+  "description": "Dataset B — Conflict Detection benchmark",
+  "pairs": [
+    {
+      "memory_a": {
+        "content": "Configurazione timeout API gateway impostata a 30 secondi in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione timeout API gateway aggiornata a 60 secondi per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione timeout API gateway impostata a 60 secondi in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione timeout API gateway aggiornata a 120 secondi per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione timeout API gateway impostata a 120 secondi in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione timeout API gateway aggiornata a 15 secondi per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione timeout API gateway impostata a 15 secondi in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione timeout API gateway aggiornata a 30 secondi per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione timeout API gateway impostata a 30 secondi in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione timeout API gateway aggiornata a 60 secondi per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione timeout API gateway impostata a 60 secondi in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione timeout API gateway aggiornata a 120 secondi per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione timeout API gateway impostata a 120 secondi in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione timeout API gateway aggiornata a 15 secondi per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione timeout API gateway impostata a 15 secondi in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione timeout API gateway aggiornata a 30 secondi per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione porta default servizio impostata a 8080 in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione porta default servizio aggiornata a 8443 per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione porta default servizio impostata a 8443 in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione porta default servizio aggiornata a 3000 per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione porta default servizio impostata a 3000 in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione porta default servizio aggiornata a 9000 per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione porta default servizio impostata a 9000 in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione porta default servizio aggiornata a 8080 per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione porta default servizio impostata a 8080 in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione porta default servizio aggiornata a 8443 per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione porta default servizio impostata a 8443 in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione porta default servizio aggiornata a 3000 per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione porta default servizio impostata a 3000 in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione porta default servizio aggiornata a 9000 per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione porta default servizio impostata a 9000 in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione porta default servizio aggiornata a 8080 per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione dimensione pool connessioni impostata a 10 in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione dimensione pool connessioni aggiornata a 50 per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione dimensione pool connessioni impostata a 50 in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione dimensione pool connessioni aggiornata a 100 per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione dimensione pool connessioni impostata a 100 in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione dimensione pool connessioni aggiornata a 200 per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione dimensione pool connessioni impostata a 200 in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione dimensione pool connessioni aggiornata a 10 per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione dimensione pool connessioni impostata a 10 in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione dimensione pool connessioni aggiornata a 50 per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione dimensione pool connessioni impostata a 50 in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione dimensione pool connessioni aggiornata a 100 per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione dimensione pool connessioni impostata a 100 in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione dimensione pool connessioni aggiornata a 200 per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione dimensione pool connessioni impostata a 200 in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione dimensione pool connessioni aggiornata a 10 per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione modello AI default impostata a gpt-4 in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione modello AI default aggiornata a claude-3 per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione modello AI default impostata a claude-3 in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione modello AI default aggiornata a llama-3 per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione modello AI default impostata a llama-3 in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione modello AI default aggiornata a gemini-pro per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione modello AI default impostata a gemini-pro in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione modello AI default aggiornata a gpt-4 per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione modello AI default impostata a gpt-4 in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione modello AI default aggiornata a claude-3 per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione modello AI default impostata a claude-3 in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione modello AI default aggiornata a llama-3 per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione modello AI default impostata a llama-3 in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione modello AI default aggiornata a gemini-pro per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione modello AI default impostata a gemini-pro in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione modello AI default aggiornata a gpt-4 per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione strategia cache impostata a Redis in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione strategia cache aggiornata a Memcached per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione strategia cache impostata a Memcached in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione strategia cache aggiornata a in-memory per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione strategia cache impostata a in-memory in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione strategia cache aggiornata a nessuna per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione strategia cache impostata a nessuna in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione strategia cache aggiornata a Redis per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione strategia cache impostata a Redis in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione strategia cache aggiornata a Memcached per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione strategia cache impostata a Memcached in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione strategia cache aggiornata a in-memory per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione strategia cache impostata a in-memory in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione strategia cache aggiornata a nessuna per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Configurazione strategia cache impostata a nessuna in ambiente produzione",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Configurazione strategia cache aggiornata a Redis per ottimizzazione performance",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "conflict",
+      "conflict_type": "factual"
+    },
+    {
+      "memory_a": {
+        "content": "Strategia deploy agile 0: rilasci ogni 2 settimane con feature flags per rollout graduale",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "memory_b": {
+        "content": "Strategia deploy tradizionale 0: rilasci mensili con approvazione manuale e freeze period",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "label": "conflict",
+      "conflict_type": "temporal"
+    },
+    {
+      "memory_a": {
+        "content": "Strategia deploy agile 1: rilasci ogni 2 settimane con feature flags per rollout graduale",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "memory_b": {
+        "content": "Strategia deploy tradizionale 1: rilasci mensili con approvazione manuale e freeze period",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "label": "conflict",
+      "conflict_type": "temporal"
+    },
+    {
+      "memory_a": {
+        "content": "Strategia deploy agile 2: rilasci ogni 2 settimane con feature flags per rollout graduale",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "memory_b": {
+        "content": "Strategia deploy tradizionale 2: rilasci mensili con approvazione manuale e freeze period",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "label": "conflict",
+      "conflict_type": "temporal"
+    },
+    {
+      "memory_a": {
+        "content": "Strategia deploy agile 3: rilasci ogni 2 settimane con feature flags per rollout graduale",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "memory_b": {
+        "content": "Strategia deploy tradizionale 3: rilasci mensili con approvazione manuale e freeze period",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "label": "conflict",
+      "conflict_type": "temporal"
+    },
+    {
+      "memory_a": {
+        "content": "Strategia deploy agile 4: rilasci ogni 2 settimane con feature flags per rollout graduale",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "memory_b": {
+        "content": "Strategia deploy tradizionale 4: rilasci mensili con approvazione manuale e freeze period",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "label": "conflict",
+      "conflict_type": "temporal"
+    },
+    {
+      "memory_a": {
+        "content": "Strategia deploy agile 5: rilasci ogni 2 settimane con feature flags per rollout graduale",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "memory_b": {
+        "content": "Strategia deploy tradizionale 5: rilasci mensili con approvazione manuale e freeze period",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "label": "conflict",
+      "conflict_type": "temporal"
+    },
+    {
+      "memory_a": {
+        "content": "Strategia deploy agile 6: rilasci ogni 2 settimane con feature flags per rollout graduale",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "memory_b": {
+        "content": "Strategia deploy tradizionale 6: rilasci mensili con approvazione manuale e freeze period",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "label": "conflict",
+      "conflict_type": "temporal"
+    },
+    {
+      "memory_a": {
+        "content": "Strategia deploy agile 7: rilasci ogni 2 settimane con feature flags per rollout graduale",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "memory_b": {
+        "content": "Strategia deploy tradizionale 7: rilasci mensili con approvazione manuale e freeze period",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "label": "conflict",
+      "conflict_type": "temporal"
+    },
+    {
+      "memory_a": {
+        "content": "Strategia deploy agile 8: rilasci ogni 2 settimane con feature flags per rollout graduale",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "memory_b": {
+        "content": "Strategia deploy tradizionale 8: rilasci mensili con approvazione manuale e freeze period",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "label": "conflict",
+      "conflict_type": "temporal"
+    },
+    {
+      "memory_a": {
+        "content": "Strategia deploy agile 9: rilasci ogni 2 settimane con feature flags per rollout graduale",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "memory_b": {
+        "content": "Strategia deploy tradizionale 9: rilasci mensili con approvazione manuale e freeze period",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "label": "conflict",
+      "conflict_type": "temporal"
+    },
+    {
+      "memory_a": {
+        "content": "Strategia deploy agile 10: rilasci ogni 2 settimane con feature flags per rollout graduale",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "memory_b": {
+        "content": "Strategia deploy tradizionale 10: rilasci mensili con approvazione manuale e freeze period",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "label": "conflict",
+      "conflict_type": "temporal"
+    },
+    {
+      "memory_a": {
+        "content": "Strategia deploy agile 11: rilasci ogni 2 settimane con feature flags per rollout graduale",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "memory_b": {
+        "content": "Strategia deploy tradizionale 11: rilasci mensili con approvazione manuale e freeze period",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "label": "conflict",
+      "conflict_type": "temporal"
+    },
+    {
+      "memory_a": {
+        "content": "Strategia deploy agile 12: rilasci ogni 2 settimane con feature flags per rollout graduale",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "memory_b": {
+        "content": "Strategia deploy tradizionale 12: rilasci mensili con approvazione manuale e freeze period",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "label": "conflict",
+      "conflict_type": "temporal"
+    },
+    {
+      "memory_a": {
+        "content": "Strategia deploy agile 13: rilasci ogni 2 settimane con feature flags per rollout graduale",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "memory_b": {
+        "content": "Strategia deploy tradizionale 13: rilasci mensili con approvazione manuale e freeze period",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "label": "conflict",
+      "conflict_type": "temporal"
+    },
+    {
+      "memory_a": {
+        "content": "Strategia deploy agile 14: rilasci ogni 2 settimane con feature flags per rollout graduale",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "memory_b": {
+        "content": "Strategia deploy tradizionale 14: rilasci mensili con approvazione manuale e freeze period",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "label": "conflict",
+      "conflict_type": "temporal"
+    },
+    {
+      "memory_a": {
+        "content": "Strategia deploy agile 15: rilasci ogni 2 settimane con feature flags per rollout graduale",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "memory_b": {
+        "content": "Strategia deploy tradizionale 15: rilasci mensili con approvazione manuale e freeze period",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "label": "conflict",
+      "conflict_type": "temporal"
+    },
+    {
+      "memory_a": {
+        "content": "Strategia deploy agile 16: rilasci ogni 2 settimane con feature flags per rollout graduale",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "memory_b": {
+        "content": "Strategia deploy tradizionale 16: rilasci mensili con approvazione manuale e freeze period",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "label": "conflict",
+      "conflict_type": "temporal"
+    },
+    {
+      "memory_a": {
+        "content": "Strategia deploy agile 17: rilasci ogni 2 settimane con feature flags per rollout graduale",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "memory_b": {
+        "content": "Strategia deploy tradizionale 17: rilasci mensili con approvazione manuale e freeze period",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "label": "conflict",
+      "conflict_type": "temporal"
+    },
+    {
+      "memory_a": {
+        "content": "Strategia deploy agile 18: rilasci ogni 2 settimane con feature flags per rollout graduale",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "memory_b": {
+        "content": "Strategia deploy tradizionale 18: rilasci mensili con approvazione manuale e freeze period",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "label": "conflict",
+      "conflict_type": "temporal"
+    },
+    {
+      "memory_a": {
+        "content": "Strategia deploy agile 19: rilasci ogni 2 settimane con feature flags per rollout graduale",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "memory_b": {
+        "content": "Strategia deploy tradizionale 19: rilasci mensili con approvazione manuale e freeze period",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "label": "conflict",
+      "conflict_type": "temporal"
+    },
+    {
+      "memory_a": {
+        "content": "Strategia deploy agile 20: rilasci ogni 2 settimane con feature flags per rollout graduale",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "memory_b": {
+        "content": "Strategia deploy tradizionale 20: rilasci mensili con approvazione manuale e freeze period",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "label": "conflict",
+      "conflict_type": "temporal"
+    },
+    {
+      "memory_a": {
+        "content": "Strategia deploy agile 21: rilasci ogni 2 settimane con feature flags per rollout graduale",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "memory_b": {
+        "content": "Strategia deploy tradizionale 21: rilasci mensili con approvazione manuale e freeze period",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "label": "conflict",
+      "conflict_type": "temporal"
+    },
+    {
+      "memory_a": {
+        "content": "Strategia deploy agile 22: rilasci ogni 2 settimane con feature flags per rollout graduale",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "memory_b": {
+        "content": "Strategia deploy tradizionale 22: rilasci mensili con approvazione manuale e freeze period",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "label": "conflict",
+      "conflict_type": "temporal"
+    },
+    {
+      "memory_a": {
+        "content": "Strategia deploy agile 23: rilasci ogni 2 settimane con feature flags per rollout graduale",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "memory_b": {
+        "content": "Strategia deploy tradizionale 23: rilasci mensili con approvazione manuale e freeze period",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "label": "conflict",
+      "conflict_type": "temporal"
+    },
+    {
+      "memory_a": {
+        "content": "Strategia deploy agile 24: rilasci ogni 2 settimane con feature flags per rollout graduale",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "memory_b": {
+        "content": "Strategia deploy tradizionale 24: rilasci mensili con approvazione manuale e freeze period",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "label": "conflict",
+      "conflict_type": "temporal"
+    },
+    {
+      "memory_a": {
+        "content": "Strategia deploy agile 25: rilasci ogni 2 settimane con feature flags per rollout graduale",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "memory_b": {
+        "content": "Strategia deploy tradizionale 25: rilasci mensili con approvazione manuale e freeze period",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "label": "conflict",
+      "conflict_type": "temporal"
+    },
+    {
+      "memory_a": {
+        "content": "Strategia deploy agile 26: rilasci ogni 2 settimane con feature flags per rollout graduale",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "memory_b": {
+        "content": "Strategia deploy tradizionale 26: rilasci mensili con approvazione manuale e freeze period",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "label": "conflict",
+      "conflict_type": "temporal"
+    },
+    {
+      "memory_a": {
+        "content": "Strategia deploy agile 27: rilasci ogni 2 settimane con feature flags per rollout graduale",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "memory_b": {
+        "content": "Strategia deploy tradizionale 27: rilasci mensili con approvazione manuale e freeze period",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "label": "conflict",
+      "conflict_type": "temporal"
+    },
+    {
+      "memory_a": {
+        "content": "Strategia deploy agile 28: rilasci ogni 2 settimane con feature flags per rollout graduale",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "memory_b": {
+        "content": "Strategia deploy tradizionale 28: rilasci mensili con approvazione manuale e freeze period",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "label": "conflict",
+      "conflict_type": "temporal"
+    },
+    {
+      "memory_a": {
+        "content": "Strategia deploy agile 29: rilasci ogni 2 settimane con feature flags per rollout graduale",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "memory_b": {
+        "content": "Strategia deploy tradizionale 29: rilasci mensili con approvazione manuale e freeze period",
+        "category": "architectural_decision",
+        "importance": 4
+      },
+      "label": "conflict",
+      "conflict_type": "temporal"
+    },
+    {
+      "memory_a": {
+        "content": "Frontend usa React 18 con TypeScript strict mode e testing con Vitest 0",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Backend usa FastAPI con Python 3.11 e testing con pytest per il servizio 0",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "no_conflict",
+      "conflict_type": null
+    },
+    {
+      "memory_a": {
+        "content": "Frontend usa React 18 con TypeScript strict mode e testing con Vitest 1",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Backend usa FastAPI con Python 3.11 e testing con pytest per il servizio 1",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "no_conflict",
+      "conflict_type": null
+    },
+    {
+      "memory_a": {
+        "content": "Frontend usa React 18 con TypeScript strict mode e testing con Vitest 2",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Backend usa FastAPI con Python 3.11 e testing con pytest per il servizio 2",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "no_conflict",
+      "conflict_type": null
+    },
+    {
+      "memory_a": {
+        "content": "Frontend usa React 18 con TypeScript strict mode e testing con Vitest 3",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Backend usa FastAPI con Python 3.11 e testing con pytest per il servizio 3",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "no_conflict",
+      "conflict_type": null
+    },
+    {
+      "memory_a": {
+        "content": "Frontend usa React 18 con TypeScript strict mode e testing con Vitest 4",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Backend usa FastAPI con Python 3.11 e testing con pytest per il servizio 4",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "no_conflict",
+      "conflict_type": null
+    },
+    {
+      "memory_a": {
+        "content": "Frontend usa React 18 con TypeScript strict mode e testing con Vitest 5",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Backend usa FastAPI con Python 3.11 e testing con pytest per il servizio 5",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "no_conflict",
+      "conflict_type": null
+    },
+    {
+      "memory_a": {
+        "content": "Frontend usa React 18 con TypeScript strict mode e testing con Vitest 6",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Backend usa FastAPI con Python 3.11 e testing con pytest per il servizio 6",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "no_conflict",
+      "conflict_type": null
+    },
+    {
+      "memory_a": {
+        "content": "Frontend usa React 18 con TypeScript strict mode e testing con Vitest 7",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Backend usa FastAPI con Python 3.11 e testing con pytest per il servizio 7",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "no_conflict",
+      "conflict_type": null
+    },
+    {
+      "memory_a": {
+        "content": "Frontend usa React 18 con TypeScript strict mode e testing con Vitest 8",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Backend usa FastAPI con Python 3.11 e testing con pytest per il servizio 8",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "no_conflict",
+      "conflict_type": null
+    },
+    {
+      "memory_a": {
+        "content": "Frontend usa React 18 con TypeScript strict mode e testing con Vitest 9",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Backend usa FastAPI con Python 3.11 e testing con pytest per il servizio 9",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "no_conflict",
+      "conflict_type": null
+    },
+    {
+      "memory_a": {
+        "content": "Frontend usa React 18 con TypeScript strict mode e testing con Vitest 10",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Backend usa FastAPI con Python 3.11 e testing con pytest per il servizio 10",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "no_conflict",
+      "conflict_type": null
+    },
+    {
+      "memory_a": {
+        "content": "Frontend usa React 18 con TypeScript strict mode e testing con Vitest 11",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Backend usa FastAPI con Python 3.11 e testing con pytest per il servizio 11",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "no_conflict",
+      "conflict_type": null
+    },
+    {
+      "memory_a": {
+        "content": "Frontend usa React 18 con TypeScript strict mode e testing con Vitest 12",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Backend usa FastAPI con Python 3.11 e testing con pytest per il servizio 12",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "no_conflict",
+      "conflict_type": null
+    },
+    {
+      "memory_a": {
+        "content": "Frontend usa React 18 con TypeScript strict mode e testing con Vitest 13",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Backend usa FastAPI con Python 3.11 e testing con pytest per il servizio 13",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "no_conflict",
+      "conflict_type": null
+    },
+    {
+      "memory_a": {
+        "content": "Frontend usa React 18 con TypeScript strict mode e testing con Vitest 14",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Backend usa FastAPI con Python 3.11 e testing con pytest per il servizio 14",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "no_conflict",
+      "conflict_type": null
+    },
+    {
+      "memory_a": {
+        "content": "Frontend usa React 18 con TypeScript strict mode e testing con Vitest 15",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Backend usa FastAPI con Python 3.11 e testing con pytest per il servizio 15",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "no_conflict",
+      "conflict_type": null
+    },
+    {
+      "memory_a": {
+        "content": "Frontend usa React 18 con TypeScript strict mode e testing con Vitest 16",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Backend usa FastAPI con Python 3.11 e testing con pytest per il servizio 16",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "no_conflict",
+      "conflict_type": null
+    },
+    {
+      "memory_a": {
+        "content": "Frontend usa React 18 con TypeScript strict mode e testing con Vitest 17",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Backend usa FastAPI con Python 3.11 e testing con pytest per il servizio 17",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "no_conflict",
+      "conflict_type": null
+    },
+    {
+      "memory_a": {
+        "content": "Frontend usa React 18 con TypeScript strict mode e testing con Vitest 18",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Backend usa FastAPI con Python 3.11 e testing con pytest per il servizio 18",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "no_conflict",
+      "conflict_type": null
+    },
+    {
+      "memory_a": {
+        "content": "Frontend usa React 18 con TypeScript strict mode e testing con Vitest 19",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Backend usa FastAPI con Python 3.11 e testing con pytest per il servizio 19",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "no_conflict",
+      "conflict_type": null
+    },
+    {
+      "memory_a": {
+        "content": "Frontend usa React 18 con TypeScript strict mode e testing con Vitest 20",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Backend usa FastAPI con Python 3.11 e testing con pytest per il servizio 20",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "no_conflict",
+      "conflict_type": null
+    },
+    {
+      "memory_a": {
+        "content": "Frontend usa React 18 con TypeScript strict mode e testing con Vitest 21",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Backend usa FastAPI con Python 3.11 e testing con pytest per il servizio 21",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "no_conflict",
+      "conflict_type": null
+    },
+    {
+      "memory_a": {
+        "content": "Frontend usa React 18 con TypeScript strict mode e testing con Vitest 22",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Backend usa FastAPI con Python 3.11 e testing con pytest per il servizio 22",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "no_conflict",
+      "conflict_type": null
+    },
+    {
+      "memory_a": {
+        "content": "Frontend usa React 18 con TypeScript strict mode e testing con Vitest 23",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Backend usa FastAPI con Python 3.11 e testing con pytest per il servizio 23",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "no_conflict",
+      "conflict_type": null
+    },
+    {
+      "memory_a": {
+        "content": "Frontend usa React 18 con TypeScript strict mode e testing con Vitest 24",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Backend usa FastAPI con Python 3.11 e testing con pytest per il servizio 24",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "no_conflict",
+      "conflict_type": null
+    },
+    {
+      "memory_a": {
+        "content": "Frontend usa React 18 con TypeScript strict mode e testing con Vitest 25",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Backend usa FastAPI con Python 3.11 e testing con pytest per il servizio 25",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "no_conflict",
+      "conflict_type": null
+    },
+    {
+      "memory_a": {
+        "content": "Frontend usa React 18 con TypeScript strict mode e testing con Vitest 26",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Backend usa FastAPI con Python 3.11 e testing con pytest per il servizio 26",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "no_conflict",
+      "conflict_type": null
+    },
+    {
+      "memory_a": {
+        "content": "Frontend usa React 18 con TypeScript strict mode e testing con Vitest 27",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Backend usa FastAPI con Python 3.11 e testing con pytest per il servizio 27",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "no_conflict",
+      "conflict_type": null
+    },
+    {
+      "memory_a": {
+        "content": "Frontend usa React 18 con TypeScript strict mode e testing con Vitest 28",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Backend usa FastAPI con Python 3.11 e testing con pytest per il servizio 28",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "no_conflict",
+      "conflict_type": null
+    },
+    {
+      "memory_a": {
+        "content": "Frontend usa React 18 con TypeScript strict mode e testing con Vitest 29",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "memory_b": {
+        "content": "Backend usa FastAPI con Python 3.11 e testing con pytest per il servizio 29",
+        "category": "architectural_decision",
+        "importance": 3
+      },
+      "label": "no_conflict",
+      "conflict_type": null
+    }
+  ],
+  "ground_truth": {
+    "labels": [
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "conflict",
+      "no_conflict",
+      "no_conflict",
+      "no_conflict",
+      "no_conflict",
+      "no_conflict",
+      "no_conflict",
+      "no_conflict",
+      "no_conflict",
+      "no_conflict",
+      "no_conflict",
+      "no_conflict",
+      "no_conflict",
+      "no_conflict",
+      "no_conflict",
+      "no_conflict",
+      "no_conflict",
+      "no_conflict",
+      "no_conflict",
+      "no_conflict",
+      "no_conflict",
+      "no_conflict",
+      "no_conflict",
+      "no_conflict",
+      "no_conflict",
+      "no_conflict",
+      "no_conflict",
+      "no_conflict",
+      "no_conflict",
+      "no_conflict",
+      "no_conflict"
+    ]
+  },
+  "stats": {
+    "total_pairs": 100,
+    "conflicts_factual": 40,
+    "conflicts_temporal": 30,
+    "no_conflicts": 30
+  }
+}

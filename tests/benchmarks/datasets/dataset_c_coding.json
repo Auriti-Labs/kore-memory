@@ -1,0 +1,1981 @@
+{
+  "version": "1.0",
+  "description": "Dataset C — Coding Scenarios benchmark",
+  "memories": [
+    {
+      "content": "Decisione architetturale 1: SQLite con WAL mode per persistenza locale — nessuna dipendenza esterna, backup semplice",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 2: FastAPI invece di Django — async nativo, Pydantic integrato, OpenAPI automatico",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 3: Sentence-transformers per embedding locale — privacy, nessun costo API, funziona offline",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 4: Connection pool thread-safe con Queue — evita aperture multiple, gestisce concorrenza",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 5: Ebbinghaus decay curve — scientificamente validata, parametri configurabili per caso d uso",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 6: SQLite con WAL mode per persistenza locale — nessuna dipendenza esterna, backup semplice",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 7: FastAPI invece di Django — async nativo, Pydantic integrato, OpenAPI automatico",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 8: Sentence-transformers per embedding locale — privacy, nessun costo API, funziona offline",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 9: Connection pool thread-safe con Queue — evita aperture multiple, gestisce concorrenza",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 10: Ebbinghaus decay curve — scientificamente validata, parametri configurabili per caso d uso",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 11: SQLite con WAL mode per persistenza locale — nessuna dipendenza esterna, backup semplice",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 12: FastAPI invece di Django — async nativo, Pydantic integrato, OpenAPI automatico",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 13: Sentence-transformers per embedding locale — privacy, nessun costo API, funziona offline",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 14: Connection pool thread-safe con Queue — evita aperture multiple, gestisce concorrenza",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 15: Ebbinghaus decay curve — scientificamente validata, parametri configurabili per caso d uso",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 16: SQLite con WAL mode per persistenza locale — nessuna dipendenza esterna, backup semplice",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 17: FastAPI invece di Django — async nativo, Pydantic integrato, OpenAPI automatico",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 18: Sentence-transformers per embedding locale — privacy, nessun costo API, funziona offline",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 19: Connection pool thread-safe con Queue — evita aperture multiple, gestisce concorrenza",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 20: Ebbinghaus decay curve — scientificamente validata, parametri configurabili per caso d uso",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 21: SQLite con WAL mode per persistenza locale — nessuna dipendenza esterna, backup semplice",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 22: FastAPI invece di Django — async nativo, Pydantic integrato, OpenAPI automatico",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 23: Sentence-transformers per embedding locale — privacy, nessun costo API, funziona offline",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 24: Connection pool thread-safe con Queue — evita aperture multiple, gestisce concorrenza",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 25: Ebbinghaus decay curve — scientificamente validata, parametri configurabili per caso d uso",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 26: SQLite con WAL mode per persistenza locale — nessuna dipendenza esterna, backup semplice",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 27: FastAPI invece di Django — async nativo, Pydantic integrato, OpenAPI automatico",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 28: Sentence-transformers per embedding locale — privacy, nessun costo API, funziona offline",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 29: Connection pool thread-safe con Queue — evita aperture multiple, gestisce concorrenza",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 30: Ebbinghaus decay curve — scientificamente validata, parametri configurabili per caso d uso",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 31: SQLite con WAL mode per persistenza locale — nessuna dipendenza esterna, backup semplice",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 32: FastAPI invece di Django — async nativo, Pydantic integrato, OpenAPI automatico",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 33: Sentence-transformers per embedding locale — privacy, nessun costo API, funziona offline",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 34: Connection pool thread-safe con Queue — evita aperture multiple, gestisce concorrenza",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 35: Ebbinghaus decay curve — scientificamente validata, parametri configurabili per caso d uso",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 36: SQLite con WAL mode per persistenza locale — nessuna dipendenza esterna, backup semplice",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 37: FastAPI invece di Django — async nativo, Pydantic integrato, OpenAPI automatico",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 38: Sentence-transformers per embedding locale — privacy, nessun costo API, funziona offline",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 39: Connection pool thread-safe con Queue — evita aperture multiple, gestisce concorrenza",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 40: Ebbinghaus decay curve — scientificamente validata, parametri configurabili per caso d uso",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 41: SQLite con WAL mode per persistenza locale — nessuna dipendenza esterna, backup semplice",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 42: FastAPI invece di Django — async nativo, Pydantic integrato, OpenAPI automatico",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 43: Sentence-transformers per embedding locale — privacy, nessun costo API, funziona offline",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 44: Connection pool thread-safe con Queue — evita aperture multiple, gestisce concorrenza",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 45: Ebbinghaus decay curve — scientificamente validata, parametri configurabili per caso d uso",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 46: SQLite con WAL mode per persistenza locale — nessuna dipendenza esterna, backup semplice",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 47: FastAPI invece di Django — async nativo, Pydantic integrato, OpenAPI automatico",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 48: Sentence-transformers per embedding locale — privacy, nessun costo API, funziona offline",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 49: Connection pool thread-safe con Queue — evita aperture multiple, gestisce concorrenza",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 50: Ebbinghaus decay curve — scientificamente validata, parametri configurabili per caso d uso",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 51: SQLite con WAL mode per persistenza locale — nessuna dipendenza esterna, backup semplice",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 52: FastAPI invece di Django — async nativo, Pydantic integrato, OpenAPI automatico",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 53: Sentence-transformers per embedding locale — privacy, nessun costo API, funziona offline",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 54: Connection pool thread-safe con Queue — evita aperture multiple, gestisce concorrenza",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 55: Ebbinghaus decay curve — scientificamente validata, parametri configurabili per caso d uso",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 56: SQLite con WAL mode per persistenza locale — nessuna dipendenza esterna, backup semplice",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 57: FastAPI invece di Django — async nativo, Pydantic integrato, OpenAPI automatico",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 58: Sentence-transformers per embedding locale — privacy, nessun costo API, funziona offline",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 59: Connection pool thread-safe con Queue — evita aperture multiple, gestisce concorrenza",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 60: Ebbinghaus decay curve — scientificamente validata, parametri configurabili per caso d uso",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 61: SQLite con WAL mode per persistenza locale — nessuna dipendenza esterna, backup semplice",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 62: FastAPI invece di Django — async nativo, Pydantic integrato, OpenAPI automatico",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 63: Sentence-transformers per embedding locale — privacy, nessun costo API, funziona offline",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 64: Connection pool thread-safe con Queue — evita aperture multiple, gestisce concorrenza",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 65: Ebbinghaus decay curve — scientificamente validata, parametri configurabili per caso d uso",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 66: SQLite con WAL mode per persistenza locale — nessuna dipendenza esterna, backup semplice",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 67: FastAPI invece di Django — async nativo, Pydantic integrato, OpenAPI automatico",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 68: Sentence-transformers per embedding locale — privacy, nessun costo API, funziona offline",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 69: Connection pool thread-safe con Queue — evita aperture multiple, gestisce concorrenza",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 70: Ebbinghaus decay curve — scientificamente validata, parametri configurabili per caso d uso",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 71: SQLite con WAL mode per persistenza locale — nessuna dipendenza esterna, backup semplice",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 72: FastAPI invece di Django — async nativo, Pydantic integrato, OpenAPI automatico",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 73: Sentence-transformers per embedding locale — privacy, nessun costo API, funziona offline",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 74: Connection pool thread-safe con Queue — evita aperture multiple, gestisce concorrenza",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 75: Ebbinghaus decay curve — scientificamente validata, parametri configurabili per caso d uso",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 76: SQLite con WAL mode per persistenza locale — nessuna dipendenza esterna, backup semplice",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 77: FastAPI invece di Django — async nativo, Pydantic integrato, OpenAPI automatico",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 78: Sentence-transformers per embedding locale — privacy, nessun costo API, funziona offline",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 79: Connection pool thread-safe con Queue — evita aperture multiple, gestisce concorrenza",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 80: Ebbinghaus decay curve — scientificamente validata, parametri configurabili per caso d uso",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 81: SQLite con WAL mode per persistenza locale — nessuna dipendenza esterna, backup semplice",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 82: FastAPI invece di Django — async nativo, Pydantic integrato, OpenAPI automatico",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 83: Sentence-transformers per embedding locale — privacy, nessun costo API, funziona offline",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 84: Connection pool thread-safe con Queue — evita aperture multiple, gestisce concorrenza",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 85: Ebbinghaus decay curve — scientificamente validata, parametri configurabili per caso d uso",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 86: SQLite con WAL mode per persistenza locale — nessuna dipendenza esterna, backup semplice",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 87: FastAPI invece di Django — async nativo, Pydantic integrato, OpenAPI automatico",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 88: Sentence-transformers per embedding locale — privacy, nessun costo API, funziona offline",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 89: Connection pool thread-safe con Queue — evita aperture multiple, gestisce concorrenza",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 90: Ebbinghaus decay curve — scientificamente validata, parametri configurabili per caso d uso",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 91: SQLite con WAL mode per persistenza locale — nessuna dipendenza esterna, backup semplice",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 92: FastAPI invece di Django — async nativo, Pydantic integrato, OpenAPI automatico",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 93: Sentence-transformers per embedding locale — privacy, nessun costo API, funziona offline",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 94: Connection pool thread-safe con Queue — evita aperture multiple, gestisce concorrenza",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 95: Ebbinghaus decay curve — scientificamente validata, parametri configurabili per caso d uso",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 96: SQLite con WAL mode per persistenza locale — nessuna dipendenza esterna, backup semplice",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 97: FastAPI invece di Django — async nativo, Pydantic integrato, OpenAPI automatico",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 98: Sentence-transformers per embedding locale — privacy, nessun costo API, funziona offline",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 99: Connection pool thread-safe con Queue — evita aperture multiple, gestisce concorrenza",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Decisione architetturale 100: Ebbinghaus decay curve — scientificamente validata, parametri configurabili per caso d uso",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 1: Timeout nelle query SQLite durante scrittura concorrente — WAL mode non abilitato su alcune connessioni. Fix: Abilitato WAL mode globalmente nel connection pool, aggiunto lock a livello applicazione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 2: Memory leak nel vector index numpy — array non rilasciati dopo compressione. Fix: Aggiunto explicit del array e gc.collect() dopo ogni batch di compressione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 3: Race condition nel decay pass — lettura e scrittura non atomica su access_count. Fix: Wrap decay pass in transazione SQLite, use ROWLOCK per accesso esclusivo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 4: Embedder si carica ad ogni request — mancanza di caching del modello. Fix: Aggiunto lru_cache(maxsize=1) su get_model(), lazy load al primo utilizzo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 5: Timeout nelle query SQLite durante scrittura concorrente — WAL mode non abilitato su alcune connessioni. Fix: Abilitato WAL mode globalmente nel connection pool, aggiunto lock a livello applicazione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 6: Memory leak nel vector index numpy — array non rilasciati dopo compressione. Fix: Aggiunto explicit del array e gc.collect() dopo ogni batch di compressione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 7: Race condition nel decay pass — lettura e scrittura non atomica su access_count. Fix: Wrap decay pass in transazione SQLite, use ROWLOCK per accesso esclusivo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 8: Embedder si carica ad ogni request — mancanza di caching del modello. Fix: Aggiunto lru_cache(maxsize=1) su get_model(), lazy load al primo utilizzo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 9: Timeout nelle query SQLite durante scrittura concorrente — WAL mode non abilitato su alcune connessioni. Fix: Abilitato WAL mode globalmente nel connection pool, aggiunto lock a livello applicazione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 10: Memory leak nel vector index numpy — array non rilasciati dopo compressione. Fix: Aggiunto explicit del array e gc.collect() dopo ogni batch di compressione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 11: Race condition nel decay pass — lettura e scrittura non atomica su access_count. Fix: Wrap decay pass in transazione SQLite, use ROWLOCK per accesso esclusivo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 12: Embedder si carica ad ogni request — mancanza di caching del modello. Fix: Aggiunto lru_cache(maxsize=1) su get_model(), lazy load al primo utilizzo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 13: Timeout nelle query SQLite durante scrittura concorrente — WAL mode non abilitato su alcune connessioni. Fix: Abilitato WAL mode globalmente nel connection pool, aggiunto lock a livello applicazione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 14: Memory leak nel vector index numpy — array non rilasciati dopo compressione. Fix: Aggiunto explicit del array e gc.collect() dopo ogni batch di compressione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 15: Race condition nel decay pass — lettura e scrittura non atomica su access_count. Fix: Wrap decay pass in transazione SQLite, use ROWLOCK per accesso esclusivo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 16: Embedder si carica ad ogni request — mancanza di caching del modello. Fix: Aggiunto lru_cache(maxsize=1) su get_model(), lazy load al primo utilizzo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 17: Timeout nelle query SQLite durante scrittura concorrente — WAL mode non abilitato su alcune connessioni. Fix: Abilitato WAL mode globalmente nel connection pool, aggiunto lock a livello applicazione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 18: Memory leak nel vector index numpy — array non rilasciati dopo compressione. Fix: Aggiunto explicit del array e gc.collect() dopo ogni batch di compressione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 19: Race condition nel decay pass — lettura e scrittura non atomica su access_count. Fix: Wrap decay pass in transazione SQLite, use ROWLOCK per accesso esclusivo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 20: Embedder si carica ad ogni request — mancanza di caching del modello. Fix: Aggiunto lru_cache(maxsize=1) su get_model(), lazy load al primo utilizzo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 21: Timeout nelle query SQLite durante scrittura concorrente — WAL mode non abilitato su alcune connessioni. Fix: Abilitato WAL mode globalmente nel connection pool, aggiunto lock a livello applicazione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 22: Memory leak nel vector index numpy — array non rilasciati dopo compressione. Fix: Aggiunto explicit del array e gc.collect() dopo ogni batch di compressione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 23: Race condition nel decay pass — lettura e scrittura non atomica su access_count. Fix: Wrap decay pass in transazione SQLite, use ROWLOCK per accesso esclusivo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 24: Embedder si carica ad ogni request — mancanza di caching del modello. Fix: Aggiunto lru_cache(maxsize=1) su get_model(), lazy load al primo utilizzo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 25: Timeout nelle query SQLite durante scrittura concorrente — WAL mode non abilitato su alcune connessioni. Fix: Abilitato WAL mode globalmente nel connection pool, aggiunto lock a livello applicazione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 26: Memory leak nel vector index numpy — array non rilasciati dopo compressione. Fix: Aggiunto explicit del array e gc.collect() dopo ogni batch di compressione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 27: Race condition nel decay pass — lettura e scrittura non atomica su access_count. Fix: Wrap decay pass in transazione SQLite, use ROWLOCK per accesso esclusivo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 28: Embedder si carica ad ogni request — mancanza di caching del modello. Fix: Aggiunto lru_cache(maxsize=1) su get_model(), lazy load al primo utilizzo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 29: Timeout nelle query SQLite durante scrittura concorrente — WAL mode non abilitato su alcune connessioni. Fix: Abilitato WAL mode globalmente nel connection pool, aggiunto lock a livello applicazione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 30: Memory leak nel vector index numpy — array non rilasciati dopo compressione. Fix: Aggiunto explicit del array e gc.collect() dopo ogni batch di compressione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 31: Race condition nel decay pass — lettura e scrittura non atomica su access_count. Fix: Wrap decay pass in transazione SQLite, use ROWLOCK per accesso esclusivo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 32: Embedder si carica ad ogni request — mancanza di caching del modello. Fix: Aggiunto lru_cache(maxsize=1) su get_model(), lazy load al primo utilizzo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 33: Timeout nelle query SQLite durante scrittura concorrente — WAL mode non abilitato su alcune connessioni. Fix: Abilitato WAL mode globalmente nel connection pool, aggiunto lock a livello applicazione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 34: Memory leak nel vector index numpy — array non rilasciati dopo compressione. Fix: Aggiunto explicit del array e gc.collect() dopo ogni batch di compressione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 35: Race condition nel decay pass — lettura e scrittura non atomica su access_count. Fix: Wrap decay pass in transazione SQLite, use ROWLOCK per accesso esclusivo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 36: Embedder si carica ad ogni request — mancanza di caching del modello. Fix: Aggiunto lru_cache(maxsize=1) su get_model(), lazy load al primo utilizzo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 37: Timeout nelle query SQLite durante scrittura concorrente — WAL mode non abilitato su alcune connessioni. Fix: Abilitato WAL mode globalmente nel connection pool, aggiunto lock a livello applicazione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 38: Memory leak nel vector index numpy — array non rilasciati dopo compressione. Fix: Aggiunto explicit del array e gc.collect() dopo ogni batch di compressione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 39: Race condition nel decay pass — lettura e scrittura non atomica su access_count. Fix: Wrap decay pass in transazione SQLite, use ROWLOCK per accesso esclusivo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 40: Embedder si carica ad ogni request — mancanza di caching del modello. Fix: Aggiunto lru_cache(maxsize=1) su get_model(), lazy load al primo utilizzo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 41: Timeout nelle query SQLite durante scrittura concorrente — WAL mode non abilitato su alcune connessioni. Fix: Abilitato WAL mode globalmente nel connection pool, aggiunto lock a livello applicazione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 42: Memory leak nel vector index numpy — array non rilasciati dopo compressione. Fix: Aggiunto explicit del array e gc.collect() dopo ogni batch di compressione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 43: Race condition nel decay pass — lettura e scrittura non atomica su access_count. Fix: Wrap decay pass in transazione SQLite, use ROWLOCK per accesso esclusivo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 44: Embedder si carica ad ogni request — mancanza di caching del modello. Fix: Aggiunto lru_cache(maxsize=1) su get_model(), lazy load al primo utilizzo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 45: Timeout nelle query SQLite durante scrittura concorrente — WAL mode non abilitato su alcune connessioni. Fix: Abilitato WAL mode globalmente nel connection pool, aggiunto lock a livello applicazione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 46: Memory leak nel vector index numpy — array non rilasciati dopo compressione. Fix: Aggiunto explicit del array e gc.collect() dopo ogni batch di compressione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 47: Race condition nel decay pass — lettura e scrittura non atomica su access_count. Fix: Wrap decay pass in transazione SQLite, use ROWLOCK per accesso esclusivo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 48: Embedder si carica ad ogni request — mancanza di caching del modello. Fix: Aggiunto lru_cache(maxsize=1) su get_model(), lazy load al primo utilizzo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 49: Timeout nelle query SQLite durante scrittura concorrente — WAL mode non abilitato su alcune connessioni. Fix: Abilitato WAL mode globalmente nel connection pool, aggiunto lock a livello applicazione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 50: Memory leak nel vector index numpy — array non rilasciati dopo compressione. Fix: Aggiunto explicit del array e gc.collect() dopo ogni batch di compressione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 51: Race condition nel decay pass — lettura e scrittura non atomica su access_count. Fix: Wrap decay pass in transazione SQLite, use ROWLOCK per accesso esclusivo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 52: Embedder si carica ad ogni request — mancanza di caching del modello. Fix: Aggiunto lru_cache(maxsize=1) su get_model(), lazy load al primo utilizzo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 53: Timeout nelle query SQLite durante scrittura concorrente — WAL mode non abilitato su alcune connessioni. Fix: Abilitato WAL mode globalmente nel connection pool, aggiunto lock a livello applicazione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 54: Memory leak nel vector index numpy — array non rilasciati dopo compressione. Fix: Aggiunto explicit del array e gc.collect() dopo ogni batch di compressione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 55: Race condition nel decay pass — lettura e scrittura non atomica su access_count. Fix: Wrap decay pass in transazione SQLite, use ROWLOCK per accesso esclusivo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 56: Embedder si carica ad ogni request — mancanza di caching del modello. Fix: Aggiunto lru_cache(maxsize=1) su get_model(), lazy load al primo utilizzo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 57: Timeout nelle query SQLite durante scrittura concorrente — WAL mode non abilitato su alcune connessioni. Fix: Abilitato WAL mode globalmente nel connection pool, aggiunto lock a livello applicazione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 58: Memory leak nel vector index numpy — array non rilasciati dopo compressione. Fix: Aggiunto explicit del array e gc.collect() dopo ogni batch di compressione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 59: Race condition nel decay pass — lettura e scrittura non atomica su access_count. Fix: Wrap decay pass in transazione SQLite, use ROWLOCK per accesso esclusivo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 60: Embedder si carica ad ogni request — mancanza di caching del modello. Fix: Aggiunto lru_cache(maxsize=1) su get_model(), lazy load al primo utilizzo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 61: Timeout nelle query SQLite durante scrittura concorrente — WAL mode non abilitato su alcune connessioni. Fix: Abilitato WAL mode globalmente nel connection pool, aggiunto lock a livello applicazione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 62: Memory leak nel vector index numpy — array non rilasciati dopo compressione. Fix: Aggiunto explicit del array e gc.collect() dopo ogni batch di compressione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 63: Race condition nel decay pass — lettura e scrittura non atomica su access_count. Fix: Wrap decay pass in transazione SQLite, use ROWLOCK per accesso esclusivo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 64: Embedder si carica ad ogni request — mancanza di caching del modello. Fix: Aggiunto lru_cache(maxsize=1) su get_model(), lazy load al primo utilizzo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 65: Timeout nelle query SQLite durante scrittura concorrente — WAL mode non abilitato su alcune connessioni. Fix: Abilitato WAL mode globalmente nel connection pool, aggiunto lock a livello applicazione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 66: Memory leak nel vector index numpy — array non rilasciati dopo compressione. Fix: Aggiunto explicit del array e gc.collect() dopo ogni batch di compressione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 67: Race condition nel decay pass — lettura e scrittura non atomica su access_count. Fix: Wrap decay pass in transazione SQLite, use ROWLOCK per accesso esclusivo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 68: Embedder si carica ad ogni request — mancanza di caching del modello. Fix: Aggiunto lru_cache(maxsize=1) su get_model(), lazy load al primo utilizzo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 69: Timeout nelle query SQLite durante scrittura concorrente — WAL mode non abilitato su alcune connessioni. Fix: Abilitato WAL mode globalmente nel connection pool, aggiunto lock a livello applicazione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 70: Memory leak nel vector index numpy — array non rilasciati dopo compressione. Fix: Aggiunto explicit del array e gc.collect() dopo ogni batch di compressione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 71: Race condition nel decay pass — lettura e scrittura non atomica su access_count. Fix: Wrap decay pass in transazione SQLite, use ROWLOCK per accesso esclusivo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 72: Embedder si carica ad ogni request — mancanza di caching del modello. Fix: Aggiunto lru_cache(maxsize=1) su get_model(), lazy load al primo utilizzo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 73: Timeout nelle query SQLite durante scrittura concorrente — WAL mode non abilitato su alcune connessioni. Fix: Abilitato WAL mode globalmente nel connection pool, aggiunto lock a livello applicazione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 74: Memory leak nel vector index numpy — array non rilasciati dopo compressione. Fix: Aggiunto explicit del array e gc.collect() dopo ogni batch di compressione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 75: Race condition nel decay pass — lettura e scrittura non atomica su access_count. Fix: Wrap decay pass in transazione SQLite, use ROWLOCK per accesso esclusivo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 76: Embedder si carica ad ogni request — mancanza di caching del modello. Fix: Aggiunto lru_cache(maxsize=1) su get_model(), lazy load al primo utilizzo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 77: Timeout nelle query SQLite durante scrittura concorrente — WAL mode non abilitato su alcune connessioni. Fix: Abilitato WAL mode globalmente nel connection pool, aggiunto lock a livello applicazione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 78: Memory leak nel vector index numpy — array non rilasciati dopo compressione. Fix: Aggiunto explicit del array e gc.collect() dopo ogni batch di compressione",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 79: Race condition nel decay pass — lettura e scrittura non atomica su access_count. Fix: Wrap decay pass in transazione SQLite, use ROWLOCK per accesso esclusivo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Root cause 80: Embedder si carica ad ogni request — mancanza di caching del modello. Fix: Aggiunto lru_cache(maxsize=1) su get_model(), lazy load al primo utilizzo",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Runbook 1: Procedura deploy produzione: 1) esegui pytest, 2) bump version, 3) tag git, 4) python -m build, 5) twine upload",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 2: Procedura rollback produzione: 1) pip install kore-memory==versione-precedente, 2) restart servizio, 3) verifica health",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 3: Procedura backup DB: sqlite3 data/memory.db .backup backup/memory_20260413.db",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 4: Procedura test coverage: pytest tests/ --cov=kore_memory --cov-report=term-missing --cov-fail-under=88",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 5: Procedura deploy produzione: 1) esegui pytest, 2) bump version, 3) tag git, 4) python -m build, 5) twine upload",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 6: Procedura rollback produzione: 1) pip install kore-memory==versione-precedente, 2) restart servizio, 3) verifica health",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 7: Procedura backup DB: sqlite3 data/memory.db .backup backup/memory_20260413.db",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 8: Procedura test coverage: pytest tests/ --cov=kore_memory --cov-report=term-missing --cov-fail-under=88",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 9: Procedura deploy produzione: 1) esegui pytest, 2) bump version, 3) tag git, 4) python -m build, 5) twine upload",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 10: Procedura rollback produzione: 1) pip install kore-memory==versione-precedente, 2) restart servizio, 3) verifica health",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 11: Procedura backup DB: sqlite3 data/memory.db .backup backup/memory_20260413.db",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 12: Procedura test coverage: pytest tests/ --cov=kore_memory --cov-report=term-missing --cov-fail-under=88",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 13: Procedura deploy produzione: 1) esegui pytest, 2) bump version, 3) tag git, 4) python -m build, 5) twine upload",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 14: Procedura rollback produzione: 1) pip install kore-memory==versione-precedente, 2) restart servizio, 3) verifica health",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 15: Procedura backup DB: sqlite3 data/memory.db .backup backup/memory_20260413.db",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 16: Procedura test coverage: pytest tests/ --cov=kore_memory --cov-report=term-missing --cov-fail-under=88",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 17: Procedura deploy produzione: 1) esegui pytest, 2) bump version, 3) tag git, 4) python -m build, 5) twine upload",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 18: Procedura rollback produzione: 1) pip install kore-memory==versione-precedente, 2) restart servizio, 3) verifica health",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 19: Procedura backup DB: sqlite3 data/memory.db .backup backup/memory_20260413.db",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 20: Procedura test coverage: pytest tests/ --cov=kore_memory --cov-report=term-missing --cov-fail-under=88",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 21: Procedura deploy produzione: 1) esegui pytest, 2) bump version, 3) tag git, 4) python -m build, 5) twine upload",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 22: Procedura rollback produzione: 1) pip install kore-memory==versione-precedente, 2) restart servizio, 3) verifica health",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 23: Procedura backup DB: sqlite3 data/memory.db .backup backup/memory_20260413.db",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 24: Procedura test coverage: pytest tests/ --cov=kore_memory --cov-report=term-missing --cov-fail-under=88",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 25: Procedura deploy produzione: 1) esegui pytest, 2) bump version, 3) tag git, 4) python -m build, 5) twine upload",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 26: Procedura rollback produzione: 1) pip install kore-memory==versione-precedente, 2) restart servizio, 3) verifica health",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 27: Procedura backup DB: sqlite3 data/memory.db .backup backup/memory_20260413.db",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 28: Procedura test coverage: pytest tests/ --cov=kore_memory --cov-report=term-missing --cov-fail-under=88",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 29: Procedura deploy produzione: 1) esegui pytest, 2) bump version, 3) tag git, 4) python -m build, 5) twine upload",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 30: Procedura rollback produzione: 1) pip install kore-memory==versione-precedente, 2) restart servizio, 3) verifica health",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 31: Procedura backup DB: sqlite3 data/memory.db .backup backup/memory_20260413.db",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 32: Procedura test coverage: pytest tests/ --cov=kore_memory --cov-report=term-missing --cov-fail-under=88",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 33: Procedura deploy produzione: 1) esegui pytest, 2) bump version, 3) tag git, 4) python -m build, 5) twine upload",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 34: Procedura rollback produzione: 1) pip install kore-memory==versione-precedente, 2) restart servizio, 3) verifica health",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 35: Procedura backup DB: sqlite3 data/memory.db .backup backup/memory_20260413.db",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 36: Procedura test coverage: pytest tests/ --cov=kore_memory --cov-report=term-missing --cov-fail-under=88",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 37: Procedura deploy produzione: 1) esegui pytest, 2) bump version, 3) tag git, 4) python -m build, 5) twine upload",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 38: Procedura rollback produzione: 1) pip install kore-memory==versione-precedente, 2) restart servizio, 3) verifica health",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 39: Procedura backup DB: sqlite3 data/memory.db .backup backup/memory_20260413.db",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 40: Procedura test coverage: pytest tests/ --cov=kore_memory --cov-report=term-missing --cov-fail-under=88",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 41: Procedura deploy produzione: 1) esegui pytest, 2) bump version, 3) tag git, 4) python -m build, 5) twine upload",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 42: Procedura rollback produzione: 1) pip install kore-memory==versione-precedente, 2) restart servizio, 3) verifica health",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 43: Procedura backup DB: sqlite3 data/memory.db .backup backup/memory_20260413.db",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 44: Procedura test coverage: pytest tests/ --cov=kore_memory --cov-report=term-missing --cov-fail-under=88",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 45: Procedura deploy produzione: 1) esegui pytest, 2) bump version, 3) tag git, 4) python -m build, 5) twine upload",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 46: Procedura rollback produzione: 1) pip install kore-memory==versione-precedente, 2) restart servizio, 3) verifica health",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 47: Procedura backup DB: sqlite3 data/memory.db .backup backup/memory_20260413.db",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 48: Procedura test coverage: pytest tests/ --cov=kore_memory --cov-report=term-missing --cov-fail-under=88",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 49: Procedura deploy produzione: 1) esegui pytest, 2) bump version, 3) tag git, 4) python -m build, 5) twine upload",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 50: Procedura rollback produzione: 1) pip install kore-memory==versione-precedente, 2) restart servizio, 3) verifica health",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 51: Procedura backup DB: sqlite3 data/memory.db .backup backup/memory_20260413.db",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 52: Procedura test coverage: pytest tests/ --cov=kore_memory --cov-report=term-missing --cov-fail-under=88",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 53: Procedura deploy produzione: 1) esegui pytest, 2) bump version, 3) tag git, 4) python -m build, 5) twine upload",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 54: Procedura rollback produzione: 1) pip install kore-memory==versione-precedente, 2) restart servizio, 3) verifica health",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 55: Procedura backup DB: sqlite3 data/memory.db .backup backup/memory_20260413.db",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 56: Procedura test coverage: pytest tests/ --cov=kore_memory --cov-report=term-missing --cov-fail-under=88",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 57: Procedura deploy produzione: 1) esegui pytest, 2) bump version, 3) tag git, 4) python -m build, 5) twine upload",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 58: Procedura rollback produzione: 1) pip install kore-memory==versione-precedente, 2) restart servizio, 3) verifica health",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 59: Procedura backup DB: sqlite3 data/memory.db .backup backup/memory_20260413.db",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Runbook 60: Procedura test coverage: pytest tests/ --cov=kore_memory --cov-report=term-missing --cov-fail-under=88",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Regressione 1: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 2: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 3: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 4: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 5: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 6: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 7: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 8: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 9: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 10: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 11: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 12: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 13: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 14: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 15: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 16: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 17: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 18: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 19: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 20: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 21: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 22: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 23: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 24: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 25: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 26: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 27: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 28: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 29: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 30: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 31: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 32: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 33: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 34: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 35: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 36: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 37: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 38: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 39: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 40: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 41: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 42: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 43: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 44: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 45: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 46: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 47: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 48: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 49: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 50: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 51: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 52: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 53: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 54: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 55: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 56: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 57: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 58: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 59: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Regressione 60: import sorting FTS5 risultati per decay_score DESC invece di relevance score — introdotto in refactoring repository v1.3.0, fix: aggiunto re-ranking post-fetch con rank_results()",
+      "category": "regression_note",
+      "importance": 4
+    }
+  ],
+  "queries": [
+    {
+      "id": 1,
+      "query": "Come funziona il vector search semantico in kore-memory",
+      "task": "implementare ricerca semantica",
+      "expected_categories": [
+        "architectural_decision"
+      ],
+      "min_relevance": 0.7
+    },
+    {
+      "id": 2,
+      "query": "Timeout connessione SQLite pool",
+      "task": "debug problema timeout database",
+      "expected_categories": [
+        "root_cause",
+        "runbook"
+      ],
+      "min_relevance": 0.7
+    },
+    {
+      "id": 3,
+      "query": "Deploy produzione kore",
+      "task": "fare release versione nuova",
+      "expected_categories": [
+        "runbook"
+      ],
+      "min_relevance": 0.8
+    },
+    {
+      "id": 4,
+      "query": "Sentence transformers embedding model",
+      "task": "ottimizzare performance embeddings",
+      "expected_categories": [
+        "architectural_decision"
+      ],
+      "min_relevance": 0.7
+    },
+    {
+      "id": 5,
+      "query": "Ebbinghaus forgetting curve decay",
+      "task": "capire come funziona il decay",
+      "expected_categories": [
+        "architectural_decision"
+      ],
+      "min_relevance": 0.8
+    },
+    {
+      "id": 6,
+      "query": "Come funziona il vector search semantico in kore-memory",
+      "task": "implementare ricerca semantica",
+      "expected_categories": [
+        "architectural_decision"
+      ],
+      "min_relevance": 0.7
+    },
+    {
+      "id": 7,
+      "query": "Timeout connessione SQLite pool",
+      "task": "debug problema timeout database",
+      "expected_categories": [
+        "root_cause",
+        "runbook"
+      ],
+      "min_relevance": 0.7
+    },
+    {
+      "id": 8,
+      "query": "Deploy produzione kore",
+      "task": "fare release versione nuova",
+      "expected_categories": [
+        "runbook"
+      ],
+      "min_relevance": 0.8
+    },
+    {
+      "id": 9,
+      "query": "Sentence transformers embedding model",
+      "task": "ottimizzare performance embeddings",
+      "expected_categories": [
+        "architectural_decision"
+      ],
+      "min_relevance": 0.7
+    },
+    {
+      "id": 10,
+      "query": "Ebbinghaus forgetting curve decay",
+      "task": "capire come funziona il decay",
+      "expected_categories": [
+        "architectural_decision"
+      ],
+      "min_relevance": 0.8
+    },
+    {
+      "id": 11,
+      "query": "Come funziona il vector search semantico in kore-memory",
+      "task": "implementare ricerca semantica",
+      "expected_categories": [
+        "architectural_decision"
+      ],
+      "min_relevance": 0.7
+    },
+    {
+      "id": 12,
+      "query": "Timeout connessione SQLite pool",
+      "task": "debug problema timeout database",
+      "expected_categories": [
+        "root_cause",
+        "runbook"
+      ],
+      "min_relevance": 0.7
+    },
+    {
+      "id": 13,
+      "query": "Deploy produzione kore",
+      "task": "fare release versione nuova",
+      "expected_categories": [
+        "runbook"
+      ],
+      "min_relevance": 0.8
+    },
+    {
+      "id": 14,
+      "query": "Sentence transformers embedding model",
+      "task": "ottimizzare performance embeddings",
+      "expected_categories": [
+        "architectural_decision"
+      ],
+      "min_relevance": 0.7
+    },
+    {
+      "id": 15,
+      "query": "Ebbinghaus forgetting curve decay",
+      "task": "capire come funziona il decay",
+      "expected_categories": [
+        "architectural_decision"
+      ],
+      "min_relevance": 0.8
+    },
+    {
+      "id": 16,
+      "query": "Come funziona il vector search semantico in kore-memory",
+      "task": "implementare ricerca semantica",
+      "expected_categories": [
+        "architectural_decision"
+      ],
+      "min_relevance": 0.7
+    },
+    {
+      "id": 17,
+      "query": "Timeout connessione SQLite pool",
+      "task": "debug problema timeout database",
+      "expected_categories": [
+        "root_cause",
+        "runbook"
+      ],
+      "min_relevance": 0.7
+    },
+    {
+      "id": 18,
+      "query": "Deploy produzione kore",
+      "task": "fare release versione nuova",
+      "expected_categories": [
+        "runbook"
+      ],
+      "min_relevance": 0.8
+    },
+    {
+      "id": 19,
+      "query": "Sentence transformers embedding model",
+      "task": "ottimizzare performance embeddings",
+      "expected_categories": [
+        "architectural_decision"
+      ],
+      "min_relevance": 0.7
+    },
+    {
+      "id": 20,
+      "query": "Ebbinghaus forgetting curve decay",
+      "task": "capire come funziona il decay",
+      "expected_categories": [
+        "architectural_decision"
+      ],
+      "min_relevance": 0.8
+    },
+    {
+      "id": 21,
+      "query": "Come funziona il vector search semantico in kore-memory",
+      "task": "implementare ricerca semantica",
+      "expected_categories": [
+        "architectural_decision"
+      ],
+      "min_relevance": 0.7
+    },
+    {
+      "id": 22,
+      "query": "Timeout connessione SQLite pool",
+      "task": "debug problema timeout database",
+      "expected_categories": [
+        "root_cause",
+        "runbook"
+      ],
+      "min_relevance": 0.7
+    },
+    {
+      "id": 23,
+      "query": "Deploy produzione kore",
+      "task": "fare release versione nuova",
+      "expected_categories": [
+        "runbook"
+      ],
+      "min_relevance": 0.8
+    },
+    {
+      "id": 24,
+      "query": "Sentence transformers embedding model",
+      "task": "ottimizzare performance embeddings",
+      "expected_categories": [
+        "architectural_decision"
+      ],
+      "min_relevance": 0.7
+    },
+    {
+      "id": 25,
+      "query": "Ebbinghaus forgetting curve decay",
+      "task": "capire come funziona il decay",
+      "expected_categories": [
+        "architectural_decision"
+      ],
+      "min_relevance": 0.8
+    },
+    {
+      "id": 26,
+      "query": "Come funziona il vector search semantico in kore-memory",
+      "task": "implementare ricerca semantica",
+      "expected_categories": [
+        "architectural_decision"
+      ],
+      "min_relevance": 0.7
+    },
+    {
+      "id": 27,
+      "query": "Timeout connessione SQLite pool",
+      "task": "debug problema timeout database",
+      "expected_categories": [
+        "root_cause",
+        "runbook"
+      ],
+      "min_relevance": 0.7
+    },
+    {
+      "id": 28,
+      "query": "Deploy produzione kore",
+      "task": "fare release versione nuova",
+      "expected_categories": [
+        "runbook"
+      ],
+      "min_relevance": 0.8
+    },
+    {
+      "id": 29,
+      "query": "Sentence transformers embedding model",
+      "task": "ottimizzare performance embeddings",
+      "expected_categories": [
+        "architectural_decision"
+      ],
+      "min_relevance": 0.7
+    },
+    {
+      "id": 30,
+      "query": "Ebbinghaus forgetting curve decay",
+      "task": "capire come funziona il decay",
+      "expected_categories": [
+        "architectural_decision"
+      ],
+      "min_relevance": 0.8
+    },
+    {
+      "id": 31,
+      "query": "Come funziona il vector search semantico in kore-memory",
+      "task": "implementare ricerca semantica",
+      "expected_categories": [
+        "architectural_decision"
+      ],
+      "min_relevance": 0.7
+    },
+    {
+      "id": 32,
+      "query": "Timeout connessione SQLite pool",
+      "task": "debug problema timeout database",
+      "expected_categories": [
+        "root_cause",
+        "runbook"
+      ],
+      "min_relevance": 0.7
+    },
+    {
+      "id": 33,
+      "query": "Deploy produzione kore",
+      "task": "fare release versione nuova",
+      "expected_categories": [
+        "runbook"
+      ],
+      "min_relevance": 0.8
+    },
+    {
+      "id": 34,
+      "query": "Sentence transformers embedding model",
+      "task": "ottimizzare performance embeddings",
+      "expected_categories": [
+        "architectural_decision"
+      ],
+      "min_relevance": 0.7
+    },
+    {
+      "id": 35,
+      "query": "Ebbinghaus forgetting curve decay",
+      "task": "capire come funziona il decay",
+      "expected_categories": [
+        "architectural_decision"
+      ],
+      "min_relevance": 0.8
+    },
+    {
+      "id": 36,
+      "query": "Come funziona il vector search semantico in kore-memory",
+      "task": "implementare ricerca semantica",
+      "expected_categories": [
+        "architectural_decision"
+      ],
+      "min_relevance": 0.7
+    },
+    {
+      "id": 37,
+      "query": "Timeout connessione SQLite pool",
+      "task": "debug problema timeout database",
+      "expected_categories": [
+        "root_cause",
+        "runbook"
+      ],
+      "min_relevance": 0.7
+    },
+    {
+      "id": 38,
+      "query": "Deploy produzione kore",
+      "task": "fare release versione nuova",
+      "expected_categories": [
+        "runbook"
+      ],
+      "min_relevance": 0.8
+    },
+    {
+      "id": 39,
+      "query": "Sentence transformers embedding model",
+      "task": "ottimizzare performance embeddings",
+      "expected_categories": [
+        "architectural_decision"
+      ],
+      "min_relevance": 0.7
+    },
+    {
+      "id": 40,
+      "query": "Ebbinghaus forgetting curve decay",
+      "task": "capire come funziona il decay",
+      "expected_categories": [
+        "architectural_decision"
+      ],
+      "min_relevance": 0.8
+    },
+    {
+      "id": 41,
+      "query": "Come funziona il vector search semantico in kore-memory",
+      "task": "implementare ricerca semantica",
+      "expected_categories": [
+        "architectural_decision"
+      ],
+      "min_relevance": 0.7
+    },
+    {
+      "id": 42,
+      "query": "Timeout connessione SQLite pool",
+      "task": "debug problema timeout database",
+      "expected_categories": [
+        "root_cause",
+        "runbook"
+      ],
+      "min_relevance": 0.7
+    },
+    {
+      "id": 43,
+      "query": "Deploy produzione kore",
+      "task": "fare release versione nuova",
+      "expected_categories": [
+        "runbook"
+      ],
+      "min_relevance": 0.8
+    },
+    {
+      "id": 44,
+      "query": "Sentence transformers embedding model",
+      "task": "ottimizzare performance embeddings",
+      "expected_categories": [
+        "architectural_decision"
+      ],
+      "min_relevance": 0.7
+    },
+    {
+      "id": 45,
+      "query": "Ebbinghaus forgetting curve decay",
+      "task": "capire come funziona il decay",
+      "expected_categories": [
+        "architectural_decision"
+      ],
+      "min_relevance": 0.8
+    },
+    {
+      "id": 46,
+      "query": "Come funziona il vector search semantico in kore-memory",
+      "task": "implementare ricerca semantica",
+      "expected_categories": [
+        "architectural_decision"
+      ],
+      "min_relevance": 0.7
+    },
+    {
+      "id": 47,
+      "query": "Timeout connessione SQLite pool",
+      "task": "debug problema timeout database",
+      "expected_categories": [
+        "root_cause",
+        "runbook"
+      ],
+      "min_relevance": 0.7
+    },
+    {
+      "id": 48,
+      "query": "Deploy produzione kore",
+      "task": "fare release versione nuova",
+      "expected_categories": [
+        "runbook"
+      ],
+      "min_relevance": 0.8
+    },
+    {
+      "id": 49,
+      "query": "Sentence transformers embedding model",
+      "task": "ottimizzare performance embeddings",
+      "expected_categories": [
+        "architectural_decision"
+      ],
+      "min_relevance": 0.7
+    },
+    {
+      "id": 50,
+      "query": "Ebbinghaus forgetting curve decay",
+      "task": "capire come funziona il decay",
+      "expected_categories": [
+        "architectural_decision"
+      ],
+      "min_relevance": 0.8
+    }
+  ],
+  "ground_truth": {
+    "precision_at_5_target": 0.75,
+    "validated_scenarios": 5,
+    "notes": "Ground truth validato manualmente su 5 scenari reali"
+  },
+  "stats": {
+    "total_memories": 300,
+    "architectural_decisions": 100,
+    "root_causes": 80,
+    "runbooks": 60,
+    "regression_notes": 60,
+    "total_queries": 50
+  }
+}

@@ -35,11 +35,14 @@ from .models import (
     BatchSaveResponse,
     CleanupExpiredResponse,
     CompressRunResponse,
+    ContextAssembleRequest,
+    ContextAssembleResponse,
     DecayRunResponse,
     EntityListResponse,
     EntityRecord,
     GDPRDeleteResponse,
     GraphTraverseResponse,
+    MemoryExplainResponse,
     MemoryExportResponse,
     MemoryImportRequest,
     MemoryImportResponse,
@@ -296,15 +299,18 @@ def search(
     cursor: str | None = Query(None, description="Opaque pagination cursor"),
     category: str | None = Query(None),
     semantic: bool = Query(True),
+    task: str = Query("", description="Descrizione task corrente per task_relevance scoring"),
+    ranking_profile: str = Query("default", description="Profilo ranking: default | coding"),
+    explain: bool = Query(False, description="Includi score breakdown per ogni risultato"),
     _: str = _Auth,
     agent_id: str = _Agent,
     # Deprecated params for backwards compatibility
     offset: int = Query(0, ge=0, deprecated=True, description="Deprecated: use cursor"),
 ) -> MemorySearchResponse:
-    """Semantic search scoped to the requesting agent, with cursor-based pagination."""
+    """Semantic search with cursor pagination, optional task_relevance and explain."""
     _check_rate_limit(_get_client_ip(request), "/search")
 
-    # Parse cursor (base64 encoded tuple of decay_score, id)
+    # Parse cursor (base64 encoded tuple di decay_score, id)
     cursor_tuple = None
     if cursor:
         try:
@@ -316,14 +322,16 @@ def search(
         except Exception:
             raise HTTPException(400, "Invalid cursor format") from None
 
-    # Execute search with cursor
-    results, next_cursor, total_count = search_memories(
+    results, next_cursor, total_count, excluded = search_memories(
         query=q,
         limit=limit,
         category=category,
         semantic=semantic,
         agent_id=agent_id,
         cursor=cursor_tuple,
+        task=task,
+        ranking_profile=ranking_profile,
+        explain=explain,
     )
 
     # Encode next cursor
@@ -334,12 +342,17 @@ def search(
 
         cursor_str = base64.b64encode(json.dumps(next_cursor).encode("utf-8")).decode("utf-8")
 
+    # Normalizza il nome del profilo per il response (default → default_v1)
+    _profile_display = "default_v1" if ranking_profile in ("default", "default_v1") else ranking_profile
+
     return MemorySearchResponse(
         results=results,
         total=total_count,
         cursor=cursor_str,
         has_more=next_cursor is not None,
-        offset=offset,  # Keep for backwards compat
+        excluded=excluded if explain else [],
+        ranking_profile=_profile_display,
+        offset=offset,
     )
 
 
@@ -403,6 +416,112 @@ def get_single(
     if not memory:
         raise HTTPException(status_code=404, detail="Memory not found")
     return memory
+
+
+@app.get("/explain/memory/{memory_id}", response_model=MemoryExplainResponse)
+def explain_memory(
+    memory_id: int,
+    _: str = _Auth,
+    agent_id: str = _Agent,
+) -> MemoryExplainResponse:
+    """
+    Analisi completa di una singola memoria: status, conditions, score breakdown,
+    conflitti, catena di supersessioni, tag, provenance. (Wave 2, issue #016)
+    """
+    memory = get_memory(memory_id, agent_id=agent_id)
+    if not memory:
+        raise HTTPException(status_code=404, detail="Memory not found")
+
+    from .database import get_connection
+    from .ranking import compute_score
+    from .repository.search import _load_conflicted_ids
+
+    with get_connection() as conn:
+        # access_count e last_accessed
+        row_extra = conn.execute(
+            "SELECT access_count, last_accessed FROM memories WHERE id = ? AND agent_id = ?",
+            (memory_id, agent_id),
+        ).fetchone()
+
+        # Conflitti
+        conflict_rows = conn.execute(
+            """
+            SELECT id, conflict_type, resolved_at, detected_at
+            FROM memory_conflicts
+            WHERE (memory_a_id = ? OR memory_b_id = ?) AND agent_id = ?
+            ORDER BY detected_at DESC
+            """,
+            (memory_id, memory_id, agent_id),
+        ).fetchall()
+
+        # Catena supersessioni: risali fino all'origine
+        chain: list[int] = []
+        curr_id = memory.supersedes_id
+        seen: set[int] = {memory_id}
+        while curr_id and curr_id not in seen and len(chain) < 20:
+            chain.append(curr_id)
+            seen.add(curr_id)
+            prev = conn.execute("SELECT supersedes_id FROM memories WHERE id = ?", (curr_id,)).fetchone()
+            curr_id = prev[0] if prev else None
+
+        # Tag
+        tag_rows = conn.execute(
+            "SELECT tag FROM memory_tags WHERE memory_id = ? ORDER BY tag",
+            (memory_id,),
+        ).fetchall()
+
+    # Score breakdown con explain
+    conflicted_ids = _load_conflicted_ids([memory_id], agent_id)
+    compute_score(memory, conflict_ids=conflicted_ids, explain=True)
+    score_breakdown = memory.explain or {}
+
+    from .models import ConflictInfo
+
+    return MemoryExplainResponse(
+        id=memory.id,
+        status=memory.status,
+        conditions=memory.conditions,
+        current_score=memory.score,
+        score_breakdown=score_breakdown,
+        access_count=row_extra["access_count"] if row_extra else 0,
+        last_accessed=row_extra["last_accessed"] if row_extra else None,
+        conflicts=[
+            ConflictInfo(
+                conflict_id=r["id"],
+                conflict_type=r["conflict_type"],
+                resolved=r["resolved_at"] is not None,
+                detected_at=r["detected_at"],
+                resolved_at=r["resolved_at"],
+            )
+            for r in conflict_rows
+        ],
+        supersession_chain=chain,
+        tags=[r["tag"] for r in tag_rows],
+        provenance=memory.provenance,
+        memory_type=memory.memory_type,
+        confidence=memory.confidence,
+        valid_from=memory.valid_from,
+        valid_to=memory.valid_to,
+    )
+
+
+@app.post("/context/assemble", response_model=ContextAssembleResponse)
+def context_assemble(
+    req: ContextAssembleRequest,
+    request: Request,
+    _: str = _Auth,
+    agent_id: str = _Agent,
+) -> ContextAssembleResponse:
+    """
+    Context Assembly Engine — costruisce un context package pronto per l'iniezione
+    nel prompt di un agente, rispettando il budget token specificato.
+    (Wave 2, issue #017)
+    """
+    _check_rate_limit(_get_client_ip(request), "/context/assemble")
+
+    from .context_assembler import assemble_context
+
+    return assemble_context(req, agent_id=agent_id)
 
 
 @app.get("/memories/{memory_id}/history", response_model=list[MemoryRecord])
@@ -859,7 +978,7 @@ async def stream_search(
 
     async def event_stream():
         # Phase 1: FTS5 results (fast)
-        fts_results, _, fts_total = search_memories(
+        fts_results, _, fts_total, _excl = search_memories(
             query=q,
             limit=limit,
             semantic=False,
@@ -877,7 +996,7 @@ async def stream_search(
 
         # Phase 2: Semantic results (slower, may overlap with FTS)
         try:
-            sem_results, _, sem_total = search_memories(
+            sem_results, _, sem_total, _excl2 = search_memories(
                 query=q,
                 limit=limit,
                 semantic=True,

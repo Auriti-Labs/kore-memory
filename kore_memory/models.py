@@ -136,6 +136,7 @@ class MemoryRecord(BaseModel):
                     "created_at": "2026-01-15T10:30:00",
                     "updated_at": "2026-01-15T10:30:00",
                     "score": None,
+                    "explain": None,
                 }
             ]
         }
@@ -160,6 +161,8 @@ class MemoryRecord(BaseModel):
     # Stato derivato (non persistito) — calcolato da _compute_memory_status()
     status: str = "active"
     conditions: list[str] = Field(default_factory=list)
+    # Explain breakdown — calcolato solo con explain=true, mai persistito (Wave 2, issue #015)
+    explain: dict | None = None
 
 
 class MemorySaveResponse(BaseModel):
@@ -179,6 +182,8 @@ class MemorySearchResponse(BaseModel):
     has_more: bool = False
     # Profilo di ranking usato per ordinare i risultati
     ranking_profile: str = "default_v1"
+    # Memorie escluse dal retrieval (popolate solo con explain=true, issue #015)
+    excluded: list[dict] = Field(default_factory=list)
     # Deprecated fields kept for backwards compatibility
     offset: int = Field(0, deprecated=True, description="Deprecated: use cursor instead")
 
@@ -446,3 +451,84 @@ class GDPRDeleteResponse(BaseModel):
 class PluginListResponse(BaseModel):
     plugins: list[str]
     total: int
+
+
+# ── Explain (issue #016) ──────────────────────────────────────────────────────
+
+
+class ConflictInfo(BaseModel):
+    conflict_id: str
+    conflict_type: str
+    resolved: bool
+    detected_at: str
+    resolved_at: str | None = None
+
+
+class MemoryExplainResponse(BaseModel):
+    """Analisi completa di una singola memoria — GET /explain/memory/{id}."""
+
+    id: int
+    status: str
+    conditions: list[str]
+    current_score: float | None = None
+    score_breakdown: dict = Field(default_factory=dict)
+    access_count: int = 0
+    last_accessed: str | None = None
+    conflicts: list[ConflictInfo] = Field(default_factory=list)
+    supersession_chain: list[int] = Field(default_factory=list)
+    tags: list[str] = Field(default_factory=list)
+    provenance: dict | None = None
+    memory_type: str = "semantic"
+    confidence: float = 1.0
+    valid_from: datetime | None = None
+    valid_to: datetime | None = None
+
+
+# ── Context Assembly (issue #017) ─────────────────────────────────────────────
+
+
+class ContextAssembleRequest(BaseModel):
+    """Request per POST /context/assemble."""
+
+    task: str = Field(..., min_length=1, max_length=2000, description="Descrizione del task corrente")
+    budget_tokens: int = Field(2000, ge=1, le=32000, description="Budget massimo in token")
+    categories: list[str] = Field(
+        default_factory=list,
+        description="Categorie da includere (vuoto = tutte)",
+        max_length=20,
+    )
+    ranking_profile: str = Field("default", description="Profilo di ranking: default | coding")
+    include_low_confidence: bool = Field(False, description="Includi memorie con confidence < 0.5")
+    explain: bool = Field(False, description="Includi score breakdown per ogni memoria")
+
+
+class ContextMemoryItem(BaseModel):
+    """Singola memoria nel context package."""
+
+    id: int
+    content: str
+    category: str
+    importance: int
+    decay_score: float
+    confidence: float
+    score: float
+    tokens_estimated: int
+    status: str = "active"
+    conditions: list[str] = Field(default_factory=list)
+    explain: dict | None = None
+
+
+class ContextAssembleResponse(BaseModel):
+    """Response di POST /context/assemble — context package strutturato."""
+
+    task: str
+    budget_tokens_requested: int
+    budget_tokens_used: int
+    total_memories: int
+    ranking_profile: str
+    degraded: bool = Field(False, description="True se embedder non disponibile → fallback FTS5")
+    memories: list[ContextMemoryItem] = Field(default_factory=list)
+    conflicts: list[dict] = Field(
+        default_factory=list,
+        description="Conflitti critici irrisolti tra le memorie selezionate",
+    )

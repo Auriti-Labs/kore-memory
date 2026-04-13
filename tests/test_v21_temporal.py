@@ -138,7 +138,7 @@ class TestSupersession:
         old_id = _save_repo(old_content)
         _save_repo(new_content, supersedes_id=old_id)
 
-        results, _, _ = search_memories("architettura kore sistema", agent_id="test-v21", semantic=False)
+        results, _, _, _ = search_memories("architettura kore sistema", agent_id="test-v21", semantic=False)
         result_ids = [r.id for r in results]
         assert old_id not in result_ids
 
@@ -195,7 +195,7 @@ class TestValidityFiltering:
         )
         expired_id, _, _ = save_memory(req, agent_id="test-v21")
 
-        results, _, _ = search_memories("offerta speciale kore promo scaduta", agent_id="test-v21", semantic=False)
+        results, _, _, _ = search_memories("offerta speciale kore promo scaduta", agent_id="test-v21", semantic=False)
         result_ids = [r.id for r in results]
         assert expired_id not in result_ids
 
@@ -207,7 +207,7 @@ class TestValidityFiltering:
         )
         active_id, _, _ = save_memory(req, agent_id="test-v21")
 
-        results, _, _ = search_memories("offerta valida kore promo attiva", agent_id="test-v21", semantic=False)
+        results, _, _, _ = search_memories("offerta valida kore promo attiva", agent_id="test-v21", semantic=False)
         result_ids = [r.id for r in results]
         assert active_id in result_ids
 
@@ -219,7 +219,7 @@ class TestValidityFiltering:
         )
         expired_id, _, _ = save_memory(req, agent_id="test-v21")
 
-        results, _, _ = search_memories(
+        results, _, _, _ = search_memories(
             "storico kore archivio memoria antica historical",
             agent_id="test-v21",
             semantic=False,
@@ -233,7 +233,7 @@ class TestValidityFiltering:
         req = MemorySaveRequest(content="Memoria permanente kore senza scadenza sempre valida")
         perm_id, _, _ = save_memory(req, agent_id="test-v21")
 
-        results, _, _ = search_memories("memoria permanente kore senza scadenza sempre valida", agent_id="test-v21", semantic=False)
+        results, _, _, _ = search_memories("memoria permanente kore senza scadenza sempre valida", agent_id="test-v21", semantic=False)
         result_ids = [r.id for r in results]
         assert perm_id in result_ids
 
