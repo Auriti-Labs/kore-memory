@@ -365,8 +365,6 @@ def memory_save_decision(
         repo="my-project",
     )
     """
-    import json as _json
-
     metadata = {
         "rationale": rationale,
         "alternatives_considered": alternatives_considered,
@@ -492,6 +490,7 @@ def _wrap_bearer_auth(app, token: str):
     /mcp/health è esente per permettere health-check senza credenziali.
     """
     import secrets as _secrets
+
     from starlette.middleware.base import BaseHTTPMiddleware
     from starlette.requests import Request
     from starlette.responses import JSONResponse
@@ -533,7 +532,6 @@ def _add_health_route() -> None:
     Viene chiamato solo quando il transport HTTP è attivo.
     """
     try:
-        import json as _json
         from starlette.requests import Request
         from starlette.responses import JSONResponse
 
@@ -594,10 +592,7 @@ def main():
             # Token configurato → costruiamo l'app manualmente e aggiungiamo
             # il middleware Bearer prima di passare a uvicorn
             import uvicorn
-            if args.transport == "streamable-http":
-                app = mcp.streamable_http_app()
-            else:
-                app = mcp.sse_app()
+            app = mcp.streamable_http_app() if args.transport == "streamable-http" else mcp.sse_app()
             _wrap_bearer_auth(app, token)
             try:
                 uvicorn.run(app, host=args.host, port=args.port)
