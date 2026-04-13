@@ -11,10 +11,13 @@ Usage:
 
 from __future__ import annotations
 
+import logging
 import re as _re
+import time as _time
 
 from mcp.server.fastmcp import FastMCP
 
+from . import config as _cfg
 from .database import init_db
 from .models import MemorySaveRequest, MemoryUpdateRequest
 from .repository import (
@@ -32,6 +35,11 @@ from .repository import (
     update_memory,
 )
 
+logger = logging.getLogger(__name__)
+
+# Timestamp di avvio per il calcolo dell'uptime
+_SERVER_START_TIME = _time.monotonic()
+
 # Initialize DB before any operation
 init_db()
 
@@ -47,6 +55,15 @@ def _sanitize_agent_id(agent_id: str) -> str:
     """Sanitize agent_id: only alphanumeric characters, dashes and underscores, max 64 chars."""
     safe = _SAFE_AGENT_RE.sub("", agent_id)
     return (safe or "default")[:64]
+
+
+# ── Helper ───────────────────────────────────────────────────────────────────
+
+
+def _error(msg: str) -> dict:
+    """Formatta un errore come dict per i tool MCP (non solleva eccezioni)."""
+    logger.error("MCP tool error: %s", msg)
+    return {"error": msg}
 
 
 # ── Tools ────────────────────────────────────────────────────────────────────
@@ -323,6 +340,137 @@ def memory_import(
     return {"imported": count, "message": f"{count} memories imported"}
 
 
+# ── Coding Memory Mode (Issue #012) ──────────────────────────────────────────
+
+
+@mcp.tool()
+def memory_save_decision(
+    content: str,
+    rationale: str = "",
+    alternatives_considered: str = "",
+    decided_by: str = "",
+    repo: str = "",
+    agent_id: str = "default",
+) -> dict:
+    """
+    Save an architectural decision (ADR) with structured metadata.
+    Use for technology choices, design patterns, infrastructure decisions.
+    The memory is automatically categorized as architectural_decision (semantic type).
+
+    Example: memory_save_decision(
+        content="Usiamo PostgreSQL invece di MySQL",
+        rationale="Supporto migliore per JSONB e query avanzate",
+        alternatives_considered="MySQL, SQLite, MongoDB",
+        decided_by="team-backend",
+        repo="my-project",
+    )
+    """
+    import json as _json
+
+    metadata = {
+        "rationale": rationale,
+        "alternatives_considered": alternatives_considered,
+        "decided_by": decided_by,
+        "still_valid": True,
+    }
+    sanitized = _sanitize_agent_id(f"{agent_id}/{repo}" if repo else agent_id)
+    req = MemorySaveRequest(
+        content=content,
+        category="architectural_decision",
+        importance=4,
+        metadata=metadata,
+    )
+    mem_id, imp, conflicts = save_memory(req, agent_id=sanitized)
+    return {
+        "id": mem_id,
+        "importance": imp,
+        "category": "architectural_decision",
+        "memory_type": "semantic",
+        "conflicts_detected": conflicts,
+        "message": "Decision saved",
+    }
+
+
+@mcp.tool()
+def memory_get_runbook(
+    trigger: str = "",
+    component: str = "",
+    repo: str = "",
+    agent_id: str = "default",
+    limit: int = 5,
+) -> dict:
+    """
+    Retrieve runbooks matching a trigger or component.
+    Runbooks are procedural memories for operational tasks (deploy, rollback, etc.).
+
+    Example: memory_get_runbook(trigger="deploy failed", component="api-gateway")
+    """
+    sanitized = _sanitize_agent_id(f"{agent_id}/{repo}" if repo else agent_id)
+    query = " ".join(filter(None, [trigger, component])) or "*"
+    results, _, total = search_memories(
+        query=query,
+        limit=limit,
+        category="runbook",
+        semantic=False,
+        agent_id=sanitized,
+    )
+    return {
+        "results": [
+            {
+                "id": r.id,
+                "content": r.content,
+                "score": r.score,
+                "decay_score": r.decay_score,
+            }
+            for r in results
+        ],
+        "total": total,
+    }
+
+
+@mcp.tool()
+def memory_log_regression(
+    content: str,
+    introduced_in: str = "",
+    fixed_in: str = "",
+    test_ref: str = "",
+    repo: str = "",
+    agent_id: str = "default",
+) -> dict:
+    """
+    Log a regression note: track when a bug was introduced and fixed.
+    Helps prevent the same regression from recurring in future versions.
+
+    Example: memory_log_regression(
+        content="Race condition nel pool di connessioni SQLite",
+        introduced_in="v1.2.0",
+        fixed_in="v1.2.1",
+        test_ref="tests/test_database.py::test_concurrent_access",
+    )
+    """
+    metadata = {
+        "introduced_in": introduced_in,
+        "fixed_in": fixed_in,
+        "test_ref": test_ref,
+    }
+    sanitized = _sanitize_agent_id(f"{agent_id}/{repo}" if repo else agent_id)
+    req = MemorySaveRequest(
+        content=content,
+        category="regression_note",
+        importance=4,
+        metadata=metadata,
+    )
+    mem_id, imp, conflicts = save_memory(req, agent_id=sanitized)
+    return {
+        "id": mem_id,
+        "importance": imp,
+        "category": "regression_note",
+        "memory_type": "episodic",
+        "conflicts_detected": conflicts,
+        "message": "Regression logged",
+    }
+
+
 # ── Resources ────────────────────────────────────────────────────────────────
 
 
@@ -333,6 +481,32 @@ def health_resource() -> str:
     from .repository import _embeddings_available
 
     return f"Kore v{config.VERSION} — semantic_search={'enabled' if _embeddings_available() else 'disabled'}"
+
+
+# ── Health endpoint (streamable-http) ────────────────────────────────────────
+
+
+def _add_health_route() -> None:
+    """
+    Registra GET /mcp/health sul transport streamable-http.
+    Risponde con {status, uptime_seconds, version}.
+    Viene chiamato solo quando il transport HTTP è attivo.
+    """
+    try:
+        import json as _json
+        from starlette.requests import Request
+        from starlette.responses import JSONResponse
+
+        @mcp.custom_route("/mcp/health", methods=["GET"])
+        async def mcp_health(_req: Request) -> JSONResponse:
+            uptime = round(_time.monotonic() - _SERVER_START_TIME, 1)
+            return JSONResponse({
+                "status": "ok",
+                "uptime_seconds": uptime,
+                "version": _cfg.VERSION,
+            })
+    except Exception as exc:
+        logger.warning("Impossibile registrare /mcp/health: %s", exc)
 
 
 # ── Entry point ──────────────────────────────────────────────────────────────
@@ -356,13 +530,30 @@ def main():
     parser.add_argument(
         "--port",
         type=int,
-        default=8766,
-        help="Porta per HTTP transport (default: 8766)",
+        default=_cfg.MCP_PORT,
+        help="Porta per HTTP transport (default: 8766, override: KORE_MCP_PORT)",
     )
     args = parser.parse_args()
 
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [kore-mcp] %(levelname)s %(message)s",
+    )
+
     if args.transport in ("streamable-http", "sse"):
-        mcp.run(transport=args.transport, host=args.host, port=args.port)
+        timeout = _cfg.MCP_TIMEOUT_SECONDS
+        logger.info(
+            "Avvio MCP server transport=%s host=%s port=%d timeout=%ss",
+            args.transport, args.host, args.port, timeout,
+        )
+        _add_health_route()
+        try:
+            mcp.run(transport=args.transport, host=args.host, port=args.port)
+        except KeyboardInterrupt:
+            logger.info("MCP server fermato (KeyboardInterrupt)")
+        except Exception as exc:
+            logger.error("MCP server crash: %s", exc, exc_info=True)
+            raise
     else:
         mcp.run()
 

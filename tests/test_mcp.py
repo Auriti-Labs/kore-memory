@@ -345,3 +345,159 @@ class TestMemoryTimeline:
         assert "total" in result
         assert "has_more" in result
         assert isinstance(result["results"], list)
+
+
+# ── Issue #007: MCP Hardening ─────────────────────────────────────────────────
+
+
+class TestMCPHardening:
+    def test_mcp_timeout_config_exists(self):
+        """KORE_MCP_TIMEOUT_SECONDS è configurabile via config."""
+        from kore_memory import config as cfg
+        assert hasattr(cfg, "MCP_TIMEOUT_SECONDS")
+        assert isinstance(cfg.MCP_TIMEOUT_SECONDS, int)
+        assert cfg.MCP_TIMEOUT_SECONDS > 0
+
+    def test_mcp_port_config_exists(self):
+        """KORE_MCP_PORT è configurabile via config."""
+        from kore_memory import config as cfg
+        assert hasattr(cfg, "MCP_PORT")
+        assert isinstance(cfg.MCP_PORT, int)
+
+    def test_mcp_timeout_from_env(self, monkeypatch):
+        """KORE_MCP_TIMEOUT_SECONDS viene letto dall'env var."""
+        import importlib
+        import kore_memory.config as cfg_mod
+        monkeypatch.setenv("KORE_MCP_TIMEOUT_SECONDS", "60")
+        importlib.reload(cfg_mod)
+        assert cfg_mod.MCP_TIMEOUT_SECONDS == 60
+        monkeypatch.delenv("KORE_MCP_TIMEOUT_SECONDS", raising=False)
+        importlib.reload(cfg_mod)
+
+    def test_health_module_importable(self):
+        """Il modulo mcp_server esporta _add_health_route e _SERVER_START_TIME."""
+        from kore_memory.mcp_server import _add_health_route, _SERVER_START_TIME
+        assert callable(_add_health_route)
+        assert isinstance(_SERVER_START_TIME, float)
+        assert _SERVER_START_TIME > 0
+
+    def test_error_helper_returns_dict_with_error_key(self):
+        """_error() formatta gli errori in modo consistente per i tool MCP."""
+        from kore_memory.mcp_server import _error
+        result = _error("Operazione non consentita")
+        assert isinstance(result, dict)
+        assert "error" in result
+        assert "Operazione" in result["error"]
+
+    def test_save_100_consecutive_calls(self):
+        """100 chiamate consecutive a memory_save senza crash o leak."""
+        for i in range(100):
+            result = memory_save(
+                content=f"Stress test memoria numero {i} per hardening MCP",
+                category="general",
+                agent_id="test-hardening",
+            )
+            assert "id" in result
+            assert result["id"] > 0
+
+
+# ── Issue #012: Coding Memory Mode Alpha ─────────────────────────────────────
+
+
+class TestCodingMemoryMode:
+    """Test per i tool MCP specializzati del Coding Memory Mode."""
+
+    def test_memory_save_decision_returns_correct_fields(self):
+        """memory_save_decision ritorna id, category e memory_type."""
+        from kore_memory.mcp_server import memory_save_decision
+        result = memory_save_decision(
+            content="Usiamo FastAPI invece di Django per la leggerezza e le performance",
+            rationale="FastAPI ha type hints nativi e async out-of-the-box",
+            alternatives_considered="Django, Flask, Starlette",
+            decided_by="tech-lead",
+            agent_id="test-coding",
+        )
+        assert "id" in result
+        assert result["id"] > 0
+        assert result["category"] == "architectural_decision"
+        assert result["memory_type"] == "semantic"
+        assert result["importance"] >= 4
+        assert "conflicts_detected" in result
+
+    def test_memory_save_decision_with_repo_namespace(self):
+        """memory_save_decision usa namespace agent/repo per l'isolamento."""
+        from kore_memory.mcp_server import memory_save_decision
+        result = memory_save_decision(
+            content="Database schema: usa UUID come primary key",
+            rationale="Distribuito, no conflicts tra istanze",
+            repo="my-project",
+            agent_id="claude-code",
+        )
+        assert result["id"] > 0
+        assert result["message"] == "Decision saved"
+
+    def test_memory_get_runbook_returns_list(self):
+        """memory_get_runbook ritorna una lista di runbook."""
+        from kore_memory.mcp_server import memory_get_runbook, memory_save
+        # Salva un runbook prima
+        memory_save(
+            content="Procedura rollback: 1) git revert 2) deploy 3) verifica",
+            category="runbook",
+            agent_id="test-coding",
+        )
+        result = memory_get_runbook(
+            trigger="rollback",
+            component="deploy",
+            agent_id="test-coding",
+        )
+        assert "results" in result
+        assert "total" in result
+        assert isinstance(result["results"], list)
+
+    def test_memory_log_regression_returns_episodic(self):
+        """memory_log_regression crea memoria di tipo episodic."""
+        from kore_memory.mcp_server import memory_log_regression
+        result = memory_log_regression(
+            content="Race condition nel pool SQLite con scritture concorrenti",
+            introduced_in="v1.2.0",
+            fixed_in="v1.2.1",
+            test_ref="tests/test_database.py::test_concurrent_writes",
+            agent_id="test-coding",
+        )
+        assert "id" in result
+        assert result["id"] > 0
+        assert result["category"] == "regression_note"
+        assert result["memory_type"] == "episodic"
+        assert result["importance"] >= 4
+
+    def test_coding_categories_all_valid(self):
+        """Tutte le categorie coding mode sono accettate da memory_save."""
+        coding_cats = [
+            "architectural_decision",
+            "root_cause",
+            "runbook",
+            "regression_note",
+            "tech_debt",
+            "api_contract",
+        ]
+        for cat in coding_cats:
+            result = memory_save(
+                content=f"Test memoria categoria {cat} coding mode alpha",
+                category=cat,
+                agent_id="test-coding",
+            )
+            assert result["id"] > 0, f"Categoria {cat} ha fallito"
+
+    def test_memory_type_inferred_from_coding_category(self):
+        """memory_type viene inferito automaticamente dalla category coding."""
+        from kore_memory.repository import get_memory
+        from kore_memory.mcp_server import memory_save
+        # runbook → procedural
+        result = memory_save(
+            content="Runbook per deploy in produzione: step 1, 2, 3",
+            category="runbook",
+            agent_id="test-coding",
+        )
+        mem = get_memory(result["id"], agent_id="test-coding")
+        assert mem is not None
+        assert mem.memory_type == "procedural"

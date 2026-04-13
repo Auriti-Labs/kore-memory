@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "kore-memory": {
+      "command": "kore-mcp",
+      "args": [],
+      "env": {
+        "KORE_LOCAL_ONLY": "1"
+      }
+    }
+  }
+}

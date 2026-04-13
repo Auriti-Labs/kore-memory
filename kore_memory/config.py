@@ -64,6 +64,12 @@ ENTITY_EXTRACTION = os.getenv("KORE_ENTITY_EXTRACTION", "0") == "1"
 
 AUDIT_LOG = os.getenv("KORE_AUDIT_LOG", "0") == "1"
 
+# ── MCP Server ───────────────────────────────────────────────────────────────
+
+MCP_PORT = int(os.getenv("KORE_MCP_PORT", "8766"))
+# Timeout in secondi per le connessioni streamable-http (usato nel client-side keepalive)
+MCP_TIMEOUT_SECONDS = int(os.getenv("KORE_MCP_TIMEOUT_SECONDS", "30"))
+
 # ── Conflict Detection ───────────────────────────────────────────────────────
 
 # Soglia similarità coseno per candidato conflitto (default calcolato empiricamente)
