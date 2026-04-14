@@ -311,7 +311,7 @@ class TestAsyncKoreClientRelations:
             assert rel_r.total >= 1
             get_r = await kore.get_relations(s1.id)
             assert get_r.total >= 1
-            assert get_r.relations[0]["relation"] == "depends_on"
+            assert get_r.relations[0].relation == "depends_on"
 
 
 class TestAsyncKoreClientMaintenance:

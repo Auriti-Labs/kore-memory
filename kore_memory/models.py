@@ -404,6 +404,45 @@ class HubDetectionResponse(BaseModel):
     total: int
 
 
+# ── Filesystem Overlay (issue #024) ──────────────────────────────────────────
+
+
+class OverlayIndexRequest(BaseModel):
+    base_path: str = Field(..., min_length=1, max_length=1024, description="Directory radice da scansionare")
+    patterns: list[str] = Field(
+        default_factory=list,
+        description="Pattern filename da includere (vuoto = DEFAULT_PATTERNS)",
+        max_length=50,
+    )
+    include_extra_md: bool = Field(True, description="Includi file .md extra in docs/")
+    replace_existing: bool = Field(True, description="Sostituisce memories esistenti per lo stesso file")
+    max_depth: int = Field(2, ge=1, le=5, description="Profondità massima di scansione")
+
+
+class OverlayFileRecord(BaseModel):
+    path: str
+    filename: str
+    exists: bool
+    memory_ids: list[int]
+    chunk_count: int
+    category: str
+    last_indexed: str
+
+
+class OverlayIndexResponse(BaseModel):
+    indexed: int
+    updated: int
+    skipped: int
+    errors: int
+    file_results: list[dict] = []
+    files_scanned: int
+
+
+class OverlayFilesResponse(BaseModel):
+    files: list[OverlayFileRecord]
+    total: int
+
+
 # ── Summarization ────────────────────────────────────────────────────────────
 
 

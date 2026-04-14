@@ -495,7 +495,7 @@ class TestSyncRelations:
         s2 = kore.save("Nodo dipendenza relazione sincrona test B")
         result = kore.add_relation(s1.id, s2.id, "depends_on")
         assert isinstance(result, RelationResponse)
-        tipi = [r["relation"] for r in result.relations]
+        tipi = [r.relation for r in result.relations]
         assert "depends_on" in tipi
 
     def test_get_relations_ritorna_relazioni_esistenti(self):

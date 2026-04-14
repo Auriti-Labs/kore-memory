@@ -298,7 +298,9 @@ def search_by_tag(tag: str, agent_id: str = "default", limit: int = 20) -> list[
             """
             SELECT m.id, m.content, m.category, m.importance,
                    m.decay_score, m.access_count, m.last_accessed,
-                   m.created_at, m.updated_at, NULL AS score
+                   m.created_at, m.updated_at, NULL AS score,
+                   m.provenance, m.memory_type, m.confidence,
+                   m.valid_from, m.valid_to, m.supersedes_id, m.archived_at
             FROM memories m
             JOIN memory_tags t ON m.id = t.memory_id
             WHERE t.tag = ? AND m.agent_id = ? AND m.compressed_into IS NULL

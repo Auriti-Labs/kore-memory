@@ -53,6 +53,10 @@ from .models import (
     MemorySaveResponse,
     MemorySearchResponse,
     MemoryUpdateRequest,
+    OverlayFileRecord,
+    OverlayFilesResponse,
+    OverlayIndexRequest,
+    OverlayIndexResponse,
     PluginListResponse,
     RelationRecord,
     RelationRequest,
@@ -1211,6 +1215,72 @@ def metrics(_: str = _Auth, agent_id: str = _Agent) -> Response:
         f"kore_db_size_bytes {stats['db_size_bytes']}",
     ]
     return Response(content="\n".join(lines) + "\n", media_type="text/plain; charset=utf-8")
+
+
+# ── Filesystem Overlay (issue #024) ──────────────────────────────────────────
+
+
+@app.post("/overlay/index", response_model=OverlayIndexResponse)
+def overlay_index(
+    body: OverlayIndexRequest,
+    _: str = _Auth,
+    agent_id: str = _Agent,
+) -> OverlayIndexResponse:
+    """Indicizza i file tecnici di un progetto come memories.
+
+    Scansiona base_path cercando CLAUDE.md, README.md, pyproject.toml ecc.
+    e crea memories con tag __overlay__ per dedup automatico.
+    """
+    from .filesystem_overlay import index_files, scan_directory
+
+    patterns = body.patterns if body.patterns else None
+    filepaths = scan_directory(
+        base_path=body.base_path,
+        patterns=patterns,
+        include_extra_md=body.include_extra_md,
+        max_depth=body.max_depth,
+    )
+    stats = index_files(
+        filepaths=filepaths,
+        agent_id=agent_id,
+        replace_existing=body.replace_existing,
+    )
+    return OverlayIndexResponse(
+        indexed=stats["indexed"],
+        updated=stats["updated"],
+        skipped=stats["skipped"],
+        errors=stats["errors"],
+        file_results=stats["file_results"],
+        files_scanned=len(filepaths),
+    )
+
+
+@app.get("/overlay/files", response_model=OverlayFilesResponse)
+def overlay_files(
+    _: str = _Auth,
+    agent_id: str = _Agent,
+) -> OverlayFilesResponse:
+    """Restituisce la lista dei file attualmente indicizzati nell'overlay."""
+    from .filesystem_overlay import list_overlay_files
+
+    files = list_overlay_files(agent_id=agent_id)
+    return OverlayFilesResponse(
+        files=[OverlayFileRecord(**f) for f in files],
+        total=len(files),
+    )
+
+
+@app.delete("/overlay/files", response_model=dict)
+def overlay_remove_file(
+    path: str = Query(..., description="Path assoluto del file da rimuovere dall'overlay"),
+    _: str = _Auth,
+    agent_id: str = _Agent,
+) -> dict:
+    """Rimuove tutte le memories di un file dall'overlay."""
+    from .filesystem_overlay import remove_file_from_overlay
+
+    removed = remove_file_from_overlay(filepath=path, agent_id=agent_id)
+    return {"removed": removed, "path": path}
 
 
 # ── Audit log ────────────────────────────────────────────────────────────────

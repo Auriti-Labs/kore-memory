@@ -11,6 +11,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.3.0] - 2026-04-14
+
+### Theme: "Wave 3 — Graph Engine + Filesystem Overlay"
+
+### Added
+
+#### Typed Graph Relations (#026)
+- **`strength`** (0.0–1.0) e **`confidence`** (0.0–1.0) su ogni relazione in `memory_relations`
+- Upsert automatico: `ON CONFLICT DO UPDATE SET` aggiorna strength/confidence se la relazione esiste già
+- `GET /memories/{id}/relations` ritorna ora `RelationRecord` con campi tipizzati, ordinati per `strength DESC`
+- `GET /graph/traverse` include `strength` e `confidence` in ogni edge
+
+#### Subgraph API (#027)
+- **`GET /graph/subgraph?ids=1,2,3&expand_depth=1`** — Estrae un sottografo da un insieme di seed node
+- `expand_depth > 0`: espansione ricorsiva tramite CTE, aggiunge i vicini diretti
+- Isolamento per `agent_id`, edges con strength/confidence
+
+#### Hub Detection (#028)
+- **`GET /graph/hubs?min_degree=4&limit=20`** — Rileva nodi hub per grado (in + out)
+- Risposta include `in_degree`, `out_degree`, `avg_strength`, `degree_centrality` (normalizzata su N-1)
+- Filtrabile per `min_degree`
+
+#### Filesystem Overlay (#024)
+- **`POST /overlay/index`** — Indicizza i file tecnici di un progetto come memories (`CLAUDE.md`, `README.md`, `pyproject.toml`, ecc.)
+- **`GET /overlay/files`** — Lista i file attualmente indicizzati nell'overlay con `path`, `chunk_count`, `memory_ids`
+- **`DELETE /overlay/files?path=...`** — Rimuove le memories di un file dall'overlay
+- Dedup automatico via tag `__overlay__` + `__file__<hash>`: re-index aggiorna senza duplicare
+- Chunking automatico per file > 3500 chars (split per righe)
+- `scan_directory()` con `DEFAULT_PATTERNS` (15 file tecnici) + `.md` extra in `docs/`
+
+#### Benchmark Datasets D + E (#029)
+- **Dataset D** (`tests/benchmarks/datasets/dataset_d_graph.json`): 60 memorie, 55 relazioni tipizzate — verifica qualità graph (hub degree, subgraph coverage, degree centrality)
+- **Dataset E** (`tests/benchmarks/datasets/dataset_e_context.json`): 80 memorie, 20 query — verifica qualità context assembly (top-1 precision)
+- Nuove soglie CI in `scripts/assert_benchmarks.py`: `hub_min_degree ≥ 4`, `subgraph_coverage ≥ 90%`, `top1_precision ≥ 80%`
+
+### Fixed
+- **`search_by_tag`** ora include `provenance`, `memory_type`, `confidence` nel SELECT — risolve `source_ref` perso nell'overlay
+- **CI security** — `pip-audit --skip-editable` per non fallire sul package locale non presente su PyPI
+- **Benchmark fixture** — `bench_client` ripristina `KORE_DB_PATH` al teardown, prevenendo contaminazione dei test unitari
+
+### Tests
+- 30 nuovi test in `tests/test_wave3_overlay.py` (scan, chunk, index, API)
+- 21 nuovi test in `tests/test_wave3_graph.py` (typed relations, subgraph, hub detection)
+- Suite totale: **572 test** (da 456), coverage ≥ 88%
+
+---
+
 ## [2.2.0] - 2026-04-13
 
 ### Theme: "Context Engine + Explainability"
