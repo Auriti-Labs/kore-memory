@@ -32,7 +32,13 @@ HEADERS = {"X-Agent-Id": "bench-agent"}
 
 @pytest.fixture(scope="module")
 def bench_client():
-    """TestClient con DB temporaneo dedicato — isolato dai test unitari."""
+    """TestClient con DB temporaneo dedicato — isolato dai test unitari.
+
+    Salva e ripristina KORE_DB_PATH al teardown per non contaminare
+    i test unitari eseguiti nello stesso processo pytest.
+    """
+    original_db_path = os.environ.get("KORE_DB_PATH")
+
     with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
         db_path = f.name
 
@@ -40,16 +46,30 @@ def bench_client():
     os.environ["KORE_TEST_MODE"] = "1"
 
     from kore_memory.database import _pool, init_db
+    from kore_memory.main import _rate_buckets, app
 
     _pool.clear()
     init_db()
-
-    from kore_memory.main import app
+    _rate_buckets.clear()
 
     client = TestClient(app)
     yield client
 
+    # Ripristina env originale per non rompere test successivi
     _pool.clear()
+    _rate_buckets.clear()
+
+    if original_db_path is not None:
+        os.environ["KORE_DB_PATH"] = original_db_path
+    else:
+        os.environ.pop("KORE_DB_PATH", None)
+
+    # Re-inizializza il pool sul DB originale
+    try:
+        init_db()
+    except Exception:
+        pass
+
     Path(db_path).unlink(missing_ok=True)
 
 

@@ -150,7 +150,8 @@ jobs:
         run: bandit -r kore_memory/ -c pyproject.toml
 
       - name: Run pip-audit (CVE check)
-        run: pip-audit --strict
+        # --skip-editable: salta kore-memory stesso (non su PyPI, non ha CVE propri)
+        run: pip-audit --strict --skip-editable
 
   lint:
     runs-on: ubuntu-latest
