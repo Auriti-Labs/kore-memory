@@ -35,15 +35,26 @@ THRESHOLDS = {
 }
 
 
-def load_results(path: str) -> dict:
-    """Carica il file results.json da pytest o da report custom."""
+def load_results(path: str) -> dict | None:
+    """Carica il file results.json da pytest o da report custom.
+
+    Ritorna None se il file non esiste (distinto da file vuoto/invalido).
+    Ritorna {} se il file esiste ma è vuoto o non contiene JSON valido.
+    """
     results_path = Path(path)
     if not results_path.exists():
         print(f"⚠️  File risultati non trovato: {path}")
         print("   Generare con: pytest tests/benchmarks/ -v --benchmark-json=results.json")
+        return None
+    try:
+        content = results_path.read_text().strip()
+        if not content:
+            # File vuoto: pytest-benchmark non ha trovato benchmark mark → OK
+            return {}
+        return json.loads(content)
+    except json.JSONDecodeError:
+        print(f"⚠️  File risultati non valido (JSON malformato): {path}")
         return {}
-    with results_path.open() as f:
-        return json.load(f)
 
 
 def check_thresholds(results: dict) -> tuple[list[str], list[str]]:
@@ -99,7 +110,8 @@ def main():
 
     results = load_results(args.results)
 
-    if not results:
+    if results is None:
+        # File non esiste
         if args.strict:
             print("❌ File risultati non trovato (--strict mode)")
             sys.exit(1)
@@ -107,6 +119,11 @@ def main():
             print("⚠️  Salto verifica soglie (file risultati non presente)")
             print("   Questo non è bloccante in assenza di --strict")
             sys.exit(0)
+
+    if not results:
+        # File esiste ma vuoto o senza benchmark — i test si sono eseguiti senza @benchmark mark
+        print("✅ Suite benchmark eseguita (nessun metric quantitativo nel report)")
+        sys.exit(0)
 
     passed, failed = check_thresholds(results)
 

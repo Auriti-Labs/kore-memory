@@ -287,10 +287,7 @@ def index_files(
 
         for chunk_content_text, chunk_idx in chunks:
             chunk_label = f" [{chunk_idx + 1}/{len(chunks)}]" if len(chunks) > 1 else ""
-            enriched_content = (
-                f"[File: {Path(filepath).name}{chunk_label}]\n"
-                f"{chunk_content_text.strip()}"
-            )
+            enriched_content = f"[File: {Path(filepath).name}{chunk_label}]\n{chunk_content_text.strip()}"
             # Tronca a 4000 chars (limite modello)
             enriched_content = enriched_content[:4000]
 

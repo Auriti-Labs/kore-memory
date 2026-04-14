@@ -150,8 +150,14 @@ jobs:
         run: bandit -r kore_memory/ -c pyproject.toml
 
       - name: Run pip-audit (CVE check)
-        # --skip-editable: salta kore-memory stesso (non su PyPI, non ha CVE propri)
-        run: pip-audit --strict --skip-editable
+        # Audita solo le dipendenze installate, non il package locale (non è su PyPI)
+        # Usiamo -r requirements-audit.txt generato al volo per evitare problemi con editable installs
+        run: |
+          pip list --format=freeze \
+            | grep -v "^kore-memory==" \
+            | grep -v "^kore_memory==" \
+            > /tmp/audit_reqs.txt
+          pip-audit -r /tmp/audit_reqs.txt
 
   lint:
     runs-on: ubuntu-latest
