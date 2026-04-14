@@ -207,11 +207,15 @@ def init_db() -> None:
                 source_id   INTEGER NOT NULL REFERENCES memories(id) ON DELETE CASCADE,
                 target_id   INTEGER NOT NULL REFERENCES memories(id) ON DELETE CASCADE,
                 relation    TEXT    NOT NULL DEFAULT 'related',
+                strength    REAL    NOT NULL DEFAULT 1.0 CHECK (strength >= 0.0 AND strength <= 1.0),
+                confidence  REAL    NOT NULL DEFAULT 1.0 CHECK (confidence >= 0.0 AND confidence <= 1.0),
                 created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+                updated_at  TEXT    NOT NULL DEFAULT (datetime('now')),
                 PRIMARY KEY (source_id, target_id, relation)
             );
             CREATE INDEX IF NOT EXISTS idx_relations_source ON memory_relations (source_id);
             CREATE INDEX IF NOT EXISTS idx_relations_target ON memory_relations (target_id);
+            CREATE INDEX IF NOT EXISTS idx_relations_strength ON memory_relations (strength DESC);
 
             -- Audit / event log
             CREATE TABLE IF NOT EXISTS event_logs (
@@ -292,6 +296,21 @@ def init_db() -> None:
                 ON memories (supersedes_id) WHERE supersedes_id IS NOT NULL;
             CREATE INDEX IF NOT EXISTS idx_memories_invalidated
                 ON memories (invalidated_at) WHERE invalidated_at IS NOT NULL;
+        """)
+
+        # Migrazione v2.3 — relazioni tipizzate con peso e confidence
+        relation_cols = {row[1] for row in conn.execute("PRAGMA table_info(memory_relations)").fetchall()}
+        _v23_relation_migrations = {
+            "strength": "ALTER TABLE memory_relations ADD COLUMN strength REAL NOT NULL DEFAULT 1.0",
+            "confidence": "ALTER TABLE memory_relations ADD COLUMN confidence REAL NOT NULL DEFAULT 1.0",
+            "updated_at": "ALTER TABLE memory_relations ADD COLUMN updated_at TEXT NOT NULL DEFAULT (datetime('now'))",
+        }
+        for col, sql in _v23_relation_migrations.items():
+            if col not in relation_cols:
+                conn.execute(sql)
+        conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_relations_strength
+                ON memory_relations (strength DESC)
         """)
 
 

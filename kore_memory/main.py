@@ -42,6 +42,8 @@ from .models import (
     EntityRecord,
     GDPRDeleteResponse,
     GraphTraverseResponse,
+    HubDetectionResponse,
+    HubNodeRecord,
     MemoryExplainResponse,
     MemoryExportResponse,
     MemoryImportRequest,
@@ -52,6 +54,7 @@ from .models import (
     MemorySearchResponse,
     MemoryUpdateRequest,
     PluginListResponse,
+    RelationRecord,
     RelationRequest,
     RelationResponse,
     ScoringStatsResponse,
@@ -60,6 +63,7 @@ from .models import (
     SessionResponse,
     SessionSummaryResponse,
     SharedMemoriesResponse,
+    SubgraphResponse,
     SummarizeResponse,
     TagRequest,
     TagResponse,
@@ -74,7 +78,9 @@ from .repository import (
     delete_session,
     end_session,
     export_memories,
+    extract_subgraph,
     get_archived,
+    get_degree_centrality,
     get_memory,
     get_memory_history,
     get_relations,
@@ -635,10 +641,20 @@ def relation_add(
     _: str = _Auth,
     agent_id: str = _Agent,
 ) -> RelationResponse:
-    """Create a relation between two memories."""
-    add_relation(memory_id, req.target_id, req.relation, agent_id=agent_id)
+    """Create a relation between two memories (with typed strength and confidence)."""
+    add_relation(
+        memory_id,
+        req.target_id,
+        req.relation,
+        agent_id=agent_id,
+        strength=req.strength,
+        confidence=req.confidence,
+    )
     relations = get_relations(memory_id, agent_id=agent_id)
-    return RelationResponse(relations=relations, total=len(relations))
+    return RelationResponse(
+        relations=[RelationRecord(**r) for r in relations],
+        total=len(relations),
+    )
 
 
 @app.get("/memories/{memory_id}/relations", response_model=RelationResponse)
@@ -649,7 +665,10 @@ def relation_list(
 ) -> RelationResponse:
     """Return the relations of a memory."""
     relations = get_relations(memory_id, agent_id=agent_id)
-    return RelationResponse(relations=relations, total=len(relations))
+    return RelationResponse(
+        relations=[RelationRecord(**r) for r in relations],
+        total=len(relations),
+    )
 
 
 # ── Maintenance endpoints ─────────────────────────────────────────────────────
@@ -878,6 +897,45 @@ def graph_traverse(
     """Multi-hop graph traversal using recursive CTE. Returns connected memories up to N hops."""
     result = traverse_graph(start_id, agent_id=agent_id, depth=depth, relation_type=relation_type)
     return GraphTraverseResponse(**result)
+
+
+@app.get("/graph/subgraph", response_model=SubgraphResponse)
+def graph_subgraph(
+    ids: str = Query(..., description="Comma-separated memory IDs (max 200)"),
+    expand: int = Query(0, ge=0, le=5, description="Espandi i vicini entro N hop (0=solo i nodi richiesti)"),
+    _: str = _Auth,
+    agent_id: str = _Agent,
+) -> SubgraphResponse:
+    """
+    Estrae il sottografo indotto dai nodi specificati.
+    Con expand>0 aggiunge i vicini entro N hop per ogni nodo seed.
+    """
+    try:
+        memory_ids = [int(x.strip()) for x in ids.split(",") if x.strip()]
+    except ValueError:
+        memory_ids = []
+    if not memory_ids:
+        return SubgraphResponse(total_nodes=0, total_edges=0)
+    result = extract_subgraph(memory_ids, agent_id=agent_id, expand_depth=expand)
+    return SubgraphResponse(**result)
+
+
+@app.get("/graph/hubs", response_model=HubDetectionResponse)
+def graph_hubs(
+    limit: int = Query(20, ge=1, le=100, description="Numero massimo di hub da restituire"),
+    min_degree: int = Query(1, ge=1, description="Grado minimo per essere incluso"),
+    _: str = _Auth,
+    agent_id: str = _Agent,
+) -> HubDetectionResponse:
+    """
+    Rileva gli hub del grafo per l'agente usando il degree centrality.
+    Restituisce i nodi ordinati per grado decrescente (in_degree + out_degree).
+    """
+    hubs = get_degree_centrality(agent_id=agent_id, limit=limit, min_degree=min_degree)
+    return HubDetectionResponse(
+        hubs=[HubNodeRecord(**h) for h in hubs],
+        total=len(hubs),
+    )
 
 
 # ── Summarization ────────────────────────────────────────────────────────────

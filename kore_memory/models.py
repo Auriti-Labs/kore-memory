@@ -223,10 +223,23 @@ class TagResponse(BaseModel):
 class RelationRequest(BaseModel):
     target_id: int
     relation: str = Field("related", max_length=100)
+    strength: float = Field(1.0, ge=0.0, le=1.0, description="Peso della relazione (0.0-1.0)")
+    confidence: float = Field(1.0, ge=0.0, le=1.0, description="Confidence sulla relazione (0.0-1.0)")
+
+
+class RelationRecord(BaseModel):
+    source_id: int
+    target_id: int
+    relation: str
+    strength: float = 1.0
+    confidence: float = 1.0
+    created_at: str
+    updated_at: str | None = None
+    related_content: str | None = None
 
 
 class RelationResponse(BaseModel):
-    relations: list[dict]
+    relations: list[RelationRecord]
     total: int
 
 
@@ -353,6 +366,8 @@ class GraphEdgeRecord(BaseModel):
     source_id: int
     target_id: int
     relation: str
+    strength: float = 1.0
+    confidence: float = 1.0
     created_at: str
 
 
@@ -361,6 +376,32 @@ class GraphTraverseResponse(BaseModel):
     nodes: list[GraphNodeRecord] = []
     edges: list[GraphEdgeRecord] = []
     depth: int
+
+
+class SubgraphResponse(BaseModel):
+    nodes: list[GraphNodeRecord] = []
+    edges: list[GraphEdgeRecord] = []
+    total_nodes: int
+    total_edges: int
+
+
+class HubNodeRecord(BaseModel):
+    id: int
+    content: str
+    category: str
+    importance: int
+    decay_score: float
+    created_at: str
+    in_degree: int
+    out_degree: int
+    degree: int
+    avg_strength: float
+    degree_centrality: float
+
+
+class HubDetectionResponse(BaseModel):
+    hubs: list[HubNodeRecord] = []
+    total: int
 
 
 # ── Summarization ────────────────────────────────────────────────────────────
