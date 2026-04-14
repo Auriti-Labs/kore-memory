@@ -11,9 +11,12 @@ Usage:
 
 from __future__ import annotations
 
+import atexit
 import logging
 import re as _re
+import threading
 import time as _time
+from datetime import datetime
 
 from mcp.server.fastmcp import FastMCP
 
@@ -24,7 +27,9 @@ from .repository import (
     add_relation,
     add_tags,
     cleanup_expired,
+    create_session,
     delete_memory,
+    end_session,
     export_memories,
     get_timeline,
     import_memories,
@@ -37,8 +42,9 @@ from .repository import (
 
 logger = logging.getLogger(__name__)
 
-# Timestamp di avvio per il calcolo dell'uptime
+# Timestamp di avvio per il calcolo dell'uptime e dell'ID sessione
 _SERVER_START_TIME = _time.monotonic()
+_SESSION_TIMESTAMP = datetime.now().strftime("%Y%m%d-%H%M%S")
 
 # Initialize DB before any operation
 init_db()
@@ -49,6 +55,46 @@ mcp = FastMCP(
 )
 
 _SAFE_AGENT_RE = _re.compile(r"[^a-zA-Z0-9_\-]")
+
+# ── Auto-Session ─────────────────────────────────────────────────────────────
+
+# Sessioni attive per agent_id — create in modo lazy al primo save
+_agent_sessions: dict[str, str] = {}
+_session_lock = threading.Lock()
+
+
+def _get_or_create_session(agent_id: str) -> str:
+    """Restituisce la session_id corrente per l'agent, creandola se necessario."""
+    if agent_id in _agent_sessions:
+        return _agent_sessions[agent_id]
+    with _session_lock:
+        # Double-check dopo aver acquisito il lock
+        if agent_id in _agent_sessions:
+            return _agent_sessions[agent_id]
+        session_id = f"kore-mcp-{agent_id}-{_SESSION_TIMESTAMP}"
+        ts = _SESSION_TIMESTAMP
+        date_str = f"{ts[:4]}-{ts[4:6]}-{ts[6:8]} {ts[9:11]}:{ts[11:13]}:{ts[13:15]}"
+        title = f"MCP — {date_str}"
+        try:
+            create_session(session_id, agent_id=agent_id, title=title)
+        except Exception:
+            pass  # DB potrebbe già avere la sessione (restart rapido)
+        _agent_sessions[agent_id] = session_id
+        logger.info("Auto-sessione creata: %s (agent=%s)", session_id, agent_id)
+        return session_id
+
+
+def _close_all_sessions() -> None:
+    """Chiude tutte le sessioni aperte all'uscita del server MCP."""
+    for agent_id, session_id in _agent_sessions.items():
+        try:
+            end_session(session_id, agent_id=agent_id)
+            logger.info("Sessione chiusa: %s (agent=%s)", session_id, agent_id)
+        except Exception:
+            pass
+
+
+atexit.register(_close_all_sessions)
 
 
 def _sanitize_agent_id(agent_id: str) -> str:
@@ -81,9 +127,11 @@ def memory_save(
     Importance is auto-calculated if 0 or not specified (1-5 = explicit).
     Categories: general, project, trading, finance, person, preference, task, decision.
     """
+    safe_agent = _sanitize_agent_id(agent_id)
+    session_id = _get_or_create_session(safe_agent)
     req = MemorySaveRequest(content=content, category=category, importance=importance or None)
-    mem_id, imp, _ = save_memory(req, agent_id=_sanitize_agent_id(agent_id))
-    return {"id": mem_id, "importance": imp, "message": "Memory saved"}
+    mem_id, imp, _ = save_memory(req, agent_id=safe_agent, session_id=session_id)
+    return {"id": mem_id, "importance": imp, "session_id": session_id, "message": "Memory saved"}
 
 
 @mcp.tool()
@@ -248,6 +296,8 @@ def memory_save_batch(
     Optional fields: category (default 'general'), importance (None=auto, 1-5=explicit).
     Maximum 100 memories per batch.
     """
+    safe_agent = _sanitize_agent_id(agent_id)
+    session_id = _get_or_create_session(safe_agent)
     saved = []
     errors = 0
     for mem in memories[:100]:
@@ -261,11 +311,11 @@ def memory_save_batch(
                 category=mem.get("category", "general"),
                 importance=raw_imp if raw_imp and raw_imp >= 1 else None,
             )
-            mem_id, imp, _ = save_memory(req, agent_id=_sanitize_agent_id(agent_id))
+            mem_id, imp, _ = save_memory(req, agent_id=safe_agent, session_id=session_id)
             saved.append({"id": mem_id, "importance": imp})
         except Exception:
             errors += 1
-    return {"saved": saved, "total": len(saved), "errors": errors}
+    return {"saved": saved, "total": len(saved), "errors": errors, "session_id": session_id}
 
 
 @mcp.tool()
@@ -381,13 +431,14 @@ def memory_save_decision(
         "still_valid": True,
     }
     sanitized = _sanitize_agent_id(f"{agent_id}/{repo}" if repo else agent_id)
+    session_id = _get_or_create_session(sanitized)
     req = MemorySaveRequest(
         content=content,
         category="architectural_decision",
         importance=4,
         metadata=metadata,
     )
-    mem_id, imp, conflicts = save_memory(req, agent_id=sanitized)
+    mem_id, imp, conflicts = save_memory(req, agent_id=sanitized, session_id=session_id)
     return {
         "id": mem_id,
         "importance": imp,
@@ -461,13 +512,14 @@ def memory_log_regression(
         "test_ref": test_ref,
     }
     sanitized = _sanitize_agent_id(f"{agent_id}/{repo}" if repo else agent_id)
+    session_id = _get_or_create_session(sanitized)
     req = MemorySaveRequest(
         content=content,
         category="regression_note",
         importance=4,
         metadata=metadata,
     )
-    mem_id, imp, conflicts = save_memory(req, agent_id=sanitized)
+    mem_id, imp, conflicts = save_memory(req, agent_id=sanitized, session_id=session_id)
     return {
         "id": mem_id,
         "importance": imp,
