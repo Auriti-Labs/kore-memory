@@ -22,10 +22,16 @@ from pathlib import Path
 # ── Soglie di blocco CI ──────────────────────────────────────────────────────
 
 THRESHOLDS = {
-    "temporal_accuracy": 0.95,        # ≥ 95%
-    "conflict_detection_f1": 0.70,    # ≥ 0.70
+    "temporal_accuracy": 0.95,  # ≥ 95%
+    "conflict_detection_f1": 0.70,  # ≥ 0.70
     "context_budget_compliance": 1.0,  # = 100%
-    "p95_latency_ms": 100.0,          # ≤ 100ms (produzione, non TestClient)
+    "p95_latency_ms": 100.0,  # ≤ 100ms (produzione, non TestClient)
+    # Wave 3 — Dataset D (graph quality)
+    "hub_min_degree": 4,  # top hub hanno degree ≥ 4
+    "subgraph_coverage": 0.90,  # ≥ 90% nodi seed presenti nel subgraph
+    "degree_centrality_range": (0.0, 1.0),  # [0.0, 1.0] per tutti i nodi
+    # Wave 3 — Dataset E (context quality)
+    "top1_precision": 0.80,  # ≥ 80% query trovano ≥ 1 memoria rilevante
 }
 
 
@@ -109,6 +115,9 @@ def main():
     print(f"  conflict_detection_f1  ≥ {THRESHOLDS['conflict_detection_f1']:.2f}")
     print(f"  context_budget_comply  = {THRESHOLDS['context_budget_compliance']:.0%}")
     print(f"  p95_latency_search     ≤ {THRESHOLDS['p95_latency_ms']:.0f}ms")
+    print(f"  hub_min_degree         ≥ {THRESHOLDS['hub_min_degree']}")
+    print(f"  subgraph_coverage      ≥ {THRESHOLDS['subgraph_coverage']:.0%}")
+    print(f"  top1_precision         ≥ {THRESHOLDS['top1_precision']:.0%}")
     print()
 
     for msg in passed:

@@ -27,7 +27,10 @@ def bench_client():
     _pool.clear()
     init_db()
 
-    from kore_memory.main import app
+    from kore_memory.main import _rate_buckets, app
+
+    # Resetta rate limiter: i benchmark caricano molte memorie in rapida sequenza
+    _rate_buckets.clear()
 
     client = TestClient(app)
 

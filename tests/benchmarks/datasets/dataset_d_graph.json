@@ -1,0 +1,462 @@
+{
+  "_meta": {
+    "name": "Dataset D — Graph Quality",
+    "version": "1.0",
+    "description": "60 memorie con relazioni tipizzate per benchmark graph: hub detection, subgraph extraction, degree centrality",
+    "structure": {
+      "hub_nodes": 5,
+      "spoke_nodes": 30,
+      "isolated_nodes": 10,
+      "chain_nodes": 15,
+      "relations": {
+        "total": 55,
+        "by_type": {
+          "supports": 15,
+          "depends_on": 12,
+          "contradicts": 8,
+          "implements": 10,
+          "references": 10
+        }
+      }
+    },
+    "expected_metrics": {
+      "hub_min_degree": 5,
+      "subgraph_coverage": 0.90,
+      "centrality_range": [0.0, 1.0]
+    }
+  },
+  "memories": [
+    {
+      "id_label": "hub_1",
+      "content": "Architettura microservizi: ogni servizio ha un singolo dominio di responsabilità e comunica via REST o eventi asincroni",
+      "category": "architectural_decision",
+      "importance": 5
+    },
+    {
+      "id_label": "hub_2",
+      "content": "Database PostgreSQL con replica asincrona per alta disponibilità e failover automatico in meno di 30 secondi",
+      "category": "architectural_decision",
+      "importance": 5
+    },
+    {
+      "id_label": "hub_3",
+      "content": "API Gateway centralizzato gestisce autenticazione, rate limiting e routing verso i microservizi interni",
+      "category": "architectural_decision",
+      "importance": 5
+    },
+    {
+      "id_label": "hub_4",
+      "content": "Modello di deployment con container Docker orchestrati da Kubernetes con auto-scaling orizzontale",
+      "category": "architectural_decision",
+      "importance": 5
+    },
+    {
+      "id_label": "hub_5",
+      "content": "Strategia di caching multi-livello: Redis L1 per sessioni, CDN L2 per asset statici, cache applicativa L3",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "id_label": "spoke_1",
+      "content": "Servizio autenticazione implementa JWT con refresh token rotation ogni 24 ore",
+      "category": "api_contract",
+      "importance": 4
+    },
+    {
+      "id_label": "spoke_2",
+      "content": "Servizio notifiche usa event bus Kafka per comunicazione asincrona con retry automatico",
+      "category": "api_contract",
+      "importance": 3
+    },
+    {
+      "id_label": "spoke_3",
+      "content": "Rate limiting configurato a 1000 richieste per minuto per utente autenticato via API Gateway",
+      "category": "api_contract",
+      "importance": 4
+    },
+    {
+      "id_label": "spoke_4",
+      "content": "Schema PostgreSQL normalizzato in 3NF con indici compositi su colonne di ricerca frequente",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "id_label": "spoke_5",
+      "content": "Replica PostgreSQL configurata con streaming replication e WAL archiving su S3",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "id_label": "spoke_6",
+      "content": "Docker immagini multi-stage build per ridurre dimensioni: build stage separato da runtime",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "id_label": "spoke_7",
+      "content": "Kubernetes HPA configurato su CPU 70% e memory 80% come soglie per auto-scaling",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "id_label": "spoke_8",
+      "content": "Redis Sentinel per alta disponibilità cache: 3 sentinels con quorum di 2",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "id_label": "spoke_9",
+      "content": "CDN configurata con TTL di 1 ora per asset versionati e 5 minuti per API responses",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "id_label": "spoke_10",
+      "content": "Microservizi comunicano tramite gRPC per chiamate sincrone interne, REST solo per API esterne",
+      "category": "api_contract",
+      "importance": 4
+    },
+    {
+      "id_label": "spoke_11",
+      "content": "CI/CD pipeline: build → test → lint → security scan → staging deploy → prod deploy con approval",
+      "category": "runbook",
+      "importance": 4
+    },
+    {
+      "id_label": "spoke_12",
+      "content": "Monitoring stack: Prometheus per metriche, Grafana per dashboard, Alertmanager per notifiche",
+      "category": "runbook",
+      "importance": 4
+    },
+    {
+      "id_label": "spoke_13",
+      "content": "Log aggregati con Fluentd verso Elasticsearch, retention 30 giorni hot, 90 giorni warm",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "id_label": "spoke_14",
+      "content": "Feature flags gestiti via LaunchDarkly con rollout graduale per nuove funzionalità",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "id_label": "spoke_15",
+      "content": "Test di carico con k6: 500 VU concorrenti, P99 latenza target < 200ms per endpoint critici",
+      "category": "regression_note",
+      "importance": 3
+    },
+    {
+      "id_label": "spoke_16",
+      "content": "Secret management con HashiCorp Vault: rotazione automatica credenziali ogni 90 giorni",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "id_label": "spoke_17",
+      "content": "Backup database: full backup giornaliero, incrementale ogni 6 ore, point-in-time recovery",
+      "category": "runbook",
+      "importance": 4
+    },
+    {
+      "id_label": "spoke_18",
+      "content": "Service mesh Istio per mTLS tra microservizi, circuit breaker e traffic management",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "id_label": "spoke_19",
+      "content": "API versioning con path prefix /v1/ /v2/ e deprecation policy di 12 mesi",
+      "category": "api_contract",
+      "importance": 4
+    },
+    {
+      "id_label": "spoke_20",
+      "content": "Healthcheck endpoint /health e /ready per liveness e readiness probe Kubernetes",
+      "category": "api_contract",
+      "importance": 3
+    },
+    {
+      "id_label": "spoke_21",
+      "content": "Database connection pool: max 20 connessioni per pod, timeout 5 secondi per acquisizione",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "id_label": "spoke_22",
+      "content": "Disaster recovery: RTO target 4 ore, RPO target 1 ora, test DR trimestrale",
+      "category": "runbook",
+      "importance": 4
+    },
+    {
+      "id_label": "spoke_23",
+      "content": "CORS policy: origini whitelist esplicita, no wildcard in produzione per sicurezza",
+      "category": "api_contract",
+      "importance": 3
+    },
+    {
+      "id_label": "spoke_24",
+      "content": "Tracing distribuito con OpenTelemetry: trace ID propagato tra servizi via header B3",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "id_label": "spoke_25",
+      "content": "Migrazione database con Flyway: versioning sequenziale, rollback manuale, lock su migration table",
+      "category": "runbook",
+      "importance": 4
+    },
+    {
+      "id_label": "spoke_26",
+      "content": "Content security policy configurata con nonce per prevenire XSS nel frontend",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "id_label": "spoke_27",
+      "content": "Queue worker configurato con max 10 job concorrenti e dead letter queue per failure",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "id_label": "spoke_28",
+      "content": "Zero-downtime deploy con rolling update: max 25% pod unavailable durante il deploy",
+      "category": "runbook",
+      "importance": 4
+    },
+    {
+      "id_label": "spoke_29",
+      "content": "Audit log immutabile per operazioni privilegiate: chi, cosa, quando, da dove",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "id_label": "spoke_30",
+      "content": "Multi-tenancy via row-level security PostgreSQL: ogni tenant vede solo i propri dati",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "id_label": "iso_1",
+      "content": "Nota personale: rivedere documentazione API entro fine sprint",
+      "category": "task",
+      "importance": 2
+    },
+    {
+      "id_label": "iso_2",
+      "content": "Meeting retrospettiva del team previsto per venerdì alle 15:00",
+      "category": "task",
+      "importance": 1
+    },
+    {
+      "id_label": "iso_3",
+      "content": "Aggiornare dipendenze npm e risolvere 3 vulnerabilità moderate rilevate da audit",
+      "category": "tech_debt",
+      "importance": 3
+    },
+    {
+      "id_label": "iso_4",
+      "content": "Preferenza personale: usare conventional commits per tutti i progetti",
+      "category": "preference",
+      "importance": 2
+    },
+    {
+      "id_label": "iso_5",
+      "content": "TODO: scrivere ADR per la scelta del database time-series",
+      "category": "task",
+      "importance": 2
+    },
+    {
+      "id_label": "iso_6",
+      "content": "Workshop su DDD organizzato per il team di architettura il mese prossimo",
+      "category": "task",
+      "importance": 1
+    },
+    {
+      "id_label": "iso_7",
+      "content": "Licenza software open source: valutare MIT vs Apache 2.0 per il nuovo progetto",
+      "category": "decision",
+      "importance": 3
+    },
+    {
+      "id_label": "iso_8",
+      "content": "Contatto fornitore cloud per negoziazione contratto enterprise annuale",
+      "category": "person",
+      "importance": 2
+    },
+    {
+      "id_label": "iso_9",
+      "content": "Benchmark prestazionale del nuovo algoritmo di compressione completato con successo",
+      "category": "task",
+      "importance": 2
+    },
+    {
+      "id_label": "iso_10",
+      "content": "Aggiornamento annuale certificazioni cloud dei membri del team",
+      "category": "task",
+      "importance": 1
+    },
+    {
+      "id_label": "chain_1",
+      "content": "Requisito: il sistema deve supportare 10.000 utenti concorrenti senza degradazione",
+      "category": "project",
+      "importance": 5
+    },
+    {
+      "id_label": "chain_2",
+      "content": "Soluzione scalabilità: adottare architettura a microservizi con auto-scaling orizzontale",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "id_label": "chain_3",
+      "content": "Implementazione: ogni microservizio deployato come container Kubernetes con HPA",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "id_label": "chain_4",
+      "content": "Verifica: test di carico confermato il supporto a 12.000 VU senza errori nel 99.5% delle richieste",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "id_label": "chain_5",
+      "content": "Rollout produzione: deploy graduale al 10%, poi 50%, poi 100% con monitoraggio attivo",
+      "category": "runbook",
+      "importance": 4
+    },
+    {
+      "id_label": "chain_6",
+      "content": "Requisito sicurezza: autenticazione multi-fattore obbligatoria per tutti gli admin",
+      "category": "project",
+      "importance": 5
+    },
+    {
+      "id_label": "chain_7",
+      "content": "Soluzione MFA: implementato TOTP con Google Authenticator e backup SMS",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "id_label": "chain_8",
+      "content": "Implementazione MFA: libreria pyotp integrata nel servizio auth con fallback SMS via Twilio",
+      "category": "api_contract",
+      "importance": 3
+    },
+    {
+      "id_label": "chain_9",
+      "content": "Test MFA: 100% copertura per flussi di enrollment, verifica e recovery account",
+      "category": "regression_note",
+      "importance": 3
+    },
+    {
+      "id_label": "chain_10",
+      "content": "Incidente produzione: timeout database causato da query N+1 nel servizio ordini",
+      "category": "root_cause",
+      "importance": 5
+    },
+    {
+      "id_label": "chain_11",
+      "content": "Root cause: ORM generava query N+1 per caricamento relazioni senza eager loading",
+      "category": "root_cause",
+      "importance": 5
+    },
+    {
+      "id_label": "chain_12",
+      "content": "Fix applicato: aggiunto eager loading con select_related e prefetch_related sulle query critiche",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "id_label": "chain_13",
+      "content": "Regressione prevenuta: test automatico controlla assenza di query N+1 con django-assert-num-queries",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "id_label": "chain_14",
+      "content": "Post-mortem incidente: documentata causa, impatto 47 minuti downtime, azioni preventive",
+      "category": "root_cause",
+      "importance": 5
+    },
+    {
+      "id_label": "chain_15",
+      "content": "Monitoraggio query slow: alert su query > 100ms, dashboard Grafana per P99 database latency",
+      "category": "runbook",
+      "importance": 4
+    }
+  ],
+  "relations": [
+    {"source": "hub_1", "target": "spoke_1", "relation": "implements", "strength": 0.9, "confidence": 0.95},
+    {"source": "hub_1", "target": "spoke_2", "relation": "implements", "strength": 0.8, "confidence": 0.90},
+    {"source": "hub_1", "target": "spoke_10", "relation": "implements", "strength": 0.85, "confidence": 0.95},
+    {"source": "hub_1", "target": "spoke_18", "relation": "supports", "strength": 0.7, "confidence": 0.80},
+    {"source": "hub_1", "target": "spoke_14", "relation": "supports", "strength": 0.6, "confidence": 0.75},
+    {"source": "hub_1", "target": "chain_1", "relation": "supports", "strength": 0.9, "confidence": 0.95},
+    {"source": "hub_2", "target": "spoke_4", "relation": "implements", "strength": 0.9, "confidence": 0.95},
+    {"source": "hub_2", "target": "spoke_5", "relation": "implements", "strength": 0.85, "confidence": 0.90},
+    {"source": "hub_2", "target": "spoke_17", "relation": "supports", "strength": 0.8, "confidence": 0.85},
+    {"source": "hub_2", "target": "spoke_21", "relation": "supports", "strength": 0.75, "confidence": 0.85},
+    {"source": "hub_2", "target": "spoke_25", "relation": "depends_on", "strength": 0.9, "confidence": 0.95},
+    {"source": "hub_2", "target": "spoke_30", "relation": "implements", "strength": 0.8, "confidence": 0.90},
+    {"source": "hub_3", "target": "spoke_3", "relation": "implements", "strength": 0.95, "confidence": 1.0},
+    {"source": "hub_3", "target": "spoke_19", "relation": "supports", "strength": 0.8, "confidence": 0.90},
+    {"source": "hub_3", "target": "spoke_23", "relation": "implements", "strength": 0.85, "confidence": 0.90},
+    {"source": "hub_3", "target": "spoke_1", "relation": "depends_on", "strength": 0.9, "confidence": 0.95},
+    {"source": "hub_3", "target": "spoke_20", "relation": "references", "strength": 0.6, "confidence": 0.80},
+    {"source": "hub_4", "target": "spoke_6", "relation": "implements", "strength": 0.9, "confidence": 0.95},
+    {"source": "hub_4", "target": "spoke_7", "relation": "implements", "strength": 0.85, "confidence": 0.90},
+    {"source": "hub_4", "target": "spoke_11", "relation": "supports", "strength": 0.8, "confidence": 0.85},
+    {"source": "hub_4", "target": "spoke_28", "relation": "implements", "strength": 0.9, "confidence": 0.95},
+    {"source": "hub_4", "target": "hub_2", "relation": "depends_on", "strength": 0.8, "confidence": 0.85},
+    {"source": "hub_5", "target": "spoke_8", "relation": "implements", "strength": 0.9, "confidence": 0.95},
+    {"source": "hub_5", "target": "spoke_9", "relation": "implements", "strength": 0.85, "confidence": 0.90},
+    {"source": "hub_5", "target": "hub_3", "relation": "supports", "strength": 0.7, "confidence": 0.80},
+    {"source": "spoke_11", "target": "spoke_12", "relation": "references", "strength": 0.8, "confidence": 0.85},
+    {"source": "spoke_12", "target": "spoke_13", "relation": "references", "strength": 0.75, "confidence": 0.85},
+    {"source": "spoke_12", "target": "spoke_24", "relation": "references", "strength": 0.7, "confidence": 0.80},
+    {"source": "spoke_16", "target": "spoke_1", "relation": "supports", "strength": 0.8, "confidence": 0.90},
+    {"source": "spoke_26", "target": "hub_3", "relation": "implements", "strength": 0.75, "confidence": 0.80},
+    {"source": "chain_1", "target": "chain_2", "relation": "supports", "strength": 0.95, "confidence": 1.0},
+    {"source": "chain_2", "target": "chain_3", "relation": "implements", "strength": 0.9, "confidence": 0.95},
+    {"source": "chain_3", "target": "chain_4", "relation": "supports", "strength": 0.85, "confidence": 0.90},
+    {"source": "chain_4", "target": "chain_5", "relation": "supports", "strength": 0.8, "confidence": 0.90},
+    {"source": "chain_2", "target": "hub_1", "relation": "implements", "strength": 0.85, "confidence": 0.90},
+    {"source": "chain_3", "target": "hub_4", "relation": "implements", "strength": 0.8, "confidence": 0.85},
+    {"source": "chain_6", "target": "chain_7", "relation": "supports", "strength": 0.95, "confidence": 1.0},
+    {"source": "chain_7", "target": "chain_8", "relation": "implements", "strength": 0.9, "confidence": 0.95},
+    {"source": "chain_8", "target": "chain_9", "relation": "references", "strength": 0.8, "confidence": 0.90},
+    {"source": "chain_7", "target": "hub_3", "relation": "depends_on", "strength": 0.85, "confidence": 0.90},
+    {"source": "chain_10", "target": "chain_11", "relation": "references", "strength": 0.95, "confidence": 1.0},
+    {"source": "chain_11", "target": "chain_12", "relation": "supports", "strength": 0.9, "confidence": 0.95},
+    {"source": "chain_12", "target": "chain_13", "relation": "supports", "strength": 0.85, "confidence": 0.90},
+    {"source": "chain_10", "target": "chain_14", "relation": "references", "strength": 0.9, "confidence": 0.95},
+    {"source": "chain_14", "target": "chain_15", "relation": "supports", "strength": 0.85, "confidence": 0.90},
+    {"source": "chain_11", "target": "hub_2", "relation": "references", "strength": 0.7, "confidence": 0.80},
+    {"source": "spoke_4", "target": "spoke_5", "relation": "depends_on", "strength": 0.85, "confidence": 0.90},
+    {"source": "spoke_6", "target": "spoke_7", "relation": "supports", "strength": 0.8, "confidence": 0.85},
+    {"source": "spoke_1", "target": "spoke_16", "relation": "depends_on", "strength": 0.9, "confidence": 0.95},
+    {"source": "hub_1", "target": "hub_2", "relation": "references", "strength": 0.6, "confidence": 0.75},
+    {"source": "hub_2", "target": "hub_5", "relation": "references", "strength": 0.65, "confidence": 0.75},
+    {"source": "hub_3", "target": "hub_4", "relation": "references", "strength": 0.6, "confidence": 0.70},
+    {"source": "spoke_22", "target": "hub_2", "relation": "references", "strength": 0.75, "confidence": 0.85},
+    {"source": "spoke_22", "target": "hub_4", "relation": "references", "strength": 0.7, "confidence": 0.80},
+    {"source": "spoke_29", "target": "hub_3", "relation": "supports", "strength": 0.7, "confidence": 0.80}
+  ],
+  "expected_hubs": {
+    "description": "Nodi attesi come hub (degree >= 5) per validare hub detection",
+    "hub_labels": ["hub_1", "hub_2", "hub_3", "hub_4"],
+    "min_degree": 5
+  },
+  "expected_subgraphs": {
+    "microservices_cluster": {
+      "seed_labels": ["hub_1", "hub_3", "hub_4"],
+      "expected_min_edges": 5
+    },
+    "incident_chain": {
+      "seed_labels": ["chain_10", "chain_11", "chain_12"],
+      "expected_min_edges": 2
+    }
+  }
+}

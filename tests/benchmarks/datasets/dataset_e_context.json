@@ -1,0 +1,575 @@
+{
+  "_meta": {
+    "name": "Dataset E — Context Assembly Quality",
+    "version": "1.0",
+    "description": "80 memorie con 20 query per benchmark context assembly: precisione del ranking, budget compliance, diversity delle categorie",
+    "structure": {
+      "total_memories": 80,
+      "categories": {
+        "architectural_decision": 20,
+        "root_cause": 10,
+        "runbook": 15,
+        "regression_note": 10,
+        "tech_debt": 5,
+        "api_contract": 10,
+        "project": 10
+      },
+      "queries": 20,
+      "importance_distribution": {
+        "5": 15,
+        "4": 25,
+        "3": 30,
+        "2": 10
+      }
+    },
+    "expected_metrics": {
+      "budget_compliance": 1.0,
+      "top1_precision": 0.80,
+      "category_diversity": 0.60
+    }
+  },
+  "memories": [
+    {
+      "content": "Kore Memory usa FastAPI come framework web con endpoint REST per operazioni CRUD sulle memorie",
+      "category": "architectural_decision",
+      "importance": 5
+    },
+    {
+      "content": "SQLite con WAL mode e FTS5 per full-text search è il database di persistenza principale",
+      "category": "architectural_decision",
+      "importance": 5
+    },
+    {
+      "content": "Sentence-transformers paraphrase-multilingual-MiniLM-L12-v2 è il modello per embedding semantico",
+      "category": "architectural_decision",
+      "importance": 5
+    },
+    {
+      "content": "Il sistema di decay usa la curva di Ebbinghaus: decay = e^(-t * ln2 / half_life), half_life da 7 a 365 giorni",
+      "category": "architectural_decision",
+      "importance": 5
+    },
+    {
+      "content": "agent_id è il namespace di isolamento: tutte le query filtrano per agent_id, mai cross-agent leakage",
+      "category": "architectural_decision",
+      "importance": 5
+    },
+    {
+      "content": "Autenticazione via API key: timing-safe comparison, auto-generata in data/.api_key al primo avvio",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Rate limiting in-memory per IP+path, configurato con sliding window di 60 secondi",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Connection pool SQLite: 4 connessioni max, validazione prima dell'uso, cleanup fd leak",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "sqlite-vec per ricerca vettoriale nativa con partition key agent_id per isolamento",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "MCP server espone 16 tool via stdio e streamable-http transport per Claude e Cursor",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Context assembly engine: invariante budget token SEMPRE rispettato, no silent degradation",
+      "category": "architectural_decision",
+      "importance": 5
+    },
+    {
+      "content": "Ranking engine usa segnali: similarity × 0.45 + decay × 0.25 + confidence × 0.15 + task_relevance × 0.10 + freshness × 0.05",
+      "category": "architectural_decision",
+      "importance": 5
+    },
+    {
+      "content": "Auto-importance scoring senza LLM: keyword signals + category baseline + length bonus, range 1-5",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Compressor usa cosine similarity > 0.88 come soglia, chunked clustering O(chunk×n) per scalabilità",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Grafo relazioni tra memorie: relazioni tipizzate con strength e confidence, CTE ricorsiva per traversal",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "ACL multi-agent: admin > write > read, owner sempre full access, grant/revoke espliciti",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Plugin system con KorePlugin ABC e 8 hook: pre/post save, search, delete, compress",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Sessions per raggruppare memorie di una conversazione, con summarization TF-IDF",
+      "category": "architectural_decision",
+      "importance": 3
+    },
+    {
+      "content": "Explainability layer: ogni risultato può includere score breakdown per segnale con explain=true",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Coding profile ranking: similarity×0.40 + decay×0.18 + confidence×0.15 + task_relevance×0.12",
+      "category": "architectural_decision",
+      "importance": 4
+    },
+    {
+      "content": "Bug critico v1.0: memorie archiviate apparivano nei risultati di search — mancava filtro archived_at IS NULL",
+      "category": "root_cause",
+      "importance": 5
+    },
+    {
+      "content": "Bug v1.1: audit emit non funzionava su delete — evento emesso prima del commit SQLite",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Bug v2.1: migrazione SQLite falliva su DB pre-esistenti perché gli indici venivano creati prima delle colonne",
+      "category": "root_cause",
+      "importance": 5
+    },
+    {
+      "content": "Root cause test flakiness: TestTTL::test_non_expired_memory_survives_cleanup contamina DB condiviso in suite completa",
+      "category": "root_cause",
+      "importance": 3
+    },
+    {
+      "content": "Bug MCP: parametri opzionali come None causavano schema anyOf che impediva caricamento tool in Claude Code",
+      "category": "root_cause",
+      "importance": 5
+    },
+    {
+      "content": "Regressione compressor: O(n²) memory allocation su dataset grandi — fixato con chunked processing",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Bug search: query con caratteri speciali FTS5 causavano OperationalError — fixato con sanitizer",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Deadlock SQLite in test paralleli: pool condiviso con check_same_thread=False risolve il problema",
+      "category": "root_cause",
+      "importance": 3
+    },
+    {
+      "content": "Leak connessione SQLite: connessioni corrotte non venivano chiuse correttamente nel pool — fix fd cleanup",
+      "category": "root_cause",
+      "importance": 4
+    },
+    {
+      "content": "Errore soglia fading: 0.05–0.30 si sovrapponeva a forgotten — corretta a 0.10–0.30",
+      "category": "root_cause",
+      "importance": 3
+    },
+    {
+      "content": "Deploy produzione: aggiornare pyproject.toml, CHANGELOG, tag git, push → CI → publish PyPI",
+      "category": "runbook",
+      "importance": 4
+    },
+    {
+      "content": "Avvio server sviluppo: source .venv/bin/activate && kore --port 8765 --reload",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Esecuzione test completa: pytest tests/ -v --cov=kore_memory --cov-report=term-missing",
+      "category": "runbook",
+      "importance": 4
+    },
+    {
+      "content": "Build per PyPI: python -m build && twine check dist/* && twine upload dist/*",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Setup ambiente sviluppo: python3 -m venv .venv && pip install -e '.[semantic,dev]'",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Aggiornamento JS SDK: cd sdk/js && npm install && npm run build && npm publish",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Migrazione DB manual: backup data/memory.db prima di ogni release major con schema changes",
+      "category": "runbook",
+      "importance": 4
+    },
+    {
+      "content": "Test benchmark isolati: pytest tests/benchmarks/ -v --tb=short — usano DB temporaneo dedicato",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Rollback release: git revert tag, re-publish versione precedente da dist/ archiviato",
+      "category": "runbook",
+      "importance": 4
+    },
+    {
+      "content": "Verifica salute server: curl http://localhost:8765/health — risponde entro 100ms",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Debug MCP connection: kore-mcp --debug per log verbosi su stdio transport",
+      "category": "runbook",
+      "importance": 2
+    },
+    {
+      "content": "Performance profiling: py-spy top --pid $(pgrep -f 'kore') per identificare hot path",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Cleanup test DB: i test usano KORE_DB_PATH=tmpfile — mai riusare DB produzione per test",
+      "category": "runbook",
+      "importance": 4
+    },
+    {
+      "content": "Aggiunta nuovo endpoint: definire route FastAPI, modello Pydantic request/response, test TestClient",
+      "category": "runbook",
+      "importance": 4
+    },
+    {
+      "content": "Monitoring produzione: verificare /metrics endpoint ogni 30s, alert su error_rate > 1%",
+      "category": "runbook",
+      "importance": 3
+    },
+    {
+      "content": "Test coverage deve rimanere >= 85%: la CI blocca il merge se coverage scende sotto soglia",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Benchmark latency P95 search <= 100ms: superare questa soglia blocca il merge via CI",
+      "category": "regression_note",
+      "importance": 5
+    },
+    {
+      "content": "Temporal accuracy >= 95%: test che verifica che le memorie scadute non appaiano nel retrieval",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Conflict detection F1 >= 0.70: soglia minima per la qualità del rilevamento conflitti",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Context budget compliance = 100%: invariante assoluto — budget_tokens_used <= budget_tokens_requested",
+      "category": "regression_note",
+      "importance": 5
+    },
+    {
+      "content": "Test di non-regressione per archived_at: memorie archiviate non devono mai apparire in search",
+      "category": "regression_note",
+      "importance": 5
+    },
+    {
+      "content": "Parametri MCP sempre stringa non-None: default '' o '0' invece di None per evitare schema anyOf",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Indici v2.1 devono essere creati DOPO le ALTER TABLE per compatibilità con DB pre-esistenti",
+      "category": "regression_note",
+      "importance": 5
+    },
+    {
+      "content": "Rate limiter deve essere resettato tra i test: conftest.py con autouse fixture per _rate_buckets.clear()",
+      "category": "regression_note",
+      "importance": 3
+    },
+    {
+      "content": "Test isolation: ogni test usa agente diverso (X-Agent-Id) per evitare contaminazione dati",
+      "category": "regression_note",
+      "importance": 4
+    },
+    {
+      "content": "Tech debt: FTS5 non supporta ranking semantico — dipende da sentence-transformers opzionale",
+      "category": "tech_debt",
+      "importance": 3
+    },
+    {
+      "content": "Tech debt: in-memory rate limiter non scala su deployment multi-pod — serve Redis per produzione",
+      "category": "tech_debt",
+      "importance": 4
+    },
+    {
+      "content": "Tech debt: dashboard HTML è template statico — refactoring verso React o htmx per interattività",
+      "category": "tech_debt",
+      "importance": 2
+    },
+    {
+      "content": "Tech debt: auto_tuner.py richiede KORE_AUTO_TUNE=1 — dovrebbe attivarsi automaticamente dopo N accessi",
+      "category": "tech_debt",
+      "importance": 3
+    },
+    {
+      "content": "Tech debt: plugin system non ha hot-reload — richiede restart del server per caricare nuovi plugin",
+      "category": "tech_debt",
+      "importance": 2
+    },
+    {
+      "content": "API versioning: tutti gli endpoint sono /v1/ implicito — aggiungere prefisso esplicito nella v3",
+      "category": "api_contract",
+      "importance": 3
+    },
+    {
+      "content": "POST /save: ritorna 201 con id, importance, conflicts_detected. Max content 4000 caratteri",
+      "category": "api_contract",
+      "importance": 4
+    },
+    {
+      "content": "GET /search: parametri q, limit, semantic, category, cursor, explain, task, ranking_profile",
+      "category": "api_contract",
+      "importance": 4
+    },
+    {
+      "content": "POST /context/assemble: accetta task, budget_tokens, categories, ranking_profile, explain",
+      "category": "api_contract",
+      "importance": 5
+    },
+    {
+      "content": "X-Agent-Id header: sanitizzato a [a-zA-Z0-9_-] max 64 chars, default 'default'",
+      "category": "api_contract",
+      "importance": 4
+    },
+    {
+      "content": "GET /health: risponde sempre 200, anche senza DB inizializzato — usato da Kubernetes probe",
+      "category": "api_contract",
+      "importance": 3
+    },
+    {
+      "content": "POST /save/batch: max 100 memorie per request, ritorna lista SaveResponse con conflicts per ognuna",
+      "category": "api_contract",
+      "importance": 3
+    },
+    {
+      "content": "GET /graph/traverse: recursive CTE max 10 hop, filtro opzionale per relation_type",
+      "category": "api_contract",
+      "importance": 3
+    },
+    {
+      "content": "GET /explain/memory/{id}: score breakdown completo con segnali, conflitti, catena supersessione",
+      "category": "api_contract",
+      "importance": 4
+    },
+    {
+      "content": "DELETE /memories/agent/{id}: GDPR right to erasure, elimina tutte le memorie e dati dell'agente",
+      "category": "api_contract",
+      "importance": 4
+    },
+    {
+      "content": "Kore Memory v1.0.0: rilascio iniziale con API core, FTS5, decay, MCP server, dashboard",
+      "category": "project",
+      "importance": 3
+    },
+    {
+      "content": "Kore Memory v2.0.0: intelligence layer con Graph RAG, ACL multi-agent, analytics, GDPR, plugins",
+      "category": "project",
+      "importance": 4
+    },
+    {
+      "content": "Kore Memory v2.1.0: temporal intelligence — layer temporale, conflict detection, ranking engine",
+      "category": "project",
+      "importance": 4
+    },
+    {
+      "content": "Kore Memory v2.2.0: context engine e explainability — context assembly, explain layer, benchmark suite",
+      "category": "project",
+      "importance": 4
+    },
+    {
+      "content": "Kore Memory v3.0.0: cognitive runtime — filesystem overlay, typed graph, hub detection, coding vertical GA",
+      "category": "project",
+      "importance": 5
+    },
+    {
+      "content": "Roadmap annuale kore-memory: 4 wave in 12 mesi, milestone trimestrali, 40+ issues pianificate",
+      "category": "project",
+      "importance": 4
+    },
+    {
+      "content": "PyPI package kore-memory MIT license, JS SDK kore-memory-client su npm, entrambi v2.2.0",
+      "category": "project",
+      "importance": 4
+    },
+    {
+      "content": "CI/CD: GitHub Actions con test Python 3.11+3.12+3.13, security bandit+pip-audit, coverage >= 85%",
+      "category": "project",
+      "importance": 3
+    },
+    {
+      "content": "Benchmark suite CI: assert_benchmarks.py blocca merge se soglie non rispettate su ogni push",
+      "category": "project",
+      "importance": 4
+    },
+    {
+      "content": "Stack integrazioni: PydanticAI, OpenAI Agents SDK, LangChain v2, CrewAI — tutti con memory tools",
+      "category": "project",
+      "importance": 3
+    }
+  ],
+  "queries": [
+    {
+      "id": "q01",
+      "task": "implementare un nuovo endpoint REST in Kore Memory",
+      "expected_top_categories": ["runbook", "architectural_decision", "api_contract"],
+      "expected_top_content_keywords": ["endpoint", "FastAPI", "route"],
+      "min_relevant_memories": 3
+    },
+    {
+      "id": "q02",
+      "task": "risolvere un bug di migrazione SQLite su DB pre-esistenti",
+      "expected_top_categories": ["root_cause", "runbook", "regression_note"],
+      "expected_top_content_keywords": ["SQLite", "migrazione", "ALTER TABLE"],
+      "min_relevant_memories": 2
+    },
+    {
+      "id": "q03",
+      "task": "ottimizzare le performance di ricerca semantica",
+      "expected_top_categories": ["architectural_decision", "tech_debt", "regression_note"],
+      "expected_top_content_keywords": ["embedding", "sqlite-vec", "FTS5"],
+      "min_relevant_memories": 3
+    },
+    {
+      "id": "q04",
+      "task": "configurare il sistema di autenticazione MCP",
+      "expected_top_categories": ["architectural_decision", "api_contract"],
+      "expected_top_content_keywords": ["MCP", "autenticazione", "API key"],
+      "min_relevant_memories": 2
+    },
+    {
+      "id": "q05",
+      "task": "fare il deploy di una nuova release su PyPI",
+      "expected_top_categories": ["runbook", "project"],
+      "expected_top_content_keywords": ["PyPI", "build", "release"],
+      "min_relevant_memories": 2
+    },
+    {
+      "id": "q06",
+      "task": "debug di un problema di isolamento agent_id nel retrieval",
+      "expected_top_categories": ["architectural_decision", "root_cause"],
+      "expected_top_content_keywords": ["agent_id", "isolamento", "namespace"],
+      "min_relevant_memories": 2
+    },
+    {
+      "id": "q07",
+      "task": "implementare il context assembly per un nuovo use case di coding",
+      "expected_top_categories": ["architectural_decision", "api_contract"],
+      "expected_top_content_keywords": ["context", "budget", "ranking"],
+      "min_relevant_memories": 3
+    },
+    {
+      "id": "q08",
+      "task": "scrivere nuovi test per il ranking engine",
+      "expected_top_categories": ["regression_note", "runbook", "architectural_decision"],
+      "expected_top_content_keywords": ["test", "ranking", "coverage"],
+      "min_relevant_memories": 2
+    },
+    {
+      "id": "q09",
+      "task": "aggiungere un nuovo tipo di relazione al grafo",
+      "expected_top_categories": ["architectural_decision", "api_contract"],
+      "expected_top_content_keywords": ["grafo", "relazioni", "CTE"],
+      "min_relevant_memories": 2
+    },
+    {
+      "id": "q10",
+      "task": "investigare un memory leak nel connection pool SQLite",
+      "expected_top_categories": ["root_cause", "architectural_decision"],
+      "expected_top_content_keywords": ["SQLite", "pool", "connessione"],
+      "min_relevant_memories": 2
+    },
+    {
+      "id": "q11",
+      "task": "configurare il decay per memorie architetturali a lunga durata",
+      "expected_top_categories": ["architectural_decision"],
+      "expected_top_content_keywords": ["decay", "Ebbinghaus", "half_life"],
+      "min_relevant_memories": 1
+    },
+    {
+      "id": "q12",
+      "task": "aggiungere integrazione con LangChain v2",
+      "expected_top_categories": ["project", "architectural_decision"],
+      "expected_top_content_keywords": ["integrazione", "LangChain"],
+      "min_relevant_memories": 1
+    },
+    {
+      "id": "q13",
+      "task": "analizzare perché i test falliscono in modo non deterministico",
+      "expected_top_categories": ["root_cause", "regression_note"],
+      "expected_top_content_keywords": ["test", "flakiness", "contaminazione"],
+      "min_relevant_memories": 2
+    },
+    {
+      "id": "q14",
+      "task": "implementare rate limiting con Redis per deployment multi-pod",
+      "expected_top_categories": ["tech_debt", "architectural_decision"],
+      "expected_top_content_keywords": ["rate limiting", "Redis", "multi-pod"],
+      "min_relevant_memories": 1
+    },
+    {
+      "id": "q15",
+      "task": "aggiornare la documentazione API per v3.0.0",
+      "expected_top_categories": ["api_contract", "project", "runbook"],
+      "expected_top_content_keywords": ["API", "versioning", "endpoint"],
+      "min_relevant_memories": 2
+    },
+    {
+      "id": "q16",
+      "task": "configurare CI/CD per il benchmark suite",
+      "expected_top_categories": ["runbook", "project", "regression_note"],
+      "expected_top_content_keywords": ["CI", "benchmark", "soglie"],
+      "min_relevant_memories": 2
+    },
+    {
+      "id": "q17",
+      "task": "implementare hub detection nel grafo relazioni",
+      "expected_top_categories": ["architectural_decision"],
+      "expected_top_content_keywords": ["grafo", "hub", "centrality"],
+      "min_relevant_memories": 1
+    },
+    {
+      "id": "q18",
+      "task": "diagnosticare errore 500 nel MCP server",
+      "expected_top_categories": ["root_cause", "runbook", "architectural_decision"],
+      "expected_top_content_keywords": ["MCP", "errore", "debug"],
+      "min_relevant_memories": 2
+    },
+    {
+      "id": "q19",
+      "task": "ottimizzare il compressor per dataset di grandi dimensioni",
+      "expected_top_categories": ["architectural_decision", "root_cause"],
+      "expected_top_content_keywords": ["compressor", "similarity", "chunk"],
+      "min_relevant_memories": 2
+    },
+    {
+      "id": "q20",
+      "task": "pianificare la roadmap Wave 3 — Cognitive Runtime",
+      "expected_top_categories": ["project", "architectural_decision"],
+      "expected_top_content_keywords": ["roadmap", "Wave", "v3"],
+      "min_relevant_memories": 2
+    }
+  ]
+}
