@@ -11,6 +11,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.4.0] - 2026-04-14
+
+### Theme: "Dashboard Fixes + MCP Auto-Session"
+
+### Added
+
+#### MCP Auto-Session
+- **Auto-creazione sessione** all'avvio di `kore-mcp`: il primo `memory_save` per ogni `agent_id` crea automaticamente una sessione con ID `kore-mcp-{agent_id}-{YYYYMMDD-HHMMSS}`
+- **Thread-safe**: creazione lazy con double-checked locking (`_get_or_create_session`)
+- **atexit handler**: chiude tutte le sessioni aperte alla terminazione del processo MCP
+- **Propagazione automatica** a `memory_save`, `memory_save_batch`, `memory_save_decision`, `memory_log_regression`
+- La risposta di `memory_save` include ora `session_id` per tracciabilità
+- La tab **Sessions** della dashboard si popola organicamente con una riga per ogni conversazione Claude/MCP
+
+### Fixed
+
+#### Dashboard
+- **Tab Memories**: `_count_active_memories` non gestiva il wildcard `q=*` come `_fts_search` — con query `*` costruiva `LIKE "%*%"` (cerca il carattere asterisco) invece di `LIKE "%%"` (match all). `total` tornava 2 invece di 40
+- **Checkbox Semantic**: rimosso `checked` di default — gli utenti senza `sentence-transformers` ottenevano risultati imprevedibili; il default sicuro è `semantic=false`
+- **Tab Timeline**: mancava `case 'timeline':` in `loadPageData()` — la tab si apriva con `#timeline-list` completamente vuoto, senza messaggi né dati. Fix: auto-carica le ultime memorie in ordine cronologico (`subject=*`) con header contestuale
+
+#### Database
+- **`idx_relations_strength`**: l'indice era nell'`executescript()` iniziale prima che la colonna `strength` venisse aggiunta via ALTER TABLE. Su DB pre-esistenti causava `no such column: strength` al startup. Spostato in `executescript()` separato dopo `_v23_relation_migrations`
+
+### Tests
+- Suite invariata: **572 test**, coverage ≥ 88%
+
+---
+
 ## [2.3.0] - 2026-04-14
 
 ### Theme: "Wave 3 — Graph Engine + Filesystem Overlay"
