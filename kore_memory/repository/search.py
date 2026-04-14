@@ -346,7 +346,9 @@ def _count_active_memories(
             params: dict = {"query": safe_query, "agent_id": agent_id}
         else:
             # Caso speciale: q=* → conta tutte le memorie attive (wildcard globale)
-            escaped = "" if query.strip() == "*" else query.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+            escaped = (
+                "" if query.strip() == "*" else query.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+            )
             sql = f"""
                 SELECT COUNT(*) FROM memories
                 WHERE content LIKE :query ESCAPE '\\'
