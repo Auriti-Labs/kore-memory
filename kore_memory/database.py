@@ -215,7 +215,7 @@ def init_db() -> None:
             );
             CREATE INDEX IF NOT EXISTS idx_relations_source ON memory_relations (source_id);
             CREATE INDEX IF NOT EXISTS idx_relations_target ON memory_relations (target_id);
-            CREATE INDEX IF NOT EXISTS idx_relations_strength ON memory_relations (strength DESC);
+            -- idx_relations_strength creato dopo la migrazione v2.3 (colonna strength)
 
             -- Audit / event log
             CREATE TABLE IF NOT EXISTS event_logs (
@@ -308,9 +308,11 @@ def init_db() -> None:
         for col, sql in _v23_relation_migrations.items():
             if col not in relation_cols:
                 conn.execute(sql)
-        conn.execute("""
+        # Indice su strength — creato qui (dopo ALTER TABLE) per DB pre-esistenti
+        # e per DB nuovi (la CREATE TABLE usa IF NOT EXISTS, l'indice viene saltato sopra)
+        conn.executescript("""
             CREATE INDEX IF NOT EXISTS idx_relations_strength
-                ON memory_relations (strength DESC)
+                ON memory_relations (strength DESC);
         """)
 
 
