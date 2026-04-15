@@ -11,6 +11,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.5.0] - 2026-04-14
+
+### Theme: "Filesystem Watcher — Live Overlay Sync"
+
+### Added
+
+#### Filesystem Watcher (`kore_memory/filesystem_watcher.py`)
+- **Nuovo modulo** che monitora in background le directory tramite `watchdog` e aggiorna automaticamente il filesystem overlay quando i file cambiano su disco
+- `_WatcherRegistry`: thread-safe registry dei watcher attivi, keyed by `agent_id:base_path`
+- `_KoreFileHandler`: gestisce CREATE/MODIFY con debounce 1s (evita burst da IDE auto-save), DELETE immediato, MOVE = remove vecchio + reindex nuovo
+- Estensioni monitorate: `.md .rst .toml .txt .json .yaml .yml .py .cfg` + nomi file da `DEFAULT_PATTERNS`
+- **Graceful degradation**: se `watchdog` non è installato, il modulo carica senza crash (`_HAS_WATCHDOG` flag), `start_watcher()` solleva `ImportError` chiaro
+- API pubblica: `start_watcher`, `stop_watcher`, `stop_all_watchers`, `list_watchers`, `is_available`
+- Graceful shutdown: `stop_all_watchers()` chiamato nel lifespan FastAPI prima del pool cleanup
+
+#### Nuovi endpoint REST
+- `POST /overlay/watch` — avvia watcher per `base_path` (503 se watchdog non installato, 400 se path non valido)
+- `DELETE /overlay/watch?path=...` — ferma watcher per path/agent
+- `GET /overlay/watchers` — lista watcher attivi con statistiche (`events_processed`, `active`, `started_at`)
+
+#### Nuovi modelli Pydantic
+- `OverlayWatchRequest`, `OverlayWatchResponse`, `OverlayWatcherRecord`, `OverlayWatchersResponse`
+
+#### Nuova optional dependency
+- `pip install 'kore-memory[watcher]'` installa `watchdog>=4.0.0`
+
+### Tests
+- **35 test** nel nuovo `tests/test_wave3_watcher.py` (2 skip se watchdog non installato):
+  - `TestWatcherAvailability` (3 test): flag, is_available(), ImportError senza watchdog
+  - `TestWatcherRegistry` (8 test): key format, add/get/remove, stop_all
+  - `TestKoreFileHandler` (12 test): is_relevant, debounce, on_modified/created/deleted/moved, do_reindex/do_remove
+  - `TestStartStopWatcher` (7 test): start/stop lifecycle, already_running, list
+  - `TestWatcherEndpoints` (6 test): REST API GET/POST/DELETE + full lifecycle
+- Suite totale: **629 test** (da 572 → +57 inclusi test v2.4.0 precedenti)
+
+---
+
 ## [2.4.0] - 2026-04-14
 
 ### Theme: "Dashboard Fixes + MCP Auto-Session"

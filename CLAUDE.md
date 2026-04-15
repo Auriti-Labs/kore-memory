@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Kore Memory is a persistent memory layer for AI agents (Python 3.11+, FastAPI, SQLite). Runs fully offline — no LLM calls, no cloud APIs. Implements Ebbinghaus forgetting curve decay, local auto-importance scoring, semantic search via sentence-transformers (with sqlite-vec native vector search), memory compression, graph RAG, multi-agent ACL, and a plugin system.
 
-Published on PyPI as `kore-memory` (v2.4.0). JS SDK on npm as `kore-memory-client` (v2.4.0). MIT license.
+Published on PyPI as `kore-memory` (v2.5.0). JS SDK on npm as `kore-memory-client` (v2.5.0). MIT license.
 
 ## Commands
 
@@ -306,3 +306,4 @@ Config pytest in `pyproject.toml` (`asyncio_mode = "auto"`). conftest.py sets `K
 | v2.2.0 | Context Engine | Context Assembler (budget tokens), Ranking Engine v1.1 (task_relevance, recency, freshness), explain mode, coding profile |
 | v2.3.0 | Wave 3 Graph | Typed relations (strength/confidence), subgraph API, hub detection, filesystem overlay, benchmark datasets D+E |
 | v2.4.0 | Dashboard + MCP | MCP auto-session, fix dashboard (wildcard count, timeline tab, semantic default), fix DB migration order |
+| v2.5.0 | Filesystem Watcher | Live overlay sync via watchdog: debounce 1s, DELETE immediato, 3 REST endpoint, graceful degradation, 35 test |
