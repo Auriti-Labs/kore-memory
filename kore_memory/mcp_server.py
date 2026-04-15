@@ -859,12 +859,14 @@ def main():
                 logger.error("MCP server crash: %s", exc, exc_info=True)
                 raise
         else:
-            # Nessun token: avvio standard (localhost only raccomandato)
+            # No token: only allow localhost binding
             if args.host not in ("127.0.0.1", "localhost", "::1"):
-                logger.warning(
-                    "KORE_MCP_TOKEN non impostato — server esposto su %s senza autenticazione",
+                logger.error(
+                    "Refusing to bind to %s without KORE_MCP_TOKEN. "
+                    "Set KORE_MCP_TOKEN or use --host 127.0.0.1.",
                     args.host,
                 )
+                raise SystemExit(1)
             try:
                 mcp.run(transport=args.transport, host=args.host, port=args.port)
             except KeyboardInterrupt:

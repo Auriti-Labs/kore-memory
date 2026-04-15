@@ -1143,6 +1143,15 @@ def gdpr_delete_agent(
             (target_agent, target_agent),
         ).rowcount
 
+        # Delete conflict records for this agent
+        try:
+            conn.execute(
+                "DELETE FROM memory_conflicts WHERE agent_id = ?",
+                (target_agent,),
+            )
+        except Exception:
+            pass  # memory_conflicts table may not exist yet
+
         # Delete ACL entries if table exists
         try:
             conn.execute(
@@ -1242,12 +1251,15 @@ def overlay_index(
     from .filesystem_overlay import index_files, scan_directory
 
     patterns = body.patterns if body.patterns else None
-    filepaths = scan_directory(
-        base_path=body.base_path,
-        patterns=patterns,
-        include_extra_md=body.include_extra_md,
-        max_depth=body.max_depth,
-    )
+    try:
+        filepaths = scan_directory(
+            base_path=body.base_path,
+            patterns=patterns,
+            include_extra_md=body.include_extra_md,
+            max_depth=body.max_depth,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
     stats = index_files(
         filepaths=filepaths,
         agent_id=agent_id,

@@ -97,7 +97,6 @@ ignore = [
     "S101",    # assert — used in tests
     "S603",    # subprocess — not applicable
     "S607",    # partial path — not applicable
-    "S608",    # SQL injection — false positive, all queries use parameterized placeholders
     "S110",    # try-except-pass — intentional error suppression (connection cleanup)
     "S112",    # try-except-continue — intentional skip of corrupted data
     "B008",    # function call in default arg — Depends() pattern FastAPI
@@ -108,6 +107,15 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S", "B"]
+# S608: All f-string SQL in these files uses parameterized placeholders or
+# hardcoded WHERE fragments — verified safe during security review 2026-04-15
+"kore_memory/auto_tuner.py" = ["S608"]
+"kore_memory/compressor.py" = ["S608"]
+"kore_memory/conflict_detector.py" = ["S608"]
+"kore_memory/context_assembler.py" = ["S608"]
+"kore_memory/repository/graph.py" = ["S608"]
+"kore_memory/repository/memory.py" = ["S608"]
+"kore_memory/repository/search.py" = ["S608"]
 
 [tool.ruff.format]
 quote-style = "double"
