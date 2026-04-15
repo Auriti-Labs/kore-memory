@@ -8,6 +8,14 @@ from __future__ import annotations
 import pytest
 from fastapi.testclient import TestClient
 
+# Salta i test MCP se il pacchetto 'mcp' non è installato (dipendenza opzionale)
+try:
+    import mcp as _mcp_mod  # noqa: F401
+
+    _HAS_MCP = True
+except ImportError:
+    _HAS_MCP = False
+
 HEADERS = {"X-Agent-Id": "cov-agent"}
 
 
@@ -131,10 +139,10 @@ class TestSearchBranches:
         assert data["total"] >= 1
 
     def test_search_empty_result(self, client):
-        """Ricerca su termine rarissimo → lista vuota, no crash."""
+        """Ricerca FTS su termine rarissimo → lista vuota, no crash."""
         r = client.get(
             "/search",
-            params={"q": "xyzzy_nonexistent_term_99999", "agent_id": "cov-agent"},
+            params={"q": "xyzzy_nonexistent_term_99999", "semantic": "false"},
             headers=HEADERS,
         )
         assert r.status_code == 200
@@ -179,6 +187,7 @@ class TestSearchBranches:
 
 # ── mcp_server.py: _get_or_create_session double-check locking ───────────────
 
+@pytest.mark.skipif(not _HAS_MCP, reason="mcp package not installed (optional dependency)")
 class TestMcpSessionDoubleLocking:
     def test_double_check_locking_same_agent(self):
         """_get_or_create_session: seconda chiamata stesso agente → stesso session_id."""
@@ -210,6 +219,7 @@ class TestMcpSessionDoubleLocking:
 
 # ── mcp_server.py: memory_save_decision con repo ────────────────────────────
 
+@pytest.mark.skipif(not _HAS_MCP, reason="mcp package not installed (optional dependency)")
 class TestMcpDecisionRepo:
     def test_save_decision_with_conflicts_detected_key(self):
         """memory_save_decision restituisce conflicts_detected."""
