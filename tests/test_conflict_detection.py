@@ -43,27 +43,32 @@ def _save(content: str, **kwargs) -> int:
 
 class TestBuildOverlapFilter:
     def test_no_temporal_bounds_returns_empty(self):
-        """Senza vincoli temporali il filtro è vuoto."""
-        assert _build_overlap_filter(None, None) == ""
+        """No temporal bounds returns empty SQL and no params."""
+        sql, params = _build_overlap_filter(None, None)
+        assert sql == ""
+        assert params == []
 
     def test_only_valid_to(self):
-        """Solo valid_to genera il filtro corretto."""
-        result = _build_overlap_filter(None, "2026-12-31 23:59:59")
-        assert "valid_from" in result
-        assert "2026-12-31" in result
+        """Only valid_to produces a parameterized filter."""
+        sql, params = _build_overlap_filter(None, "2026-12-31 23:59:59")
+        assert "valid_from" in sql
+        assert "?" in sql
+        assert "2026-12-31 23:59:59" in params
 
     def test_only_valid_from(self):
-        """Solo valid_from genera il filtro corretto."""
-        result = _build_overlap_filter("2026-01-01 00:00:00", None)
-        assert "valid_to" in result
-        assert "2026-01-01" in result
+        """Only valid_from produces a parameterized filter."""
+        sql, params = _build_overlap_filter("2026-01-01 00:00:00", None)
+        assert "valid_to" in sql
+        assert "?" in sql
+        assert "2026-01-01 00:00:00" in params
 
     def test_both_bounds(self):
-        """Entrambi i bounds generano clausole AND."""
-        result = _build_overlap_filter("2026-01-01 00:00:00", "2026-12-31 23:59:59")
-        assert "valid_from" in result
-        assert "valid_to" in result
-        assert result.startswith("AND ")
+        """Both bounds produce AND clauses with two params."""
+        sql, params = _build_overlap_filter("2026-01-01 00:00:00", "2026-12-31 23:59:59")
+        assert "valid_from" in sql
+        assert "valid_to" in sql
+        assert sql.startswith("AND ")
+        assert len(params) == 2
 
 
 # ── Unit test: _infer_conflict_type ──────────────────────────────────────────

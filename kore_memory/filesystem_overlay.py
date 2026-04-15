@@ -14,6 +14,7 @@ Strategia:
 from __future__ import annotations
 
 import hashlib
+import os
 from pathlib import Path
 
 # Dimensione massima per chunk di memoria (sotto il limite di 4000 chars del modello)
@@ -150,6 +151,38 @@ def _read_file_safe(filepath: str, max_bytes: int = 128_000) -> str | None:
         return None
 
 
+# Directories that are never allowed as overlay base paths
+_SENSITIVE_DIRS = frozenset({"/etc", "/var", "/usr", "/bin", "/sbin", "/boot", "/proc", "/sys", "/dev", "/root"})
+
+
+def _validate_base_path(resolved: Path) -> None:
+    """Reject base paths that point to sensitive system directories.
+
+    If KORE_OVERLAY_ALLOWED_DIRS is set (comma-separated list of absolute
+    paths), the resolved path must be under one of them.  Otherwise, a
+    blocklist of known sensitive directories is enforced.
+
+    Raises:
+        ValueError: If the path is not allowed.
+    """
+    allowed_raw = os.getenv("KORE_OVERLAY_ALLOWED_DIRS", "")
+    resolved_str = str(resolved)
+
+    if allowed_raw.strip():
+        allowed = [str(Path(d.strip()).resolve()) for d in allowed_raw.split(",") if d.strip()]
+        if not any(resolved_str == a or resolved_str.startswith(a + os.sep) for a in allowed):
+            raise ValueError(
+                f"Path '{resolved}' is outside allowed overlay directories. "
+                f"Allowed: {', '.join(allowed)}"
+            )
+        return
+
+    # Default blocklist: reject known sensitive system directories
+    for sensitive in _SENSITIVE_DIRS:
+        if resolved_str == sensitive or resolved_str.startswith(sensitive + os.sep):
+            raise ValueError(f"Path '{resolved}' is inside a sensitive system directory ({sensitive})")
+
+
 def scan_directory(
     base_path: str,
     patterns: list[str] | None = None,
@@ -164,10 +197,15 @@ def scan_directory(
         patterns: Lista di filename/glob pattern (default: DEFAULT_PATTERNS)
         include_extra_md: Se True, include anche file .md nelle subdirectory
         max_depth: Profondità massima di ricerca (default: 2)
+
+    Raises:
+        ValueError: If base_path is outside allowed directories.
     """
     base = Path(base_path).resolve()
     if not base.is_dir():
         return []
+
+    _validate_base_path(base)
 
     effective_patterns = set(patterns or DEFAULT_PATTERNS)
     found: list[str] = []

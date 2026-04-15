@@ -100,7 +100,7 @@ def _semantic_candidates(
         return []
 
     candidate_ids = [mid for mid, _ in candidates]
-    overlap_filter = _build_overlap_filter(valid_from, valid_to)
+    overlap_sql, overlap_params = _build_overlap_filter(valid_from, valid_to)
 
     with get_connection() as conn:
         placeholders = ",".join("?" for _ in candidate_ids)
@@ -113,9 +113,9 @@ def _semantic_candidates(
               AND invalidated_at IS NULL
               AND archived_at IS NULL
               AND compressed_into IS NULL
-              {overlap_filter}
+              {overlap_sql}
             """,
-            candidate_ids + [agent_id],
+            candidate_ids + [agent_id] + overlap_params,
         ).fetchall()
 
     return [dict(r) for r in rows]
@@ -135,7 +135,7 @@ def _fts_candidates(
     if not safe_query:
         return []
 
-    overlap_filter = _build_overlap_filter(valid_from, valid_to)
+    overlap_sql, overlap_params = _build_overlap_filter(valid_from, valid_to)
 
     with get_connection() as conn:
         rows = conn.execute(
@@ -149,36 +149,41 @@ def _fts_candidates(
               AND m.invalidated_at IS NULL
               AND m.archived_at IS NULL
               AND m.compressed_into IS NULL
-              {overlap_filter}
+              {overlap_sql}
             LIMIT ?
             """,
-            (safe_query, memory_id, agent_id, _cfg.CONFLICT_MAX_CANDIDATES),
+            (safe_query, memory_id, agent_id) + tuple(overlap_params) + (_cfg.CONFLICT_MAX_CANDIDATES,),
         ).fetchall()
 
     return [dict(r) for r in rows]
 
 
-def _build_overlap_filter(valid_from: str | None, valid_to: str | None) -> str:
+def _build_overlap_filter(valid_from: str | None, valid_to: str | None) -> tuple[str, list]:
     """
-    Costruisce il filtro SQL per periodo sovrapposto.
+    Build a parameterized SQL filter for overlapping time periods.
 
-    Due periodi [A_from, A_to] e [B_from, B_to] si sovrappongono se:
+    Two periods [A_from, A_to] and [B_from, B_to] overlap when:
     NOT (A_to < B_from OR A_from > B_to)
-    Trattando NULL come infinito nei due estremi.
+    NULL is treated as infinity on either end.
+
+    Returns (sql_fragment, params) where sql_fragment starts with "AND ..."
+    or is empty, and params is a list of bind values.
     """
-    # Memoria senza alcun vincolo temporale: può collidere con qualsiasi memoria
     if valid_from is None and valid_to is None:
-        return ""
+        return "", []
 
     clauses = []
+    params: list = []
     if valid_to:
-        # La nuova memoria finisce prima di valid_to, la candidata deve iniziare prima
-        clauses.append(f"(valid_from IS NULL OR valid_from < '{valid_to}')")
+        clauses.append("(valid_from IS NULL OR valid_from < ?)")
+        params.append(valid_to)
     if valid_from:
-        # La nuova memoria inizia dopo valid_from, la candidata deve finire dopo
-        clauses.append(f"(valid_to IS NULL OR valid_to > '{valid_from}')")
+        clauses.append("(valid_to IS NULL OR valid_to > ?)")
+        params.append(valid_from)
 
-    return "AND " + " AND ".join(clauses) if clauses else ""
+    if not clauses:
+        return "", []
+    return "AND " + " AND ".join(clauses), params
 
 
 def _persist_conflicts(
