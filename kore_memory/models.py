@@ -443,6 +443,43 @@ class OverlayFilesResponse(BaseModel):
     total: int
 
 
+# ── Filesystem Watcher (issue #025) ──────────────────────────────────────────
+
+
+class OverlayWatchRequest(BaseModel):
+    base_path: str = Field(..., min_length=1, max_length=1024, description="Directory da monitorare")
+    patterns: list[str] = Field(
+        default_factory=list,
+        description="Pattern filename da monitorare (vuoto = DEFAULT_PATTERNS)",
+        max_length=50,
+    )
+    include_extra_md: bool = Field(True, description="Monitora anche file .md extra")
+    max_depth: int = Field(2, ge=1, le=5, description="Profondità massima di scansione al re-index")
+
+
+class OverlayWatcherRecord(BaseModel):
+    base_path: str
+    agent_id: str
+    started_at: str
+    events_processed: int
+    active: bool
+
+
+class OverlayWatchResponse(BaseModel):
+    watching: bool
+    already_running: bool = False
+    base_path: str
+    agent_id: str
+    started_at: str = ""
+    message: str
+
+
+class OverlayWatchersResponse(BaseModel):
+    watchers: list[OverlayWatcherRecord]
+    total: int
+    watcher_available: bool
+
+
 # ── Summarization ────────────────────────────────────────────────────────────
 
 

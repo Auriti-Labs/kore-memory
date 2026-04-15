@@ -57,6 +57,10 @@ from .models import (
     OverlayFilesResponse,
     OverlayIndexRequest,
     OverlayIndexResponse,
+    OverlayWatcherRecord,
+    OverlayWatchersResponse,
+    OverlayWatchRequest,
+    OverlayWatchResponse,
     PluginListResponse,
     RelationRecord,
     RelationRequest,
@@ -222,6 +226,10 @@ async def lifespan(app: FastAPI):
 
         register_audit_handler()
     yield
+    # Graceful shutdown: ferma i watcher attivi
+    from .filesystem_watcher import stop_all_watchers
+
+    stop_all_watchers()
     # Graceful shutdown: close the SQLite connection pool
     from .database import _pool
 
@@ -1281,6 +1289,64 @@ def overlay_remove_file(
 
     removed = remove_file_from_overlay(filepath=path, agent_id=agent_id)
     return {"removed": removed, "path": path}
+
+
+# ── Filesystem Watcher (issue #025) ──────────────────────────────────────────
+
+
+@app.post("/overlay/watch", response_model=OverlayWatchResponse)
+def overlay_watch_start(
+    body: OverlayWatchRequest,
+    _: str = _Auth,
+    agent_id: str = _Agent,
+) -> OverlayWatchResponse:
+    """
+    Avvia un watcher su base_path che auto-aggiorna l'overlay al cambio dei file.
+    Richiede: pip install kore-memory[watcher]
+    """
+    from .filesystem_watcher import start_watcher
+
+    try:
+        patterns = body.patterns if body.patterns else None
+        result = start_watcher(
+            base_path=body.base_path,
+            agent_id=agent_id,
+            patterns=patterns,
+            include_extra_md=body.include_extra_md,
+            max_depth=body.max_depth,
+        )
+        return OverlayWatchResponse(**result)
+    except ImportError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.delete("/overlay/watch", response_model=dict)
+def overlay_watch_stop(
+    path: str = Query(..., description="base_path del watcher da fermare"),
+    _: str = _Auth,
+    agent_id: str = _Agent,
+) -> dict:
+    """Ferma il watcher attivo per base_path."""
+    from .filesystem_watcher import stop_watcher
+
+    return stop_watcher(base_path=path, agent_id=agent_id)
+
+
+@app.get("/overlay/watchers", response_model=OverlayWatchersResponse)
+def overlay_watchers(
+    _: str = _Auth,
+) -> OverlayWatchersResponse:
+    """Lista tutti i watcher attivi con statistiche."""
+    from .filesystem_watcher import is_available, list_watchers
+
+    watchers = list_watchers()
+    return OverlayWatchersResponse(
+        watchers=[OverlayWatcherRecord(**w) for w in watchers],
+        total=len(watchers),
+        watcher_available=is_available(),
+    )
 
 
 # ── Audit log ────────────────────────────────────────────────────────────────
