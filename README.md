@@ -35,26 +35,29 @@ Every AI agent memory tool has the same problem: they remember everything foreve
 
 <div align="center">
 
-| | **Kore** | Mem0 | Letta | Zep |
-|---|:---:|:---:|:---:|:---:|
-| 100% offline — no cloud dependency | ✅ | ❌ | ❌ | ❌ |
-| No LLM required for any operation | ✅ | ❌ | ❌ | ❌ |
-| Memory Decay (Ebbinghaus curve) | ✅ | ❌ | ❌ | ❌ |
-| Auto-importance scoring (local) | ✅ | via LLM | ❌ | via LLM |
-| Memory Compression (cosine dedup) | ✅ | ❌ | ❌ | ❌ |
-| Graph RAG (multi-hop traversal) | ✅ | ❌ | ✅ | ❌ |
-| Context Engine (token budget) | ✅ | ❌ | ❌ | ❌ |
-| Filesystem Watcher (live sync) | ✅ | ❌ | ❌ | ❌ |
-| Coding Memory Mode (ADR + RCA) | ✅ | ❌ | ❌ | ❌ |
-| Semantic search — 50+ languages | ✅ local | via API | ✅ | via API |
-| MCP Server (Claude, Cursor) | ✅ | ❌ | ❌ | ❌ |
-| TTL / Auto-expiration | ✅ | ❌ | ❌ | ❌ |
-| Temporal memory (valid_from/to) | ✅ | ❌ | ❌ | ✅ |
+| | 🟣 **Kore** | Mem0 | Letta | Zep |
+|:---|:---:|:---:|:---:|:---:|
+| **🔒 Privacy & Architecture** | | | | |
+| 100% offline — zero cloud | **✅** | — | — | — |
+| No LLM required | **✅** | — | — | — |
+| Setup in < 2 minutes | **✅** | — | — | — |
+| **🧠 Memory Intelligence** | | | | |
+| Ebbinghaus forgetting curve | **✅** | — | — | — |
+| Auto-importance scoring (local) | **✅** | via LLM | — | via LLM |
+| Memory compression (cosine dedup) | **✅** | — | — | — |
+| Temporal memory (valid_from/to) | ✅ | — | — | ✅ |
+| **🕸️ Knowledge & Context** | | | | |
+| Graph RAG (multi-hop traversal) | **✅** | — | ✅ | — |
+| Context Engine (token budget) | **✅** | — | — | — |
+| Semantic search — 50+ languages | **✅** local | via API | ✅ | via API |
+| TTL / Auto-expiration | **✅** | — | — | — |
+| **💻 Developer Experience** | | | | |
+| MCP Server (Claude Code, Cursor) | **✅** | — | — | — |
+| Coding Memory Mode (ADR + RCA) | **✅** | — | — | — |
+| Filesystem Watcher (live sync) | **✅** | — | — | — |
 | Multi-agent ACL | ✅ | ✅ | ✅ | ✅ |
-| Prometheus metrics | ✅ | ❌ | ❌ | ❌ |
-| Export / Import (JSON) | ✅ | ❌ | ✅ | ✅ |
-| Python + JS/TS SDK | ✅ | ✅ | ❌ | ✅ |
-| Install in < 2 minutes | ✅ | ❌ | ❌ | ❌ |
+| Python + JS/TS SDK | ✅ | ✅ | — | ✅ |
+| Export / Import (JSON) | ✅ | — | ✅ | ✅ |
 
 </div>
 
