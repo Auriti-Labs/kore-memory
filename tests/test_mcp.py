@@ -367,6 +367,7 @@ class TestMCPHardening:
     def test_mcp_timeout_from_env(self, monkeypatch):
         """KORE_MCP_TIMEOUT_SECONDS viene letto dall'env var."""
         import importlib
+
         import kore_memory.config as cfg_mod
         monkeypatch.setenv("KORE_MCP_TIMEOUT_SECONDS", "60")
         importlib.reload(cfg_mod)
@@ -376,7 +377,7 @@ class TestMCPHardening:
 
     def test_health_module_importable(self):
         """Il modulo mcp_server esporta _add_health_route e _SERVER_START_TIME."""
-        from kore_memory.mcp_server import _add_health_route, _SERVER_START_TIME
+        from kore_memory.mcp_server import _SERVER_START_TIME, _add_health_route
         assert callable(_add_health_route)
         assert isinstance(_SERVER_START_TIME, float)
         assert _SERVER_START_TIME > 0
@@ -490,8 +491,8 @@ class TestCodingMemoryMode:
 
     def test_memory_type_inferred_from_coding_category(self):
         """memory_type viene inferito automaticamente dalla category coding."""
-        from kore_memory.repository import get_memory
         from kore_memory.mcp_server import memory_save
+        from kore_memory.repository import get_memory
         # runbook → procedural
         result = memory_save(
             content="Runbook per deploy in produzione: step 1, 2, 3",
@@ -503,15 +504,47 @@ class TestCodingMemoryMode:
         assert mem.memory_type == "procedural"
 
 
+    def test_memory_log_root_cause_returns_episodic(self):
+        """memory_log_root_cause crea memoria di tipo episodic con category root_cause."""
+        from kore_memory.mcp_server import memory_log_root_cause
+
+        result = memory_log_root_cause(
+            content="CPU spike causato da timer leak nel filesystem watcher al shutdown",
+            symptom="CPU al 100% dopo ogni riavvio del server",
+            affected_component="filesystem_watcher",
+            fix_applied="Aggiunto cancel() su tutti i _timers nel metodo stop_all",
+            repo="kore-memory",
+            agent_id="test-coding",
+        )
+        assert "id" in result
+        assert result["id"] > 0
+        assert result["category"] == "root_cause"
+        assert result["memory_type"] == "episodic"
+        assert result["importance"] >= 4
+        assert "message" in result
+
+    def test_memory_log_root_cause_without_optional_fields(self):
+        """memory_log_root_cause funziona anche senza i campi opzionali."""
+        from kore_memory.mcp_server import memory_log_root_cause
+
+        result = memory_log_root_cause(
+            content="Il pool SQLite esauriva le connessioni durante i test paralleli",
+            agent_id="test-coding",
+        )
+        assert result["id"] > 0
+        assert result["category"] == "root_cause"
+
+
 class TestBearerAuthMiddleware:
     """Test per il middleware Bearer token (#008)."""
 
     def test_wrap_bearer_auth_blocks_missing_token(self):
         """Richiesta senza Authorization viene rifiutata con 401."""
         from starlette.applications import Starlette
-        from starlette.testclient import TestClient
         from starlette.responses import PlainTextResponse
         from starlette.routing import Route
+        from starlette.testclient import TestClient
+
         from kore_memory.mcp_server import _wrap_bearer_auth
 
         async def ok(_req):
@@ -528,9 +561,10 @@ class TestBearerAuthMiddleware:
     def test_wrap_bearer_auth_blocks_wrong_token(self):
         """Token errato → 403."""
         from starlette.applications import Starlette
-        from starlette.testclient import TestClient
         from starlette.responses import PlainTextResponse
         from starlette.routing import Route
+        from starlette.testclient import TestClient
+
         from kore_memory.mcp_server import _wrap_bearer_auth
 
         async def ok(_req):
@@ -546,9 +580,10 @@ class TestBearerAuthMiddleware:
     def test_wrap_bearer_auth_allows_correct_token(self):
         """Token corretto → 200."""
         from starlette.applications import Starlette
-        from starlette.testclient import TestClient
         from starlette.responses import PlainTextResponse
         from starlette.routing import Route
+        from starlette.testclient import TestClient
+
         from kore_memory.mcp_server import _wrap_bearer_auth
 
         async def ok(_req):
@@ -564,9 +599,10 @@ class TestBearerAuthMiddleware:
     def test_health_route_exempt_from_auth(self):
         """/mcp/health è esente dal Bearer token."""
         from starlette.applications import Starlette
-        from starlette.testclient import TestClient
         from starlette.responses import JSONResponse
         from starlette.routing import Route
+        from starlette.testclient import TestClient
+
         from kore_memory.mcp_server import _wrap_bearer_auth
 
         async def health(_req):
@@ -586,6 +622,7 @@ class TestBearerAuthMiddleware:
         # Re-import per leggere il valore fresco non è necessario —
         # verifichiamo solo che il default sia ""
         import importlib
+
         import kore_memory.config as cfg
         importlib.reload(cfg)
         assert cfg.MCP_TOKEN == ""

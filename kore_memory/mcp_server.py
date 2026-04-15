@@ -531,6 +531,52 @@ def memory_log_regression(
 
 
 @mcp.tool()
+def memory_log_root_cause(
+    content: str,
+    symptom: str = "",
+    affected_component: str = "",
+    fix_applied: str = "",
+    repo: str = "",
+    agent_id: str = "default",
+) -> dict:
+    """
+    Log a root cause analysis for a bug or incident.
+    Use after investigating an issue to record WHY it happened and how it was resolved.
+    The memory is automatically categorized as root_cause (episodic type).
+
+    Example: memory_log_root_cause(
+        content="Il watcher non cancellava i timer pendenti al shutdown, causando thread leak",
+        symptom="CPU spike al riavvio del server",
+        affected_component="filesystem_watcher",
+        fix_applied="Aggiunto cancel() di tutti i _timers in __del__ e stop_all",
+        repo="kore-memory",
+    )
+    """
+    metadata = {
+        "symptom": symptom,
+        "affected_component": affected_component,
+        "fix_applied": fix_applied,
+    }
+    sanitized = _sanitize_agent_id(f"{agent_id}/{repo}" if repo else agent_id)
+    session_id = _get_or_create_session(sanitized)
+    req = MemorySaveRequest(
+        content=content,
+        category="root_cause",
+        importance=4,
+        metadata=metadata,
+    )
+    mem_id, imp, conflicts = save_memory(req, agent_id=sanitized, session_id=session_id)
+    return {
+        "id": mem_id,
+        "importance": imp,
+        "category": "root_cause",
+        "memory_type": "episodic",
+        "conflicts_detected": conflicts,
+        "message": "Root cause logged",
+    }
+
+
+@mcp.tool()
 def memory_get_context(
     task: str,
     budget_tokens: int = 2000,

@@ -37,6 +37,10 @@ claude
 | `memory_cleanup` | Elimina memorie scadute |
 | `memory_get_context` | Assembla context package ottimizzato per un task (budget token) |
 | `memory_explain` | Analisi completa di una memoria (status, conditions, score breakdown) |
+| `memory_save_decision` | **[Coding]** Salva ADR con rationale e alternative considerate |
+| `memory_log_root_cause` | **[Coding]** Registra root cause analysis di un bug |
+| `memory_log_regression` | **[Coding]** Traccia una regressione con versione e test_ref |
+| `memory_get_runbook` | **[Coding]** Recupera runbook per trigger/componente |
 
 ## Configurazione avanzata
 
