@@ -1,0 +1,19 @@
+[run]
+source = kore_memory
+omit =
+    # Integrations che richiedono dipendenze opzionali (pydantic-ai, openai-agents)
+    kore_memory/integrations/pydantic_ai.py
+    kore_memory/integrations/openai_agents.py
+    # Banner di benvenuto CLI — non coperto da test
+    kore_memory/welcome.py
+    # Entry point scripts — coperti da test funzionali, non unit
+    kore_memory/__main__.py
+    # Vector index sqlite-vec — richiede estensione sqlite-vec, testato in test-semantic CI
+    kore_memory/vector_index.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    if TYPE_CHECKING:
+    raise NotImplementedError

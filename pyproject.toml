@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "kore-memory"
-version = "2.5.0"
+version = "3.0.0"
 description = "The memory layer that thinks like a human: remembers what matters, forgets what doesn't, and never calls home."
 readme = "README.md"
 license = { text = "MIT" }

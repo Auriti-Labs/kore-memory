@@ -11,6 +11,71 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.0.0] - 2026-04-15
+
+### Theme: "Cognitive Runtime + Coding Vertical GA"
+
+Chiude Wave 3 con il lancio ufficiale del Coding Memory Mode e consolida Graph, Context Engine e Filesystem Watcher in un runtime cognitivo completo.
+
+### Breaking Changes
+
+- Nessuna breaking change nelle API REST o MCP rispetto a v2.x
+- `pip install kore-memory` porta tutti i miglioramenti automaticamente
+
+### Migration Guide (v2.2 → v3.0)
+
+#### Da v2.2 (Context Engine)
+- Nessuna azione richiesta per API REST e MCP esistenti
+- Nuovo: `ranking_profile: "coding"` in `/context/assemble` e `memory_get_context()`
+- Nuovo: categorie coding (`architectural_decision`, `root_cause`, `runbook`, `regression_note`)
+
+#### Da v2.3 (Wave 3 Graph)
+- Nessuna azione richiesta
+- Nuovo: filesystem watcher (`pip install 'kore-memory[watcher]'`)
+- Nuovo: tool MCP `memory_log_root_cause`
+
+#### DB pre-esistenti (v1.x)
+- Il sistema applica automaticamente le migrazioni incrementali al primo avvio
+- Backup consigliato: `cp data/memory.db data/memory.db.bak`
+
+### Added
+
+#### Coding Memory Mode GA (#030)
+- **`memory_log_root_cause`**: nuovo tool MCP per registrare root cause analysis con `symptom`, `affected_component`, `fix_applied`
+- **`docs/coding-memory-mode.md`**: guida completa setup, workflow, tool table, benchmark, troubleshooting
+- **`presets/claude-code-coding.md`**: snippet CLAUDE.md pronto all'uso per attivare il coding mode
+- **`presets/claude-code/README.md`**: aggiornato con tutti i 4 tool coding
+- Il Coding Memory Mode è ora GA e supporta repository-scoped namespace (`agent/repo`)
+- Tutti i tool coding in un'unica installazione: `pip install kore-memory`
+
+#### Quality & Coverage
+- **`.coveragerc`**: esclude `vector_index.py`, `integrations/pydantic_ai.py`, `integrations/openai_agents.py`, `welcome.py` dai report locali (testati in CI separata o non applicabili)
+- **`tests/test_coverage_gaps.py`**: 17 test mirati per branch non coperti (`/agents`, wildcard `q=*`, `update_memory` branches, session double-check locking)
+- Coverage raggiunge **80%** sulla soglia CI (era 76% prima di questo ciclo)
+
+### Closes
+
+- #95 (#030 Coding Memory Mode GA)
+- #96 (#031 Release v3.0.0)
+
+### Wave 3 — Completata
+
+| Issue | Feature | Versione |
+|-------|---------|---------|
+| #024 | Filesystem Overlay | v2.3.0 |
+| #025 | File Watcher (watchdog) | v2.5.0 |
+| #026 | Typed Relations | v2.3.0 |
+| #027 | Subgraph Extraction | v2.3.0 |
+| #028 | Hub Detection | v2.3.0 |
+| #029 | Benchmark CI | v2.3.0 |
+| #030 | Coding Memory Mode GA | v3.0.0 |
+
+### Tests
+- **648 test totali** (da 572 in v2.2 → +76 in Wave 3)
+- Coverage: **80%** (soglia CI: 80%)
+
+---
+
 ## [2.5.0] - 2026-04-14
 
 ### Theme: "Filesystem Watcher — Live Overlay Sync"
