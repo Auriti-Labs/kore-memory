@@ -38,11 +38,11 @@ from .models import MemoryRecord
 # Pesi default_v1: bilanciati per uso generico
 _DEFAULT_WEIGHTS: dict[str, float] = {
     "similarity": 0.45,
-    "decay_score": 0.25,
+    "decay_score": 0.23,
     "confidence": 0.15,
-    "importance_n": 0.00,  # non usato nel ranking default (v2.1)
-    "task_relevance": 0.10,  # Wave 2: attivo con task fornito, 0.5 se assente
-    "graph_centrality": 0.00,  # Wave 3
+    "importance_n": 0.00,
+    "task_relevance": 0.10,
+    "graph_centrality": 0.02,  # M1: weak signal from entity graph
     "freshness": 0.05,
 }
 
@@ -53,8 +53,8 @@ CODING_PROFILE: dict[str, float] = {
     "confidence": 0.15,
     "importance_n": 0.08,
     "task_relevance": 0.12,
-    "graph_centrality": 0.05,  # Wave 3: rimane 0.0 finché centrality non è calcolata (#028)
-    "freshness": 0.02,
+    "graph_centrality": 0.03,  # M1: weak signal from entity graph
+    "freshness": 0.04,
 }
 
 _PROFILES: dict[str, dict[str, float]] = {
@@ -108,8 +108,7 @@ def compute_score(
     importance_n = (record.importance - 1) / 4.0
     freshness = _compute_freshness(record.created_at)
     task_rel = _compute_task_relevance(record, task, task_vec, embedding_map)
-    # graph_centrality rimandato a Wave 3
-    graph_centrality = 0.0
+    graph_centrality = _get_graph_centrality(record.id)
 
     raw = (
         similarity * weights["similarity"]
@@ -277,3 +276,46 @@ def _compute_freshness(created_at) -> float:
         return max(0.0, 1.0 - age_days / _FRESHNESS_WINDOW_DAYS)
     except Exception:
         return 0.5
+
+
+# ── M1: Graph centrality signal ──────────────────────────────────────────────
+
+_centrality_cache: dict[int, float] = {}
+_centrality_cache_ts: float = 0.0
+
+
+def _get_graph_centrality(memory_id: int) -> float:
+    """
+    Get normalized degree centrality for a memory. Cached for 60s.
+    Returns 0.0 if memory has no relations (graceful degradation).
+    """
+    import time
+
+    global _centrality_cache, _centrality_cache_ts
+    now = time.monotonic()
+    if now - _centrality_cache_ts > 60:
+        _centrality_cache = {}
+        _centrality_cache_ts = now
+
+    if memory_id in _centrality_cache:
+        return _centrality_cache[memory_id]
+
+    try:
+        from .database import get_connection
+
+        with get_connection() as conn:
+            row = conn.execute(
+                """
+                SELECT COUNT(*) AS degree FROM memory_relations
+                WHERE source_id = ? OR target_id = ?
+                """,
+                (memory_id, memory_id),
+            ).fetchone()
+            degree = row[0] if row else 0
+            # Simple normalization: cap at 20 relations → 1.0
+            centrality = min(1.0, degree / 20.0)
+    except Exception:
+        centrality = 0.0
+
+    _centrality_cache[memory_id] = centrality
+    return centrality

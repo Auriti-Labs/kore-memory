@@ -315,6 +315,98 @@ def init_db() -> None:
                 ON memory_relations (strength DESC);
         """)
 
+        # ── Lifecycle Policy Engine v1 (Wave 4, issue #032) ──────────────
+        conn.executescript("""
+            CREATE TABLE IF NOT EXISTS lifecycle_policies (
+                id          TEXT    PRIMARY KEY,
+                agent_id    TEXT    NOT NULL DEFAULT '*',
+                name        TEXT    NOT NULL,
+                trigger     TEXT    NOT NULL
+                            CHECK (trigger IN ('decay_below','conflict_unresolved_days','age_and_idle')),
+                action      TEXT    NOT NULL
+                            CHECK (action IN ('archive','flag')),
+                params_json TEXT    NOT NULL,
+                enabled     BOOLEAN NOT NULL DEFAULT 1,
+                created_at  TEXT    NOT NULL DEFAULT (datetime('now'))
+            );
+            CREATE INDEX IF NOT EXISTS idx_policies_agent
+                ON lifecycle_policies (agent_id, enabled);
+
+            CREATE TABLE IF NOT EXISTS policy_flags (
+                memory_id   INTEGER NOT NULL REFERENCES memories(id) ON DELETE CASCADE,
+                policy_id   TEXT    NOT NULL REFERENCES lifecycle_policies(id) ON DELETE CASCADE,
+                flagged_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+                PRIMARY KEY (memory_id, policy_id)
+            );
+        """)
+
+        # Seed: 3 policy default globali (agent_id='*')
+        conn.execute("""
+            INSERT OR IGNORE INTO lifecycle_policies (id, agent_id, name, trigger, action, params_json)
+            VALUES ('auto_archive_forgotten', '*', 'Auto-archive forgotten memories',
+                    'decay_below', 'archive',
+                    '{"decay_threshold": 0.02, "min_idle_days": 90}')
+        """)
+        conn.execute("""
+            INSERT OR IGNORE INTO lifecycle_policies (id, agent_id, name, trigger, action, params_json)
+            VALUES ('flag_old_conflicts', '*', 'Flag stale unresolved conflicts',
+                    'conflict_unresolved_days', 'flag',
+                    '{"unresolved_days": 30}')
+        """)
+        conn.execute("""
+            INSERT OR IGNORE INTO lifecycle_policies (id, agent_id, name, trigger, action, params_json)
+            VALUES ('archive_stale_runbooks', '*', 'Archive stale runbook memories',
+                    'age_and_idle', 'archive',
+                    '{"min_age_days": 365, "min_idle_days": 180, "category": "runbook", "memory_type": "procedural"}')
+        """)
+
+        # ── M1: Graph Entity Layer (v4.0) ────────────────────────────────
+        conn.executescript("""
+            CREATE TABLE IF NOT EXISTS graph_entities (
+                id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                agent_id    TEXT    NOT NULL DEFAULT 'default',
+                name        TEXT    NOT NULL,
+                entity_type TEXT    NOT NULL DEFAULT 'concept'
+                            CHECK (entity_type IN (
+                                'person','org','tech','file','concept','location','project'
+                            )),
+                properties  TEXT    DEFAULT NULL,
+                created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+                updated_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+                UNIQUE(agent_id, name, entity_type)
+            );
+            CREATE INDEX IF NOT EXISTS idx_ge_agent      ON graph_entities (agent_id);
+            CREATE INDEX IF NOT EXISTS idx_ge_name       ON graph_entities (name);
+            CREATE INDEX IF NOT EXISTS idx_ge_agent_type ON graph_entities (agent_id, entity_type);
+
+            CREATE TABLE IF NOT EXISTS memory_entity_links (
+                memory_id   INTEGER NOT NULL REFERENCES memories(id) ON DELETE CASCADE,
+                entity_id   INTEGER NOT NULL REFERENCES graph_entities(id) ON DELETE CASCADE,
+                role        TEXT    NOT NULL DEFAULT 'mentions'
+                            CHECK (role IN ('mentions','defines','modifies','depends_on')),
+                confidence  REAL    NOT NULL DEFAULT 1.0
+                            CHECK (confidence >= 0.0 AND confidence <= 1.0),
+                created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+                PRIMARY KEY (memory_id, entity_id, role)
+            );
+            CREATE INDEX IF NOT EXISTS idx_mel_entity ON memory_entity_links (entity_id);
+            CREATE INDEX IF NOT EXISTS idx_mel_memory ON memory_entity_links (memory_id);
+        """)
+
+        # M1: structured columns on memories (idempotent)
+        _m1_migrations = {
+            "title": "ALTER TABLE memories ADD COLUMN title TEXT DEFAULT NULL",
+            "content_hash": "ALTER TABLE memories ADD COLUMN content_hash TEXT DEFAULT NULL",
+        }
+        for col, sql in _m1_migrations.items():
+            if col not in cols:
+                conn.execute(sql)
+
+        conn.executescript("""
+            CREATE INDEX IF NOT EXISTS idx_memories_hash
+                ON memories (agent_id, content_hash) WHERE content_hash IS NOT NULL;
+        """)
+
 
 @contextmanager
 def get_connection():

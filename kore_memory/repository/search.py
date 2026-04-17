@@ -6,6 +6,7 @@ FTS5, semantic search, tag search, timeline.
 from __future__ import annotations
 
 import json
+import os
 from datetime import UTC, datetime, timedelta
 
 from ..database import get_connection
@@ -130,6 +131,219 @@ def _load_embeddings(memory_ids: list[int]) -> dict[int, list[float]]:
     return result
 
 
+# ── M1: RRF Fusion + Graph Search ────────────────────────────────────────────
+
+# Default RRF weights (configurable via env)
+_RRF_W_FTS = float(os.getenv("KORE_RRF_W_FTS", "0.30"))
+_RRF_W_VEC = float(os.getenv("KORE_RRF_W_VEC", "0.50"))
+_RRF_W_GRAPH = float(os.getenv("KORE_RRF_W_GRAPH", "0.20"))
+
+
+def _rrf_fusion(
+    fts_stream: list[tuple[int, float]],
+    vec_stream: list[tuple[int, float]],
+    graph_stream: list[tuple[int, float]],
+    k: int = 60,
+) -> list[tuple[int, float]]:
+    """Reciprocal Rank Fusion across 3 streams with weight renormalization."""
+    streams = []
+    weights = []
+    if fts_stream:
+        streams.append(fts_stream)
+        weights.append(_RRF_W_FTS)
+    if vec_stream:
+        streams.append(vec_stream)
+        weights.append(_RRF_W_VEC)
+    if graph_stream:
+        streams.append(graph_stream)
+        weights.append(_RRF_W_GRAPH)
+
+    if not streams:
+        return []
+
+    # Renormalize weights
+    total_w = sum(weights)
+    weights = [w / total_w for w in weights]
+
+    scores: dict[int, float] = {}
+    for stream, weight in zip(streams, weights):
+        for rank, (mem_id, _) in enumerate(stream, start=1):
+            scores[mem_id] = scores.get(mem_id, 0.0) + weight / (k + rank)
+
+    return sorted(scores.items(), key=lambda x: x[1], reverse=True)
+
+
+def _graph_search(
+    query: str,
+    agent_id: str,
+    limit: int,
+    include_historical: bool = False,
+) -> list[tuple[int, float]]:
+    """Graph search stream: extract entities from query → match → BFS 1-hop → memory IDs."""
+    try:
+        from ..integrations.entities import extract_graph_entities
+        from .entity import find_entities_by_names
+    except Exception:
+        return []
+
+    entities = extract_graph_entities(query)
+    if not entities:
+        return []
+
+    names = [name for name, _ in entities[:10]]
+    matched = find_entities_by_names(names, agent_id=agent_id)
+    if not matched:
+        return []
+
+    entity_ids = [eid for eid, _, _ in matched]
+    total_query_entities = len(entity_ids)
+    placeholders = ",".join("?" for _ in entity_ids)
+
+    validity_clause = (
+        ""
+        if include_historical
+        else "AND m.invalidated_at IS NULL AND (m.valid_to IS NULL OR m.valid_to > datetime('now'))"
+    )
+
+    try:
+        with get_connection() as conn:
+            rows = conn.execute(
+                f"""
+                SELECT mel.memory_id,
+                       COUNT(DISTINCT mel.entity_id) AS entity_hits,
+                       SUM(mel.confidence) AS total_confidence
+                FROM memory_entity_links mel
+                JOIN memories m ON m.id = mel.memory_id
+                WHERE mel.entity_id IN ({placeholders})
+                  AND m.agent_id = ?
+                  AND m.archived_at IS NULL
+                  AND m.compressed_into IS NULL
+                  AND (m.expires_at IS NULL OR m.expires_at > datetime('now'))
+                  {validity_clause}
+                GROUP BY mel.memory_id
+                ORDER BY entity_hits DESC, total_confidence DESC
+                LIMIT ?
+                """,
+                (*entity_ids, agent_id, limit),
+            ).fetchall()
+    except Exception:
+        return []  # graceful degradation (table may not exist)
+
+    return [(r[0], r[1] / total_query_entities) for r in rows]
+
+
+def _fts_search_ids(
+    query: str,
+    limit: int,
+    category: str | None,
+    agent_id: str,
+    include_historical: bool = False,
+) -> list[tuple[int, float]]:
+    """FTS5 search returning (id, score) tuples for RRF fusion."""
+    validity = (
+        ""
+        if include_historical
+        else "AND (m.valid_to IS NULL OR m.valid_to > datetime('now')) AND m.invalidated_at IS NULL"
+    )
+    safe_query = _sanitize_fts_query(query)
+    if not safe_query:
+        return []
+
+    cat_filter = "AND m.category = :category" if category else ""
+    params: dict = {"query": safe_query, "limit": limit, "agent_id": agent_id}
+    if category:
+        params["category"] = category
+
+    with get_connection() as conn:
+        rows = conn.execute(
+            f"""
+            SELECT m.id, rank AS score
+            FROM memories_fts
+            JOIN memories m ON memories_fts.rowid = m.id
+            WHERE memories_fts MATCH :query
+              AND m.agent_id = :agent_id
+              AND m.compressed_into IS NULL
+              AND m.archived_at IS NULL
+              AND (m.expires_at IS NULL OR m.expires_at > datetime('now'))
+              {validity}
+              {cat_filter}
+            ORDER BY rank
+            LIMIT :limit
+            """,
+            params,
+        ).fetchall()
+    return [(r[0], float(r[1])) for r in rows]
+
+
+def _vec_search_ids(
+    query: str,
+    limit: int,
+    category: str | None,
+    agent_id: str,
+) -> list[tuple[int, float]]:
+    """Vector search returning (id, score) tuples for RRF fusion."""
+    if not _embeddings_available():
+        return []
+    try:
+        from ..embedder import embed_query
+        from ..vector_index import get_index
+
+        query_vec = embed_query(query)
+        index = get_index()
+        return index.search(query_vec, agent_id, category=category, limit=limit)
+    except Exception:
+        return []
+
+
+def _load_memories_by_ids(
+    fused: list[tuple[int, float]],
+    agent_id: str,
+    include_historical: bool = False,
+) -> list[MemoryRecord]:
+    """Load MemoryRecords for fused IDs, preserving RRF score order."""
+    if not fused:
+        return []
+
+    ids = [mid for mid, _ in fused]
+    score_map = {mid: score for mid, score in fused}
+    placeholders = ",".join("?" for _ in ids)
+
+    validity = (
+        ""
+        if include_historical
+        else "AND (valid_to IS NULL OR valid_to > datetime('now')) AND invalidated_at IS NULL"
+    )
+
+    with get_connection() as conn:
+        rows = conn.execute(
+            f"""
+            SELECT id, content, category, importance,
+                   decay_score, access_count, last_accessed,
+                   created_at, updated_at, title,
+                   valid_from, valid_to, invalidated_at, supersedes_id,
+                   confidence, provenance, memory_type, archived_at,
+                   compressed_into
+            FROM memories
+            WHERE id IN ({placeholders})
+              AND archived_at IS NULL
+              AND (expires_at IS NULL OR expires_at > datetime('now'))
+              {validity}
+            """,
+            ids,
+        ).fetchall()
+
+    results = []
+    for row in rows:
+        record = _row_to_record(row)
+        record.score = score_map.get(row["id"], 0.0)
+        results.append(record)
+
+    # Preserve RRF order
+    id_order = {mid: i for i, mid in enumerate(ids)}
+    results.sort(key=lambda r: id_order.get(r.id, 999999))
+    return results
+
+
 # ── Public search functions ──────────────────────────────────────────────────
 
 
@@ -157,24 +371,13 @@ def search_memories(
     """
     fetch_limit = max(limit * 5, 30)
 
-    if semantic and _embeddings_available():
-        results = _semantic_search(
-            query,
-            fetch_limit,
-            category,
-            agent_id,
-            cursor,
-            include_historical=include_historical,
-        )
-    else:
-        results = _fts_search(
-            query,
-            fetch_limit,
-            category,
-            agent_id,
-            cursor,
-            include_historical=include_historical,
-        )
+    # M1: 3-stream RRF fusion (FTS + Vector + Graph)
+    fts_ids = _fts_search_ids(query, fetch_limit, category, agent_id, include_historical=include_historical)
+    vec_ids = _vec_search_ids(query, fetch_limit, category, agent_id) if semantic else []
+    graph_ids = _graph_search(query, agent_id, fetch_limit, include_historical=include_historical)
+
+    fused = _rrf_fusion(fts_ids, vec_ids, graph_ids)
+    results = _load_memories_by_ids(fused[:fetch_limit], agent_id, include_historical=include_historical)
 
     # Traccia memorie escluse (popola solo con explain=True)
     excluded: list[dict] = []
@@ -219,6 +422,25 @@ def search_memories(
 
     total_count = _count_active_memories(query, category, agent_id, include_historical=include_historical)
 
+    # Cursor-based pagination: skip results at or before cursor position
+    if cursor:
+        cursor_score, cursor_id = cursor
+        skip = True
+        filtered = []
+        for r in results:
+            if skip:
+                if r.id == cursor_id:
+                    skip = False
+                    continue  # skip the cursor item itself
+                # Also skip items with higher score (already seen)
+                r_score = r.score or 0.0
+                if r_score > cursor_score or (r_score == cursor_score and r.id > cursor_id):
+                    continue
+                # If we haven't found cursor_id but score is lower, stop skipping
+                skip = False
+            filtered.append(r)
+        results = filtered
+
     page = results[: limit + 1]
     has_more = len(page) > limit
     top = page[:limit]
@@ -226,7 +448,7 @@ def search_memories(
     next_cursor = None
     if has_more and top:
         last = top[-1]
-        next_cursor = (last.decay_score or 1.0, last.id)
+        next_cursor = (last.score or last.decay_score or 1.0, last.id)
 
     if top:
         _reinforce([r.id for r in top])
@@ -579,6 +801,7 @@ def _row_to_record(row) -> MemoryRecord:
         decay_score=_row_field(row, "decay_score") or 1.0,
         created_at=row["created_at"],
         updated_at=row["updated_at"],
+        title=_row_field(row, "title"),
         score=_row_field(row, "score"),
         memory_type=_row_field(row, "memory_type") or "semantic",
         confidence=_row_field(row, "confidence") or 1.0,

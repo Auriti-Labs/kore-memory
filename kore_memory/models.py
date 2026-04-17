@@ -93,6 +93,7 @@ class MemorySaveRequest(BaseModel):
     provenance: ProvenanceSchema | None = Field(None, description="Provenienza della memoria")
     memory_type: MemoryType | None = Field(None, description="Tipo cognitivo: None = inferito dalla category")
     metadata: dict | None = Field(None, description="Campi strutturati specifici per category (coding mode)")
+    title: str | None = Field(None, max_length=120, description="Titolo esplicito (auto-generato se assente)")
 
     @field_validator("content")
     @classmethod
@@ -149,6 +150,7 @@ class MemoryRecord(BaseModel):
     decay_score: float = 1.0
     created_at: datetime
     updated_at: datetime
+    title: str | None = None
     # score è un campo runtime — calcolato durante il retrieval, mai persistito in DB
     score: float | None = None
     # Campi temporali v2.1
@@ -169,6 +171,7 @@ class MemorySaveResponse(BaseModel):
     id: int
     importance: int
     message: str = "Memory saved"
+    title: str | None = None
     # Lista di conflict ID rilevati al save (lista vuota = nessun conflitto)
     conflicts_detected: list[str] = Field(default_factory=list)
     # ID della memoria superseded (se supersedes_id era presente nella request)

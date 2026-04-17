@@ -209,17 +209,10 @@ def extract_entities(text: str) -> list[dict[str, str]]:
 
 def auto_tag_entities(memory_id: int, content: str, agent_id: str = "default") -> int:
     """
-    Extract entities from content and save them as tags on the memory.
+    Extract entities from content, save as tags AND populate graph_entities + links.
 
-    Tags are stored in `entity:type:value` format, e.g.:
-    - `entity:person:juan`
-    - `entity:email:user@example.com`
-    - `entity:url:https://example.com`
-
-    Args:
-        memory_id: The memory ID to tag.
-        content: The text content to extract entities from.
-        agent_id: The agent namespace.
+    Tags are stored in `entity:type:value` format (backward compat).
+    Graph entities are stored in graph_entities + memory_entity_links (M1 v4.0).
 
     Returns:
         Number of entity tags added.
@@ -232,15 +225,162 @@ def auto_tag_entities(memory_id: int, content: str, agent_id: str = "default") -
 
     tags = []
     for ent in entities:
-        # Normalize value for tag: lowercase, limit length
         value = ent["value"].strip().lower()[:80]
         tag = f"entity:{ent['type']}:{value}"
         tags.append(tag)
 
-    if not tags:
-        return 0
+    tag_count = add_tags(memory_id, tags, agent_id=agent_id) if tags else 0
 
-    return add_tags(memory_id, tags, agent_id=agent_id)
+    # M1: also populate graph_entities + memory_entity_links
+    graph_entities = extract_graph_entities(content)
+    if graph_entities:
+        try:
+            from ..repository.entity import link_entities_to_memory
+
+            link_entities_to_memory(memory_id, graph_entities, agent_id=agent_id)
+        except Exception:
+            pass  # graceful degradation
+
+    return tag_count
+
+
+# ── M1: Graph-compatible entity extraction ───────────────────────────────────
+
+# File path pattern
+_FILE_RE = re.compile(r"(?:^|[\s\"'`(])([a-zA-Z0-9_./\\-]+\.[a-zA-Z]{1,10})(?=[\s\"'`),:;]|$)")
+
+# Project name pattern (word-word or word_word)
+_PROJECT_RE = re.compile(r"\b([a-z][a-z0-9]*(?:[-_][a-z0-9]+)+)\b")
+
+# Person name pattern (two+ capitalized words)
+_PERSON_RE = re.compile(r"\b([A-Z][a-z]{1,20}(?:\s+[A-Z][a-z]{1,20})+)\b")
+
+# Tech terms: loaded once from static file or inline fallback
+_TECH_TERMS: set[str] | None = None
+
+
+def _load_tech_terms() -> set[str]:
+    global _TECH_TERMS
+    if _TECH_TERMS is not None:
+        return _TECH_TERMS
+    # Try loading from file
+    from pathlib import Path
+
+    terms_file = Path(__file__).parent.parent / "data" / "tech_terms.txt"
+    if terms_file.exists():
+        _TECH_TERMS = {line.strip().lower() for line in terms_file.read_text().splitlines() if line.strip()}
+    else:
+        # Inline fallback: common tech terms
+        _TECH_TERMS = {
+            "python", "javascript", "typescript", "rust", "go", "java", "ruby", "php", "swift", "kotlin",
+            "react", "vue", "angular", "svelte", "next.js", "nuxt", "astro", "fastapi", "django", "flask",
+            "express", "nest.js", "spring", "laravel", "rails", "sqlite", "postgresql", "mysql", "mongodb",
+            "redis", "elasticsearch", "docker", "kubernetes", "terraform", "ansible", "nginx", "apache",
+            "git", "github", "gitlab", "aws", "gcp", "azure", "vercel", "netlify", "cloudflare",
+            "graphql", "rest", "grpc", "websocket", "oauth", "jwt", "openai", "anthropic", "claude",
+            "gpt", "llm", "rag", "mcp", "pydantic", "sqlalchemy", "prisma", "drizzle", "tailwind",
+            "webpack", "vite", "esbuild", "npm", "pip", "cargo", "pytest", "jest", "vitest", "cypress",
+            "linux", "macos", "windows", "ubuntu", "debian", "alpine", "node.js", "deno", "bun",
+            "pandas", "numpy", "scipy", "pytorch", "tensorflow", "huggingface", "langchain", "crewai",
+            "supabase", "firebase", "stripe", "twilio", "sendgrid", "datadog", "sentry", "grafana",
+            "prometheus", "kafka", "rabbitmq", "celery", "airflow", "spark", "hadoop", "snowflake",
+            "spacy", "nltk", "scikit-learn", "matplotlib", "plotly", "streamlit", "gradio",
+            "html", "css", "sass", "less", "json", "yaml", "toml", "xml", "markdown", "latex",
+            "sql", "nosql", "orm", "api", "sdk", "cli", "tui", "gui", "ide", "vscode", "neovim",
+            "sentence-transformers", "sqlite-vec", "chromadb", "pinecone", "weaviate", "qdrant",
+            "fastmcp", "pydantic-ai", "openai-agents", "filament", "wordpress", "gutenberg",
+        }
+    return _TECH_TERMS
+
+
+# M1 entity type precedence (fallback mode): file → tech → project → person → location → concept
+_GRAPH_ENTITY_TYPES = {"person", "org", "tech", "file", "concept", "location", "project"}
+
+# Map spaCy labels to M1 graph entity types
+_SPACY_TO_GRAPH: dict[str, str] = {
+    "PERSON": "person",
+    "ORG": "org",
+    "GPE": "location",
+    "PRODUCT": "tech",
+}
+
+
+def extract_graph_entities(text: str) -> list[tuple[str, str]]:
+    """
+    Extract entities suitable for graph_entities table.
+    Returns list of (name, entity_type) tuples.
+    Precedence (fallback mode): file → tech → project → person → location → concept.
+    """
+    if not text or not text.strip():
+        return []
+
+    results: list[tuple[str, str]] = []
+    seen: set[str] = set()  # canonical lowercase names
+
+    # If spaCy available, use it first (highest quality)
+    if spacy_available():
+        nlp = _get_spacy_nlp()
+        if nlp:
+            doc = nlp(text[:10000])
+            for ent in doc.ents:
+                graph_type = _SPACY_TO_GRAPH.get(ent.label_)
+                if graph_type and ent.text.strip():
+                    key = ent.text.strip().lower()
+                    if key not in seen and len(key) >= 3:
+                        seen.add(key)
+                        results.append((ent.text.strip(), graph_type))
+
+    # Fallback regex extraction in precedence order
+    # 1. Files
+    for m in _FILE_RE.finditer(text):
+        val = m.group(1)
+        key = val.lower()
+        if key not in seen and len(key) >= 3 and "/" in val:
+            seen.add(key)
+            results.append((val, "file"))
+
+    # 2. Tech terms
+    tech_terms = _load_tech_terms()
+    words = re.findall(r"[a-zA-Z][a-zA-Z0-9._-]*", text)
+    for w in words:
+        key = w.lower()
+        if key in tech_terms and key not in seen:
+            seen.add(key)
+            results.append((w, "tech"))
+
+    # 3. Projects (word-word patterns)
+    for m in _PROJECT_RE.finditer(text):
+        val = m.group(1)
+        key = val.lower()
+        if key not in seen and key not in tech_terms:
+            seen.add(key)
+            results.append((val, "project"))
+
+    # 4. Person names (only in fallback mode, if spaCy didn't run)
+    if not spacy_available():
+        for m in _PERSON_RE.finditer(text):
+            val = m.group(1)
+            key = val.lower()
+            if key not in seen:
+                seen.add(key)
+                results.append((val, "person"))
+
+    # 5. Concepts: words ≥5 chars appearing 2+ times, not already extracted
+    _stopwords = {
+        "about", "after", "again", "being", "below", "between", "could", "doing",
+        "during", "every", "first", "found", "given", "going", "having", "their",
+        "there", "these", "thing", "think", "those", "three", "through", "under",
+        "using", "value", "where", "which", "while", "would", "should", "other",
+        "before", "because", "already", "always", "another", "without", "within",
+    }
+    from collections import Counter
+    word_counts = Counter(w.lower() for w in re.findall(r"[a-zA-Z]{5,}", text))
+    for word, count in word_counts.most_common(10):
+        if count >= 2 and word not in seen and word not in _stopwords and word not in tech_terms:
+            seen.add(word)
+            results.append((word, "concept"))
+
+    return results[:20]  # Cap at 20 per spec
 
 
 def search_entities(

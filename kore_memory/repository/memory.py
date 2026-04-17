@@ -6,6 +6,7 @@ Save, get, update, delete, batch save, import/export.
 from __future__ import annotations
 
 import os
+import re as _re_mod
 from datetime import UTC, datetime, timedelta
 
 from ..database import _get_db_path, get_connection
@@ -26,6 +27,26 @@ def _embeddings_available() -> bool:
         except ImportError:
             _EMBEDDINGS_AVAILABLE = False
     return _EMBEDDINGS_AVAILABLE
+
+
+# ── M1: Dedup + Title helpers ────────────────────────────────────────────────
+
+import hashlib
+
+
+def _content_hash(content: str) -> str:
+    """SHA-256 hash of normalized content (trim + collapse whitespace, preserve case)."""
+    normalized = _re_mod.sub(r"\s+", " ", content.strip())
+    return hashlib.sha256(normalized.encode("utf-8")).hexdigest()[:32]
+
+
+def _auto_title(content: str) -> str:
+    """Generate title from first sentence or first line, max 120 chars."""
+    first_line = content.split("\n")[0].strip()
+    # Try first sentence
+    parts = _re_mod.split(r"(?<=[.!?])\s", first_line, maxsplit=1)
+    title = parts[0].strip()
+    return title[:120]
 
 
 def save_memory(
@@ -75,6 +96,28 @@ def save_memory(
     provenance_json = _json.dumps(req.provenance.model_dump()) if req.provenance else None
     now = datetime.now(UTC).isoformat()
 
+    # M1: content hash for dedup + title auto-generation
+    content_hash = _content_hash(req.content)
+    title = getattr(req, "title", None) or _auto_title(req.content)
+
+    # M1: dedup check (skip if supersedes_id set, KORE_DEDUP=0, or test mode)
+    from .. import config as _cfg
+
+    _dedup_enabled = (
+        req.supersedes_id is None
+        and os.getenv("KORE_DEDUP", "1") != "0"
+        and os.getenv("KORE_TEST_MODE", "0") != "1"
+    )
+    if _dedup_enabled:
+        with get_connection() as conn:
+            dup = conn.execute(
+                "SELECT id, importance FROM memories WHERE agent_id = ? AND content_hash = ?"
+                " AND created_at > datetime('now', '-5 minutes') AND compressed_into IS NULL LIMIT 1",
+                (agent_id, content_hash),
+            ).fetchone()
+            if dup:
+                return dup[0], dup[1], []
+
     with get_connection() as conn:
         # Auto-create session se necessario
         if session_id:
@@ -94,11 +137,13 @@ def save_memory(
             """
             INSERT INTO memories (
                 agent_id, content, category, importance, embedding, expires_at, session_id,
-                valid_from, valid_to, supersedes_id, confidence, provenance, memory_type
+                valid_from, valid_to, supersedes_id, confidence, provenance, memory_type,
+                title, content_hash
             )
             VALUES (
                 :agent_id, :content, :category, :importance, :embedding, :expires_at, :session_id,
-                :valid_from, :valid_to, :supersedes_id, :confidence, :provenance, :memory_type
+                :valid_from, :valid_to, :supersedes_id, :confidence, :provenance, :memory_type,
+                :title, :content_hash
             )
             """,
             {
@@ -115,6 +160,8 @@ def save_memory(
                 "confidence": req.confidence,
                 "provenance": provenance_json,
                 "memory_type": memory_type,
+                "title": title,
+                "content_hash": content_hash,
             },
         )
         row_id = cursor.lastrowid
@@ -330,7 +377,7 @@ def get_memory(memory_id: int, agent_id: str = "default") -> MemoryRecord | None
                       created_at, updated_at, NULL AS score,
                       valid_from, valid_to, invalidated_at, supersedes_id,
                       confidence, provenance, memory_type, archived_at,
-                      compressed_into
+                      compressed_into, title
                FROM memories
                WHERE id = ? AND agent_id = ? AND archived_at IS NULL""",
             (memory_id, agent_id),
