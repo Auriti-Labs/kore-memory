@@ -716,6 +716,22 @@ def compress(
     )
 
 
+@app.post("/consolidate")
+def consolidate(
+    request: Request,
+    body: dict | None = None,
+    _: str = _Auth,
+    agent_id: str = _Agent,
+) -> dict:
+    """Consolidate session memories into episodic summaries."""
+    _check_rate_limit(_get_client_ip(request), "/compress")
+    from .consolidation import consolidate_agent, consolidate_session
+
+    if body and body.get("session_id"):
+        return consolidate_session(body["session_id"], agent_id)
+    return consolidate_agent(agent_id)
+
+
 @app.post("/cleanup", response_model=CleanupExpiredResponse)
 def cleanup(
     _: str = _Auth,

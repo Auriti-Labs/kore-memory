@@ -720,6 +720,27 @@ def memory_explain(
     }
 
 
+# ── Session Consolidation (M3a) ──────────────────────────────────────────────
+
+
+@mcp.tool()
+def memory_consolidate(
+    agent_id: str = "",
+    session_id: str = "",
+) -> dict:
+    """
+    Consolidate session memories into episodic summaries.
+    If session_id is provided, consolidates only that session.
+    Otherwise, consolidates all eligible ended sessions for the agent.
+    """
+    aid = _sanitize_agent_id(agent_id)
+    from .consolidation import consolidate_agent, consolidate_session
+
+    if session_id.strip():
+        return consolidate_session(session_id.strip(), aid)
+    return consolidate_agent(aid)
+
+
 # ── Resources ────────────────────────────────────────────────────────────────
 
 

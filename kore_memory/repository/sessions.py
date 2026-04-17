@@ -57,13 +57,23 @@ def get_session_memories(session_id: str, agent_id: str = "default") -> list[Mem
 
 
 def end_session(session_id: str, agent_id: str = "default") -> bool:
-    """Mark a session as ended."""
+    """Mark a session as ended. Auto-consolidates if eligible (non-blocking)."""
     with get_connection() as conn:
         cursor = conn.execute(
             "UPDATE sessions SET ended_at = datetime('now') WHERE id = ? AND agent_id = ? AND ended_at IS NULL",
             (session_id, agent_id),
         )
-        return cursor.rowcount > 0
+        ended = cursor.rowcount > 0
+
+    if ended:
+        try:
+            from ..consolidation import consolidate_session
+
+            consolidate_session(session_id, agent_id)
+        except Exception:
+            pass  # non-blocking: session end succeeds even if consolidation fails
+
+    return ended
 
 
 def delete_session(session_id: str, agent_id: str = "default") -> int:

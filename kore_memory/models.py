@@ -56,7 +56,7 @@ def infer_memory_type(category: str) -> MemoryType:
 class ProvenanceSchema(BaseModel):
     """Provenienza di una memoria: chi l'ha creata, come, da dove."""
 
-    source_type: Literal["agent", "file", "import", "api"] = "agent"
+    source_type: Literal["agent", "file", "import", "api", "consolidation"] = "agent"
     source_ref: str | None = None
     author_agent: str | None = None
     session_id: str | None = None
