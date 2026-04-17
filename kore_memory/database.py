@@ -407,6 +407,48 @@ def init_db() -> None:
                 ON memories (agent_id, content_hash) WHERE content_hash IS NOT NULL;
         """)
 
+        # ── M2: Structured Memory Fields (v4.0) ─────────────────────────
+        _m2_migrations = {
+            "facts_json": "ALTER TABLE memories ADD COLUMN facts_json TEXT DEFAULT NULL",
+            "concepts_json": "ALTER TABLE memories ADD COLUMN concepts_json TEXT DEFAULT NULL",
+            "narrative": "ALTER TABLE memories ADD COLUMN narrative TEXT DEFAULT NULL",
+            "metadata_json": "ALTER TABLE memories ADD COLUMN metadata_json TEXT DEFAULT NULL",
+        }
+        for col, sql in _m2_migrations.items():
+            if col not in cols:
+                conn.execute(sql)
+
+        # M2: Update FTS triggers to index title + narrative alongside content
+        conn.executescript("""
+            DROP TRIGGER IF EXISTS memories_ai;
+            CREATE TRIGGER memories_ai AFTER INSERT ON memories BEGIN
+                INSERT INTO memories_fts (rowid, content, category)
+                VALUES (new.id,
+                        COALESCE(new.title, '') || ' ' || new.content || ' ' || COALESCE(new.narrative, ''),
+                        new.category);
+            END;
+
+            DROP TRIGGER IF EXISTS memories_ad;
+            CREATE TRIGGER memories_ad AFTER DELETE ON memories BEGIN
+                INSERT INTO memories_fts (memories_fts, rowid, content, category)
+                VALUES ('delete', old.id,
+                        COALESCE(old.title, '') || ' ' || old.content || ' ' || COALESCE(old.narrative, ''),
+                        old.category);
+            END;
+
+            DROP TRIGGER IF EXISTS memories_au;
+            CREATE TRIGGER memories_au AFTER UPDATE ON memories BEGIN
+                INSERT INTO memories_fts (memories_fts, rowid, content, category)
+                VALUES ('delete', old.id,
+                        COALESCE(old.title, '') || ' ' || old.content || ' ' || COALESCE(old.narrative, ''),
+                        old.category);
+                INSERT INTO memories_fts (rowid, content, category)
+                VALUES (new.id,
+                        COALESCE(new.title, '') || ' ' || new.content || ' ' || COALESCE(new.narrative, ''),
+                        new.category);
+            END;
+        """)
+
 
 @contextmanager
 def get_connection():

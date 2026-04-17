@@ -73,12 +73,17 @@ def save_memory(
 
     memory_type = req.memory_type or infer_memory_type(req.category)
 
+    # M2: Privacy filter — MUST run before title, hash, extraction, embedding
+    from ..privacy import privacy_filter
+
+    filtered_content = privacy_filter(req.content)
+
     embedding_blob = None
     if _embeddings_available():
         from ..embedder import embed, serialize
 
         try:
-            embedding_blob = serialize(embed(req.content))
+            embedding_blob = serialize(embed(filtered_content))
         except Exception:
             embedding_blob = None
 
@@ -96,9 +101,23 @@ def save_memory(
     provenance_json = _json.dumps(req.provenance.model_dump()) if req.provenance else None
     now = datetime.now(UTC).isoformat()
 
-    # M1: content hash for dedup + title auto-generation
-    content_hash = _content_hash(req.content)
-    title = getattr(req, "title", None) or _auto_title(req.content)
+    # M1: content hash + title — derived from filtered content
+    content_hash = _content_hash(filtered_content)
+    title = getattr(req, "title", None) or _auto_title(filtered_content)
+
+    # M2: Structured extraction — derived from filtered content
+    from ..structured import extract_structured
+
+    auto_facts, auto_concepts, auto_narrative = extract_structured(filtered_content)
+    # Explicit overrides take priority
+    facts = getattr(req, "facts", None) or auto_facts
+    concepts = getattr(req, "concepts", None) or auto_concepts
+    narrative = getattr(req, "narrative", None) or auto_narrative
+    # Serialize
+    facts_json = _json.dumps(facts) if facts else None
+    concepts_json = _json.dumps(concepts) if concepts else None
+    narrative_str = narrative[:500] if narrative else None
+    metadata_json = _json.dumps(req.metadata) if req.metadata else None
 
     # M1: dedup check (skip if supersedes_id set, KORE_DEDUP=0, or test mode)
     from .. import config as _cfg
@@ -138,17 +157,17 @@ def save_memory(
             INSERT INTO memories (
                 agent_id, content, category, importance, embedding, expires_at, session_id,
                 valid_from, valid_to, supersedes_id, confidence, provenance, memory_type,
-                title, content_hash
+                title, content_hash, facts_json, concepts_json, narrative, metadata_json
             )
             VALUES (
                 :agent_id, :content, :category, :importance, :embedding, :expires_at, :session_id,
                 :valid_from, :valid_to, :supersedes_id, :confidence, :provenance, :memory_type,
-                :title, :content_hash
+                :title, :content_hash, :facts_json, :concepts_json, :narrative, :metadata_json
             )
             """,
             {
                 "agent_id": agent_id,
-                "content": req.content,
+                "content": filtered_content,
                 "category": req.category,
                 "importance": importance,
                 "embedding": embedding_blob,
@@ -162,6 +181,10 @@ def save_memory(
                 "memory_type": memory_type,
                 "title": title,
                 "content_hash": content_hash,
+                "facts_json": facts_json,
+                "concepts_json": concepts_json,
+                "narrative": narrative_str,
+                "metadata_json": metadata_json,
             },
         )
         row_id = cursor.lastrowid
@@ -193,7 +216,7 @@ def save_memory(
         from ..integrations.entities import auto_tag_entities
 
         try:
-            auto_tag_entities(row_id, req.content, agent_id)
+            auto_tag_entities(row_id, filtered_content, agent_id)
         except Exception:
             pass  # graceful degradation
 
@@ -205,7 +228,7 @@ def save_memory(
 
             conflicts = detect_conflicts(
                 memory_id=row_id,
-                content=req.content,
+                content=filtered_content,
                 agent_id=agent_id,
                 valid_from=valid_from,
                 valid_to=valid_to,
@@ -377,7 +400,8 @@ def get_memory(memory_id: int, agent_id: str = "default") -> MemoryRecord | None
                       created_at, updated_at, NULL AS score,
                       valid_from, valid_to, invalidated_at, supersedes_id,
                       confidence, provenance, memory_type, archived_at,
-                      compressed_into, title
+                      compressed_into, title,
+                      facts_json, concepts_json, narrative, metadata_json
                FROM memories
                WHERE id = ? AND agent_id = ? AND archived_at IS NULL""",
             (memory_id, agent_id),
@@ -467,7 +491,8 @@ def export_memories(agent_id: str = "default") -> list[dict]:
         rows = conn.execute(
             """
             SELECT id, content, category, importance, decay_score,
-                   access_count, last_accessed, created_at, updated_at
+                   access_count, last_accessed, created_at, updated_at,
+                   title, facts_json, concepts_json, narrative, metadata_json
             FROM memories
             WHERE agent_id = ? AND compressed_into IS NULL
               AND archived_at IS NULL

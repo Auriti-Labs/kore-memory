@@ -792,7 +792,16 @@ def _row_to_record(row) -> MemoryRecord:
         except (ValueError, TypeError):
             pass
 
-    # conflicted_ids viene aggiornato post-hoc in search_memories (bulk load)
+    # M2: deserialize structured JSON fields
+    def _json_field(field_name):
+        raw = _row_field(row, field_name)
+        if raw:
+            try:
+                return json.loads(raw)
+            except (ValueError, TypeError):
+                pass
+        return None
+
     return MemoryRecord(
         id=row["id"],
         content=row["content"],
@@ -809,6 +818,10 @@ def _row_to_record(row) -> MemoryRecord:
         valid_to=_row_field(row, "valid_to"),
         supersedes_id=_row_field(row, "supersedes_id"),
         provenance=provenance_dict,
+        facts=_json_field("facts_json"),
+        concepts=_json_field("concepts_json"),
+        narrative=_row_field(row, "narrative"),
+        metadata=_json_field("metadata_json"),
         status=_compute_memory_status(row),
-        conditions=_compute_conditions(row),  # conflicted aggiunto in search_memories
+        conditions=_compute_conditions(row),
     )

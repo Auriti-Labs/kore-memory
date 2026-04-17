@@ -94,6 +94,9 @@ class MemorySaveRequest(BaseModel):
     memory_type: MemoryType | None = Field(None, description="Tipo cognitivo: None = inferito dalla category")
     metadata: dict | None = Field(None, description="Campi strutturati specifici per category (coding mode)")
     title: str | None = Field(None, max_length=120, description="Titolo esplicito (auto-generato se assente)")
+    facts: list[str] | None = Field(None, max_length=20, description="Fatti espliciti (override auto-extraction)")
+    concepts: list[str] | None = Field(None, max_length=15, description="Concetti espliciti (override auto-extraction)")
+    narrative: str | None = Field(None, max_length=500, description="Riassunto esplicito (override auto-extraction)")
 
     @field_validator("content")
     @classmethod
@@ -160,6 +163,11 @@ class MemoryRecord(BaseModel):
     valid_to: datetime | None = None
     supersedes_id: int | None = None
     provenance: dict | None = None
+    # M2: structured fields
+    facts: list[str] | None = None
+    concepts: list[str] | None = None
+    narrative: str | None = None
+    metadata: dict | None = None
     # Stato derivato (non persistito) — calcolato da _compute_memory_status()
     status: str = "active"
     conditions: list[str] = Field(default_factory=list)
