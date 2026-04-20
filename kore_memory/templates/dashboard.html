@@ -1310,7 +1310,13 @@ function hitTestNode(gx, gy) {
 }
 
 function loadGraph() {
+  /* Defer to next frame so the page is visible and canvas has dimensions */
+  requestAnimationFrame(function() { _loadGraphInner(); });
+}
+
+function _loadGraphInner() {
   var canvas = $('#graph-canvas');
+  if (!canvas.offsetWidth || !canvas.offsetHeight) return;
   var ctx = canvas.getContext('2d');
   canvas.width = canvas.offsetWidth * (window.devicePixelRatio || 1);
   canvas.height = canvas.offsetHeight * (window.devicePixelRatio || 1);
