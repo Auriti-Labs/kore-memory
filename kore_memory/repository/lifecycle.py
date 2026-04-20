@@ -33,7 +33,7 @@ def cleanup_expired(agent_id: str | None = None) -> int:
 
 def run_decay_pass(
     agent_id: str | None = None, dry_run: bool = False,
-) -> tuple[int, "PolicyRunResult | None"]:
+) -> tuple[int, object | None]:
     """
     Recalculate decay_score for all active memories (optionally scoped to agent).
     Also cleans up memories with elapsed TTL and runs lifecycle policies.
