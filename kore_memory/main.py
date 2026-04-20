@@ -62,6 +62,9 @@ from .models import (
     OverlayWatchRequest,
     OverlayWatchResponse,
     PluginListResponse,
+    PolicyListResponse,
+    PolicyToggleResponse,
+    LifecyclePolicyRecord,
     RelationRecord,
     RelationRequest,
     RelationResponse,
@@ -689,13 +692,71 @@ def relation_list(
 @app.post("/decay/run", response_model=DecayRunResponse)
 def decay_run(
     request: Request,
+    dry_run: bool = Query(False, description="If true, evaluate policies without applying actions"),
     _: str = _Auth,
     agent_id: str = _Agent,
 ) -> DecayRunResponse:
-    """Recalculate decay scores for agent's memories."""
+    """Recalculate decay scores for agent's memories and run lifecycle policies."""
     _check_rate_limit(_get_client_ip(request), "/decay/run")
-    updated = run_decay_pass(agent_id=agent_id)
-    return DecayRunResponse(updated=updated)
+    updated, policy_result = run_decay_pass(agent_id=agent_id, dry_run=dry_run)
+
+    return DecayRunResponse(
+        updated=updated,
+        policies_evaluated=policy_result.evaluated if policy_result else 0,
+        policies_archived=policy_result.archived if policy_result else 0,
+        policies_flagged=policy_result.flagged if policy_result else 0,
+    )
+
+
+@app.get("/lifecycle/policies", response_model=PolicyListResponse)
+def list_policies(
+    _: str = _Auth,
+    agent_id: str = _Agent,
+) -> PolicyListResponse:
+    """List all lifecycle policies (global + agent-specific)."""
+    import json
+
+    from .database import get_connection
+
+    with get_connection() as conn:
+        rows = conn.execute(
+            "SELECT id, agent_id, name, trigger, action, params_json, enabled, created_at "
+            "FROM lifecycle_policies WHERE agent_id = '*' OR agent_id = ? ORDER BY id",
+            (agent_id,),
+        ).fetchall()
+
+    policies = [
+        LifecyclePolicyRecord(
+            id=r["id"], agent_id=r["agent_id"], name=r["name"],
+            trigger=r["trigger"], action=r["action"],
+            params=json.loads(r["params_json"]), enabled=bool(r["enabled"]),
+            created_at=r["created_at"],
+        )
+        for r in rows
+    ]
+    return PolicyListResponse(policies=policies, total=len(policies))
+
+
+@app.put("/lifecycle/policies/{policy_id}/enabled", response_model=PolicyToggleResponse)
+def toggle_policy(
+    policy_id: str,
+    enabled: bool = Query(..., description="Enable or disable the policy"),
+    _: str = _Auth,
+) -> PolicyToggleResponse:
+    """Enable or disable a lifecycle policy."""
+    from .database import get_connection
+
+    with get_connection() as conn:
+        cursor = conn.execute(
+            "UPDATE lifecycle_policies SET enabled = ? WHERE id = ?",
+            (int(enabled), policy_id),
+        )
+    if cursor.rowcount == 0:
+        raise HTTPException(404, f"Policy '{policy_id}' not found")
+    return PolicyToggleResponse(
+        id=policy_id, enabled=enabled,
+        message=f"Policy {'enabled' if enabled else 'disabled'}",
+    )
 
 
 @app.post("/compress", response_model=CompressRunResponse)

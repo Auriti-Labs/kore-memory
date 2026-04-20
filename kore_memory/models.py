@@ -257,6 +257,35 @@ class RelationResponse(BaseModel):
 class DecayRunResponse(BaseModel):
     updated: int
     message: str = "Decay pass complete"
+    # Lifecycle policy results (populated when policies are enabled)
+    policies_evaluated: int = 0
+    policies_archived: int = 0
+    policies_flagged: int = 0
+
+
+# ── Lifecycle Policies ───────────────────────────────────────────────────────
+
+
+class LifecyclePolicyRecord(BaseModel):
+    id: str
+    agent_id: str
+    name: str
+    trigger: str
+    action: str
+    params: dict
+    enabled: bool
+    created_at: str
+
+
+class PolicyListResponse(BaseModel):
+    policies: list[LifecyclePolicyRecord]
+    total: int
+
+
+class PolicyToggleResponse(BaseModel):
+    id: str
+    enabled: bool
+    message: str = ""
 
 
 class CleanupExpiredResponse(BaseModel):

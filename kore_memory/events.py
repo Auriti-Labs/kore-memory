@@ -24,6 +24,7 @@ MEMORY_COMPRESSED = "memory.compressed"
 MEMORY_DECAYED = "memory.decayed"
 MEMORY_ARCHIVED = "memory.archived"
 MEMORY_RESTORED = "memory.restored"
+POLICY_APPLIED = "policy.applied"
 
 
 def on(event: str, handler: EventHandler) -> None:

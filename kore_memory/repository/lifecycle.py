@@ -31,19 +31,34 @@ def cleanup_expired(agent_id: str | None = None) -> int:
         return cursor.rowcount
 
 
-def run_decay_pass(agent_id: str | None = None) -> int:
+def run_decay_pass(
+    agent_id: str | None = None, dry_run: bool = False,
+) -> tuple[int, "PolicyRunResult | None"]:
     """
     Recalculate decay_score for all active memories (optionally scoped to agent).
-    Also cleans up memories with elapsed TTL.
-    Returns the count of memories updated. Thread-safe: only one run at a time.
+    Also cleans up memories with elapsed TTL and runs lifecycle policies.
+    Returns (memories_updated, policy_result). Thread-safe: only one run at a time.
     """
     if not _decay_lock.acquire(blocking=False):
-        return 0  # run already in progress — silent skip
+        return 0, None  # run already in progress — silent skip
 
     try:
         # Clean up expired memories before recalculating
         cleanup_expired(agent_id)
-        return _run_decay_pass_inner(agent_id)
+        updated = _run_decay_pass_inner(agent_id)
+
+        # Run lifecycle policies after decay recalculation
+        from ..policy_engine import evaluate_and_apply
+
+        policy_result = None
+        try:
+            policy_result = evaluate_and_apply(agent_id=agent_id, dry_run=dry_run)
+        except Exception:
+            import logging
+
+            logging.getLogger("kore.lifecycle").exception("Policy engine error during decay pass")
+
+        return updated, policy_result
     finally:
         _decay_lock.release()
 

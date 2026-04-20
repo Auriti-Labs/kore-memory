@@ -40,6 +40,7 @@ def register_audit_handler() -> None:
         events.MEMORY_DECAYED,
         events.MEMORY_ARCHIVED,
         events.MEMORY_RESTORED,
+        events.POLICY_APPLIED,
     ]
     for event_type in all_events:
         events.on(event_type, _audit_handler)

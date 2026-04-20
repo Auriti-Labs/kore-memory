@@ -107,6 +107,19 @@ def _load_conflicted_ids(memory_ids: list[int], agent_id: str) -> set[int]:
     return conflicted & ids_set
 
 
+def _load_flagged_ids(memory_ids: list[int]) -> set[int]:
+    """Load memory IDs that have been flagged by lifecycle policies."""
+    if not memory_ids:
+        return set()
+    placeholders = ",".join("?" for _ in memory_ids)
+    with get_connection() as conn:
+        rows = conn.execute(
+            f"SELECT DISTINCT memory_id FROM policy_flags WHERE memory_id IN ({placeholders})",
+            memory_ids,
+        ).fetchall()
+    return {r[0] for r in rows}
+
+
 def _load_embeddings(memory_ids: list[int]) -> dict[int, list[float]]:
     """
     Carica embeddings dalla tabella memories in bulk.
@@ -394,6 +407,12 @@ def search_memories(
     for record in results:
         if record.id in conflicted_ids and "conflicted" not in record.conditions:
             record.conditions.append("conflicted")
+
+    # Carica policy_flagged IDs
+    flagged_ids = _load_flagged_ids(result_ids) if result_ids else set()
+    for record in results:
+        if record.id in flagged_ids and "policy_flagged" not in record.conditions:
+            record.conditions.append("policy_flagged")
 
     # Carica embeddings per task_relevance (solo se task fornito e embedder disponibile)
     embedding_map: dict[int, list[float]] = {}

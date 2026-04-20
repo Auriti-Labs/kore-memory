@@ -218,8 +218,14 @@ def memory_decay_run(agent_id: str = "default") -> dict:
     Recalculate the decay score of all memories for the agent.
     Memories that have not been accessed decay over time following the Ebbinghaus curve.
     """
-    updated = run_decay_pass(agent_id=_sanitize_agent_id(agent_id))
-    return {"updated": updated, "message": "Decay pass complete"}
+    updated, policy_result = run_decay_pass(agent_id=_sanitize_agent_id(agent_id))
+    return {
+        "updated": updated,
+        "message": "Decay pass complete",
+        "policies_evaluated": policy_result.evaluated if policy_result else 0,
+        "policies_archived": policy_result.archived if policy_result else 0,
+        "policies_flagged": policy_result.flagged if policy_result else 0,
+    }
 
 
 @mcp.tool()
