@@ -1036,20 +1036,23 @@ function loadPageData(pageId) {
 function loadOverview() {
   Promise.all([
     api.get('/health'),
-    api.get('/search?q=*&limit=20&semantic=false'),
+    api.get('/analytics'),
     api.get('/agents'),
-    api.get('/stats/scoring').catch(function() { return null; }),
+    api.get('/graph/hubs?limit=6').catch(function() { return { hubs: [] }; }),
     api.get('/archive?limit=1').catch(function() { return { total: 0 }; }),
   ]).then(function(results) {
-    var health = results[0], searchRes = results[1], agents = results[2], scoring = results[3], arch = results[4];
+    var health = results[0], analytics = results[1], agents = results[2], hubs = results[3], arch = results[4];
 
     state.version = health.version || '';
     state.semanticEnabled = health.semantic_search || false;
     $('#version-badge').textContent = 'v' + state.version;
 
-    var totalMem = searchRes.total || 0;
+    var totalMem = analytics.total_memories || 0;
     var agentCount = agents ? (agents.total || (agents.agents || agents).length) : 0;
-    var avgImp = scoring ? (scoring.avg_importance || 0).toFixed(1) : '\u2014';
+    var impDist = analytics.importance_distribution || {};
+    var impSum = 0, impCount = 0;
+    Object.keys(impDist).forEach(function(k) { impSum += parseInt(k) * impDist[k]; impCount += impDist[k]; });
+    var avgImp = impCount > 0 ? (impSum / impCount).toFixed(1) : '\u2014';
     var semStatus = state.semanticEnabled ? 'Active' : 'Off';
     var archivedCount = arch.total || 0;
 
@@ -1063,7 +1066,7 @@ function loadOverview() {
     );
 
     /* Recent memories */
-    var recent = (searchRes.results || []).slice(0, 6);
+    var recent = (hubs.hubs || []).slice(0, 6);
     if (recent.length) {
       var rhtml = '';
       recent.forEach(function(m) {
@@ -1115,15 +1118,70 @@ function loadOverview() {
 /* ═══════════════════════════════════════════════════════════════════════
    PAGE: Memories
    ═══════════════════════════════════════════════════════════════════════ */
+function _renderMemCards(list, memories) {
+  var html = '';
+  memories.forEach(function(m) {
+    html += '<div class="memory-card" data-id="' + m.id + '">' +
+      '<div class="memory-card-header"><div style="display:flex;gap:8px;align-items:center">' +
+      '<span class="badge badge-' + esc(m.category) + '">' + esc(m.category) + '</span>' +
+      '<span style="font-size:11px;color:var(--text-dim)">#' + m.id + '</span></div>' +
+      '<div class="memory-card-actions">' +
+      '<button class="btn-ghost btn-sm" title="Edit" data-edit="' + m.id + '"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>' +
+      '<button class="btn-ghost btn-sm" title="Archive" data-archive="' + m.id + '"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg></button>' +
+      '<button class="btn-ghost btn-sm" title="Delete" data-delete="' + m.id + '" style="color:var(--danger)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>' +
+      '</div></div>' +
+      '<div class="memory-card-content">' + esc(m.content) + '</div>' +
+      '<div class="memory-card-footer">' +
+      '<div class="importance" title="Importance: ' + m.importance + '/5">' + importanceDots(m.importance) + '</div>' +
+      '<div style="display:flex;align-items:center;gap:4px" title="Decay: ' + (m.decay_score*100).toFixed(0) + '%">' +
+      '<div class="decay-bar"><div class="decay-bar-fill" style="width:' + (m.decay_score*100).toFixed(0) + '%;background:' + decayColor(m.decay_score) + '"></div></div>' +
+      '<span style="font-size:10px;color:var(--text-dim)">' + (m.decay_score*100).toFixed(0) + '%</span></div>' +
+      '<span class="meta">' + fmtDate(m.created_at) + '</span>' +
+      '</div></div>';
+  });
+  safeRender(list, html);
+  list.querySelectorAll('[data-edit]').forEach(function(btn) {
+    btn.addEventListener('click', function() { openEditMemory(parseInt(btn.dataset.edit)); });
+  });
+  list.querySelectorAll('[data-archive]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      api.post('/memories/' + btn.dataset.archive + '/archive').then(function() {
+        toast('Memory archived', 'success'); loadMemories();
+      }).catch(function(e) { toast(e.message, 'error'); });
+    });
+  });
+  list.querySelectorAll('[data-delete]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      if (confirm('Delete memory #' + btn.dataset.delete + '?')) {
+        api.del('/memories/' + btn.dataset.delete).then(function() {
+          toast('Memory deleted', 'success'); loadMemories();
+        }).catch(function(e) { toast(e.message, 'error'); });
+      }
+    });
+  });
+}
+
 var memSearchTimeout = null;
 
 function loadMemories(query) {
-  var q = query || ($('#mem-search') ? $('#mem-search').value.trim() : '') || '*';
+  var q = query || ($('#mem-search') ? $('#mem-search').value.trim() : '');
   var cat = $('#mem-category') ? $('#mem-category').value : '';
   var semantic = $('#mem-semantic') ? $('#mem-semantic').checked : true;
   var list = $('#memories-list');
 
   safeRender(list, '<div class="loading-center"><div class="spinner"></div></div>');
+
+  if (!q) {
+    api.get('/graph/hubs?limit=20').then(function(data) {
+      var memories = data.hubs || [];
+      if (!memories.length) {
+        safeRender(list, '<div class="empty-state"><p>No memories yet. Save your first memory to get started.</p></div>');
+        return;
+      }
+      _renderMemCards(list, memories);
+    }).catch(function(e) { toast('Error: ' + e.message, 'error'); });
+    return;
+  }
 
   var url = '/search?q=' + encodeURIComponent(q) + '&limit=20&semantic=' + semantic;
   if (cat) url += '&category=' + encodeURIComponent(cat);
@@ -1133,49 +1191,7 @@ function loadMemories(query) {
       safeRender(list, '<div class="empty-state"><p>No memories found. Try another search.</p></div>');
       return;
     }
-
-    var html = '';
-    data.results.forEach(function(m) {
-      html += '<div class="memory-card" data-id="' + m.id + '">' +
-        '<div class="memory-card-header"><div style="display:flex;gap:8px;align-items:center">' +
-        '<span class="badge badge-' + esc(m.category) + '">' + esc(m.category) + '</span>' +
-        '<span style="font-size:11px;color:var(--text-dim)">#' + m.id + '</span></div>' +
-        '<div class="memory-card-actions">' +
-        '<button class="btn-ghost btn-sm" title="Edit" data-edit="' + m.id + '"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>' +
-        '<button class="btn-ghost btn-sm" title="Archive" data-archive="' + m.id + '"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg></button>' +
-        '<button class="btn-ghost btn-sm" title="Delete" data-delete="' + m.id + '" style="color:var(--danger)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>' +
-        '</div></div>' +
-        '<div class="memory-card-content">' + esc(m.content) + '</div>' +
-        '<div class="memory-card-footer">' +
-        '<div class="importance" title="Importance: ' + m.importance + '/5">' + importanceDots(m.importance) + '</div>' +
-        '<div style="display:flex;align-items:center;gap:4px" title="Decay: ' + (m.decay_score*100).toFixed(0) + '%">' +
-        '<div class="decay-bar"><div class="decay-bar-fill" style="width:' + (m.decay_score*100).toFixed(0) + '%;background:' + decayColor(m.decay_score) + '"></div></div>' +
-        '<span style="font-size:10px;color:var(--text-dim)">' + (m.decay_score*100).toFixed(0) + '%</span></div>' +
-        '<span class="meta">' + fmtDate(m.created_at) + '</span>' +
-        '</div></div>';
-    });
-    safeRender(list, html);
-
-    /* Event handlers */
-    list.querySelectorAll('[data-edit]').forEach(function(btn) {
-      btn.addEventListener('click', function() { openEditMemory(parseInt(btn.dataset.edit)); });
-    });
-    list.querySelectorAll('[data-archive]').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        api.post('/memories/' + btn.dataset.archive + '/archive').then(function() {
-          toast('Memory archived', 'success'); loadMemories();
-        }).catch(function(e) { toast(e.message, 'error'); });
-      });
-    });
-    list.querySelectorAll('[data-delete]').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        if (!confirm('Delete this memory?')) return;
-        api.del('/memories/' + btn.dataset.delete).then(function() {
-          toast('Memory deleted', 'success'); loadMemories();
-        }).catch(function(e) { toast(e.message, 'error'); });
-      });
-    });
-
+    _renderMemCards(list, data.results);
   }).catch(function(e) {
     safeRender(list, '<div class="empty-state"><p>Error: ' + esc(e.message) + '</p></div>');
   });
@@ -1199,27 +1215,16 @@ function openEditMemory(id) {
    PAGE: Tags & Relations
    ═══════════════════════════════════════════════════════════════════════ */
 function loadTags() {
-  api.get('/search?q=*&limit=20&semantic=false').then(function(data) {
-    var tagMap = {};
-    var promises = (data.results || []).map(function(m) {
-      return api.get('/memories/' + m.id + '/tags').then(function(t) {
-        (t.tags || []).forEach(function(tag) {
-          if (!tagMap[tag]) tagMap[tag] = { count: 0 };
-          tagMap[tag].count++;
-        });
-      }).catch(function() {});
-    });
+  api.get('/analytics').then(function(data) {
+    var tags = data.top_tags || [];
+    var cloud = $('#tag-cloud');
 
-    return Promise.all(promises).then(function() {
-      var cloud = $('#tag-cloud');
-      var tags = Object.entries(tagMap).sort(function(a, b) { return b[1].count - a[1].count; });
-
-      if (tags.length) {
-        var html = '';
-        tags.forEach(function(entry) {
-          html += '<span class="badge badge-tag" data-tag="' + esc(entry[0]) + '" title="' + entry[1].count + ' memories">' + esc(entry[0]) + ' (' + entry[1].count + ')</span>';
-        });
-        safeRender(cloud, html);
+    if (tags.length) {
+      var html = '';
+      tags.forEach(function(entry) {
+        html += '<span class="badge badge-tag" data-tag="' + esc(entry.tag) + '" title="' + entry.count + ' memories">' + esc(entry.tag) + ' (' + entry.count + ')</span>';
+      });
+      safeRender(cloud, html);
         cloud.querySelectorAll('[data-tag]').forEach(function(el) {
           el.addEventListener('click', function() {
             api.get('/tags/' + encodeURIComponent(el.dataset.tag) + '/memories').then(function(res) {
@@ -1319,8 +1324,8 @@ function loadGraph() {
   graphState.dragNode = null; graphState.hoveredNode = null;
   graphState.selectedNode = null; graphState.settled = false; graphState.iteration = 0;
 
-  api.get('/search?q=*&limit=20&semantic=false').then(function(data) {
-    var memories = data.results || [];
+  api.get('/graph/hubs?limit=20').then(function(data) {
+    var memories = data.hubs || [];
     /* Distribute nodes in a circle for better initial layout */
     graphNodes = memories.map(function(m, i) {
       var angle = (2 * Math.PI * i) / memories.length;

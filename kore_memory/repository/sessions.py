@@ -5,7 +5,11 @@ Create, list, end, delete, summarize conversation sessions.
 
 from __future__ import annotations
 
+import logging
+
 from ..database import get_connection
+
+_logger = logging.getLogger(__name__)
 from ..models import MemoryRecord
 from .search import _row_to_record
 
@@ -71,7 +75,7 @@ def end_session(session_id: str, agent_id: str = "default") -> bool:
 
             consolidate_session(session_id, agent_id)
         except Exception:
-            pass  # non-blocking: session end succeeds even if consolidation fails
+            _logger.exception("Session consolidation failed for session=%s agent=%s", session_id, agent_id)
 
     return ended
 

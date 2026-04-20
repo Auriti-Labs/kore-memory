@@ -430,7 +430,7 @@ def memory_save_decision(
         "decided_by": decided_by,
         "still_valid": True,
     }
-    sanitized = _sanitize_agent_id(f"{agent_id}/{repo}" if repo else agent_id)
+    sanitized = _sanitize_agent_id(agent_id)
     session_id = _get_or_create_session(sanitized)
     req = MemorySaveRequest(
         content=content,
@@ -463,7 +463,7 @@ def memory_get_runbook(
 
     Example: memory_get_runbook(trigger="deploy failed", component="api-gateway")
     """
-    sanitized = _sanitize_agent_id(f"{agent_id}/{repo}" if repo else agent_id)
+    sanitized = _sanitize_agent_id(agent_id)
     query = " ".join(filter(None, [trigger, component])) or "*"
     results, _, total, _excluded = search_memories(
         query=query,
@@ -511,7 +511,7 @@ def memory_log_regression(
         "fixed_in": fixed_in,
         "test_ref": test_ref,
     }
-    sanitized = _sanitize_agent_id(f"{agent_id}/{repo}" if repo else agent_id)
+    sanitized = _sanitize_agent_id(agent_id)
     session_id = _get_or_create_session(sanitized)
     req = MemorySaveRequest(
         content=content,
@@ -557,7 +557,7 @@ def memory_log_root_cause(
         "affected_component": affected_component,
         "fix_applied": fix_applied,
     }
-    sanitized = _sanitize_agent_id(f"{agent_id}/{repo}" if repo else agent_id)
+    sanitized = _sanitize_agent_id(agent_id)
     session_id = _get_or_create_session(sanitized)
     req = MemorySaveRequest(
         content=content,

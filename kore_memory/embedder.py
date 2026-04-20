@@ -56,7 +56,7 @@ def get_model() -> SentenceTransformer:
     logger.info(
         "Loaded model %s (dim=%d, asymmetric=%s)",
         MODEL_NAME,
-        model.get_sentence_embedding_dimension(),
+        model.get_embedding_dimension(),
         bool(has_prompts),
     )
     return model
@@ -116,7 +116,7 @@ def embed_batch(texts: list[str]) -> list[list[float]]:
 def get_dimensions() -> int:
     """Return the embedding dimension of the current model."""
     model = get_model()
-    return model.get_sentence_embedding_dimension()
+    return model.get_embedding_dimension()
 
 
 def cosine_similarity(a: list[float], b: list[float]) -> float:

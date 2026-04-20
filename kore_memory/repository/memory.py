@@ -210,8 +210,6 @@ def save_memory(
     emit(MEMORY_SAVED, {"id": row_id, "agent_id": agent_id})
 
     # Entity extraction (optional, enabled via KORE_ENTITY_EXTRACTION=1)
-    from .. import config as _cfg
-
     if _cfg.ENTITY_EXTRACTION:
         from ..integrations.entities import auto_tag_entities
 

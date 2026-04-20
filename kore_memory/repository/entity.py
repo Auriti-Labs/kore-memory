@@ -68,7 +68,8 @@ def link_memory_entity(
     def _do(c):
         try:
             c.execute(
-                "INSERT OR IGNORE INTO memory_entity_links (memory_id, entity_id, role, confidence) VALUES (?, ?, ?, ?)",
+                "INSERT OR IGNORE INTO memory_entity_links"
+                " (memory_id, entity_id, role, confidence) VALUES (?, ?, ?, ?)",
                 (memory_id, entity_id, role, confidence),
             )
             return True
@@ -96,8 +97,7 @@ def link_entities_to_memory(
     with get_connection() as conn:
         for name, etype in entities[:_MAX_ENTITIES_PER_MEMORY]:
             eid = get_or_create_entity(agent_id, name, etype, conn=conn)
-            if eid is not None:
-                if link_memory_entity(memory_id, eid, role=role, conn=conn):
+            if eid is not None and link_memory_entity(memory_id, eid, role=role, conn=conn):
                     linked += 1
     return linked
 
