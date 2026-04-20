@@ -1163,14 +1163,15 @@ function _renderMemCards(list, memories) {
 var memSearchTimeout = null;
 
 function loadMemories(query) {
-  var q = query || ($('#mem-search') ? $('#mem-search').value.trim() : '');
+  var searchEl = $('#mem-search');
+  var q = query || (searchEl ? searchEl.value.trim() : '');
   var cat = $('#mem-category') ? $('#mem-category').value : '';
   var semantic = $('#mem-semantic') ? $('#mem-semantic').checked : true;
   var list = $('#memories-list');
 
   safeRender(list, '<div class="loading-center"><div class="spinner"></div></div>');
 
-  if (!q) {
+  if (!q && !cat) {
     api.get('/graph/hubs?limit=20').then(function(data) {
       var memories = data.hubs || [];
       if (!memories.length) {
@@ -1182,7 +1183,7 @@ function loadMemories(query) {
     return;
   }
 
-  var url = '/search?q=' + encodeURIComponent(q) + '&limit=20&semantic=' + semantic;
+  var url = '/search?q=' + encodeURIComponent(q || 'memory') + '&limit=20&semantic=' + semantic;
   if (cat) url += '&category=' + encodeURIComponent(cat);
 
   api.get(url).then(function(data) {
