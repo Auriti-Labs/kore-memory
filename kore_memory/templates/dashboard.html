@@ -1081,8 +1081,7 @@ function loadOverview() {
     }
 
     /* Category distribution */
-    var cats = {};
-    (searchRes.results || []).forEach(function(m) { cats[m.category] = (cats[m.category] || 0) + 1; });
+    var cats = analytics.categories || {};
     var maxCat = Math.max.apply(null, Object.values(cats).concat([1]));
     var catEntries = Object.entries(cats).sort(function(a, b) { return b[1] - a[1]; });
 
