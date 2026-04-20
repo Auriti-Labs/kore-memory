@@ -118,8 +118,7 @@ def consolidate_session(session_id: str, agent_id: str = "default") -> dict:
     provenance_ref = f"session:{session_id}"
     with get_connection() as conn:
         existing = conn.execute(
-            "SELECT id FROM memories WHERE agent_id = ? AND memory_type = 'episodic'"
-            " AND provenance LIKE ?",
+            "SELECT id FROM memories WHERE agent_id = ? AND memory_type = 'episodic' AND provenance LIKE ?",
             (agent_id, f'%"source_ref": "{provenance_ref}"%'),
         ).fetchone()
     if existing:
@@ -164,14 +163,17 @@ def consolidate_session(session_id: str, agent_id: str = "default") -> dict:
 
     # Gate 4: minimum candidates
     if len(candidates) < 3:
-        return {"consolidated": False, "skipped": "too_few_candidates",
-                "candidates": len(candidates), "excluded_conflicted": excluded_conflicted}
+        return {
+            "consolidated": False,
+            "skipped": "too_few_candidates",
+            "candidates": len(candidates),
+            "excluded_conflicted": excluded_conflicted,
+        }
 
     # Gate 5: avg confidence
     avg_conf = sum(m.get("confidence") or 1.0 for m in candidates) / len(candidates)
     if avg_conf < 0.5:
-        return {"consolidated": False, "skipped": "low_confidence",
-                "avg_confidence": round(avg_conf, 2)}
+        return {"consolidated": False, "skipped": "low_confidence", "avg_confidence": round(avg_conf, 2)}
 
     # Classify: has structured fields?
     has_structured = any(m.get("facts_json") for m in candidates)

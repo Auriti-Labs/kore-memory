@@ -889,8 +889,7 @@ def main():
             # No token: only allow localhost binding
             if args.host not in ("127.0.0.1", "localhost", "::1"):
                 logger.error(
-                    "Refusing to bind to %s without KORE_MCP_TOKEN. "
-                    "Set KORE_MCP_TOKEN or use --host 127.0.0.1.",
+                    "Refusing to bind to %s without KORE_MCP_TOKEN. Set KORE_MCP_TOKEN or use --host 127.0.0.1.",
                     args.host,
                 )
                 raise SystemExit(1)

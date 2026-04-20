@@ -19,10 +19,13 @@ _PATTERNS: list[tuple[re.Pattern, str]] = [
     # Connection strings with password (://user:pass@host)
     (re.compile(r"(://[^:]+:)[^@\s]+(@)"), r"\1[REDACTED]\2"),
     # Secret assignments: password = "...", token = '...', api_key: "..."
-    (re.compile(
-        r'''((?:password|secret|token|api_key|apikey|api_secret)\s*[=:]\s*)["']([^"']{8,})["']''',
-        re.I,
-    ), r'\1"[REDACTED]"'),
+    (
+        re.compile(
+            r"""((?:password|secret|token|api_key|apikey|api_secret)\s*[=:]\s*)["']([^"']{8,})["']""",
+            re.I,
+        ),
+        r'\1"[REDACTED]"',
+    ),
 ]
 
 

@@ -98,7 +98,7 @@ def link_entities_to_memory(
         for name, etype in entities[:_MAX_ENTITIES_PER_MEMORY]:
             eid = get_or_create_entity(agent_id, name, etype, conn=conn)
             if eid is not None and link_memory_entity(memory_id, eid, role=role, conn=conn):
-                    linked += 1
+                linked += 1
     return linked
 
 

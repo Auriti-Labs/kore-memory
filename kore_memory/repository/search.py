@@ -322,9 +322,7 @@ def _load_memories_by_ids(
     placeholders = ",".join("?" for _ in ids)
 
     validity = (
-        ""
-        if include_historical
-        else "AND (valid_to IS NULL OR valid_to > datetime('now')) AND invalidated_at IS NULL"
+        "" if include_historical else "AND (valid_to IS NULL OR valid_to > datetime('now')) AND invalidated_at IS NULL"
     )
 
     with get_connection() as conn:

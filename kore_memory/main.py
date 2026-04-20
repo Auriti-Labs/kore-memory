@@ -727,9 +727,13 @@ def list_policies(
 
     policies = [
         LifecyclePolicyRecord(
-            id=r["id"], agent_id=r["agent_id"], name=r["name"],
-            trigger=r["trigger"], action=r["action"],
-            params=json.loads(r["params_json"]), enabled=bool(r["enabled"]),
+            id=r["id"],
+            agent_id=r["agent_id"],
+            name=r["name"],
+            trigger=r["trigger"],
+            action=r["action"],
+            params=json.loads(r["params_json"]),
+            enabled=bool(r["enabled"]),
             created_at=r["created_at"],
         )
         for r in rows
@@ -754,7 +758,8 @@ def toggle_policy(
     if cursor.rowcount == 0:
         raise HTTPException(404, f"Policy '{policy_id}' not found")
     return PolicyToggleResponse(
-        id=policy_id, enabled=enabled,
+        id=policy_id,
+        enabled=enabled,
         message=f"Policy {'enabled' if enabled else 'disabled'}",
     )
 

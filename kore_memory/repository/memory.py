@@ -123,9 +123,7 @@ def save_memory(
     from .. import config as _cfg
 
     _dedup_enabled = (
-        req.supersedes_id is None
-        and os.getenv("KORE_DEDUP", "1") != "0"
-        and os.getenv("KORE_TEST_MODE", "0") != "1"
+        req.supersedes_id is None and os.getenv("KORE_DEDUP", "1") != "0" and os.getenv("KORE_TEST_MODE", "0") != "1"
     )
     if _dedup_enabled:
         with get_connection() as conn:

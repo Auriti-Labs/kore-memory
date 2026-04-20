@@ -171,10 +171,7 @@ def _validate_base_path(resolved: Path) -> None:
     if allowed_raw.strip():
         allowed = [str(Path(d.strip()).resolve()) for d in allowed_raw.split(",") if d.strip()]
         if not any(resolved_str == a or resolved_str.startswith(a + os.sep) for a in allowed):
-            raise ValueError(
-                f"Path '{resolved}' is outside allowed overlay directories. "
-                f"Allowed: {', '.join(allowed)}"
-            )
+            raise ValueError(f"Path '{resolved}' is outside allowed overlay directories. Allowed: {', '.join(allowed)}")
         return
 
     # Default blocklist: reject known sensitive system directories

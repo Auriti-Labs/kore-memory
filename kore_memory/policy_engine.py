@@ -196,11 +196,14 @@ def _apply_actions(result: PolicyRunResult) -> None:
                 )
                 if cursor.rowcount > 0:
                     result.archived += 1
-                    emit(POLICY_APPLIED, {
-                        "id": pa.memory_id,
-                        "policy_id": pa.policy_id,
-                        "action": "archive",
-                    })
+                    emit(
+                        POLICY_APPLIED,
+                        {
+                            "id": pa.memory_id,
+                            "policy_id": pa.policy_id,
+                            "action": "archive",
+                        },
+                    )
 
             elif pa.action == "flag":
                 conn.execute(
@@ -208,13 +211,18 @@ def _apply_actions(result: PolicyRunResult) -> None:
                     (pa.memory_id, pa.policy_id),
                 )
                 result.flagged += 1
-                emit(POLICY_APPLIED, {
-                    "id": pa.memory_id,
-                    "policy_id": pa.policy_id,
-                    "action": "flag",
-                })
+                emit(
+                    POLICY_APPLIED,
+                    {
+                        "id": pa.memory_id,
+                        "policy_id": pa.policy_id,
+                        "action": "flag",
+                    },
+                )
 
     logger.info(
         "Policy engine: %d evaluated, %d archived, %d flagged",
-        result.evaluated, result.archived, result.flagged,
+        result.evaluated,
+        result.archived,
+        result.flagged,
     )
