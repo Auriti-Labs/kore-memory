@@ -8,10 +8,10 @@ from __future__ import annotations
 import logging
 
 from ..database import get_connection
-
-_logger = logging.getLogger(__name__)
 from ..models import MemoryRecord
 from .search import _row_to_record
+
+_logger = logging.getLogger(__name__)
 
 
 def create_session(session_id: str, agent_id: str = "default", title: str | None = None) -> dict:

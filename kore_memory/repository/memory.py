@@ -5,6 +5,7 @@ Save, get, update, delete, batch save, import/export.
 
 from __future__ import annotations
 
+import hashlib
 import os
 import re as _re_mod
 from datetime import UTC, datetime, timedelta
@@ -30,8 +31,6 @@ def _embeddings_available() -> bool:
 
 
 # ── M1: Dedup + Title helpers ────────────────────────────────────────────────
-
-import hashlib
 
 
 def _content_hash(content: str) -> str:

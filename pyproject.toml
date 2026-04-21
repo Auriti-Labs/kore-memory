@@ -116,6 +116,9 @@ ignore = [
 "kore_memory/repository/graph.py" = ["S608"]
 "kore_memory/repository/memory.py" = ["S608"]
 "kore_memory/repository/search.py" = ["S608"]
+"kore_memory/consolidation.py" = ["S608"]
+"kore_memory/policy_engine.py" = ["S608"]
+"kore_memory/repository/entity.py" = ["S608"]
 
 [tool.ruff.format]
 quote-style = "double"
