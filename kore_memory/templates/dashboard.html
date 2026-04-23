@@ -1242,7 +1242,6 @@ function loadTags() {
 
       /* Relations */
       loadRelations(data.results || []);
-    });
   }).catch(function(e) {
     toast('Error loading tags: ' + e.message, 'error');
   });

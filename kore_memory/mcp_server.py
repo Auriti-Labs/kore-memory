@@ -895,6 +895,9 @@ def main():
                 raise SystemExit(1)
             try:
                 mcp.run(transport=args.transport, host=args.host, port=args.port)
+            except TypeError:
+                logger.warning("FastMCP.run() does not accept host/port — falling back to transport-only")
+                mcp.run(transport=args.transport)
             except KeyboardInterrupt:
                 logger.info("MCP server fermato (KeyboardInterrupt)")
             except Exception as exc:
