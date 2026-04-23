@@ -25,6 +25,9 @@ fi
 fuser -k 8765/tcp 2>/dev/null || true
 sleep 1
 
+# Defaults: usa il DB nella cartella data/ del progetto
+export KORE_DB_PATH="${KORE_DB_PATH:-$DIR/data/memory.db}"
+
 # Load .env and start server in one command (preserves env vars in nohup)
 if [ -f "$DIR/.env" ]; then
     # shellcheck disable=SC2046
