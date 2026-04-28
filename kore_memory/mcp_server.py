@@ -447,6 +447,7 @@ def memory_save_decision(
         "rationale": rationale,
         "alternatives_considered": alternatives_considered,
         "decided_by": decided_by,
+        "repo": repo,
         "still_valid": True,
     }
     sanitized = _sanitize_agent_id(agent_id)
@@ -529,6 +530,7 @@ def memory_log_regression(
         "introduced_in": introduced_in,
         "fixed_in": fixed_in,
         "test_ref": test_ref,
+        "repo": repo,
     }
     sanitized = _sanitize_agent_id(agent_id)
     session_id = _get_or_create_session(sanitized)
@@ -575,6 +577,7 @@ def memory_log_root_cause(
         "symptom": symptom,
         "affected_component": affected_component,
         "fix_applied": fix_applied,
+        "repo": repo,
     }
     sanitized = _sanitize_agent_id(agent_id)
     session_id = _get_or_create_session(sanitized)
