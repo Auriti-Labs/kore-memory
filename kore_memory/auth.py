@@ -68,9 +68,7 @@ def _is_local(request: Request) -> bool:
         return False
     # Detect reverse proxy: if X-Forwarded-For is present, the real client
     # is NOT local — require auth even if socket peer is localhost
-    if request.headers.get("X-Forwarded-For") or request.headers.get("X-Real-IP"):
-        return False
-    return True
+    return not (request.headers.get("X-Forwarded-For") or request.headers.get("X-Real-IP"))
 
 
 def _local_only_mode() -> bool:
