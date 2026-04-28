@@ -11,6 +11,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.0.2] - 2026-04-28
+
+### Theme: "Hardening & Bug Sweep"
+
+Comprehensive bug-fixing release: 24 fixes across backend, dashboard, security, and infrastructure. No breaking changes.
+
+### Fixed — Backend (Critical)
+
+- **Data corruption in compressor**: `DELETE FROM memory_relations WHERE source_id = target_id` was unscoped — deleted ALL self-relations globally instead of only the newly merged record. Now scoped to `(new_id, new_id)`.
+- **save_memory_batch bypassed entire pipeline**: Batch save was missing privacy filter, title generation, content_hash, structured extraction (facts/concepts/narrative), entity extraction, conflict detection, dedup, session_id, and all v2.1/M2 fields. Refactored with shared `_prepare_memory()` helper — full parity with single save.
+- **Race condition in dedup (TOCTOU)**: Dedup check and INSERT were in separate transactions. Two concurrent identical saves could both pass the check. Now merged into a single transaction.
+- **ZeroDivisionError in RRF fusion**: Setting `KORE_RRF_W_FTS=0` caused crash when that stream had results. Added `or 1.0` fallback.
+- **search_by_tag returned incomplete data**: Missing `title`, `invalidated_at`, `compressed_into`, and all structured fields in SELECT. `_row_to_record` silently returned nulls.
+- **assert in context_assembler**: Token budget invariant used `assert` (disabled with `python -O`). Replaced with `if/raise ValueError`.
+
+### Fixed — Security
+
+- **Auth bypass behind reverse proxy**: `_is_local()` checked only `request.client.host`, which is the proxy's IP (127.0.0.1) when behind nginx/Caddy. Now detects `X-Forwarded-For`/`X-Real-IP` headers and requires API key when proxy is detected.
+- **MCP import no size limit**: Docstring said "max 500" but code passed full list. Added `memories[:500]` truncation.
+- **Search query DoS vector**: `/search` had no `max_length` on query parameter. Added `max_length=1000`.
+- **CSP redundancy**: Removed `'unsafe-inline'` from `script-src` (redundant when nonce is present).
+
+### Fixed — Infrastructure
+
+- **VectorIndex memory leak**: Legacy in-memory cache grew unbounded (one entry per agent, all embeddings in RAM). Added LRU eviction with max 20 agents.
+- **Timer leak in filesystem_watcher**: `stop_all()` stopped observers but didn't cancel pending debounce timers. Timers could fire after shutdown, causing DB operations on closed connections.
+- **init_db() at import time in MCP server**: Any `import kore_memory.mcp_server` triggered full DB initialization. Replaced with lazy `_ensure_db()` using double-check locking.
+
+### Fixed — Dashboard
+
+- **Tab lost on refresh**: No URL state persistence. Added `location.hash` routing — tab survives refresh and browser back/forward.
+- **Memories page empty for agents without relations**: Default view used `/graph/hubs` (requires relations). Changed to `/search?q=*`.
+- **Relations section permanently broken**: `loadRelations(data.results)` where `/analytics` has no `results` field. Now fetches memories via `/search`.
+- **Graph detail panel permanently broken after X close**: Inline `style.display='none'` overrode CSS class. Fixed to use `classList.remove('open')`.
+- **Graph animation CPU leak**: `requestAnimationFrame` loop ran at 60fps on hidden canvas after navigating away. Now cancelled on page change.
+- **HiDPI mouse coordinates wrong**: `screenToGraph()` used `canvas.width` (physical pixels) instead of `canvas.offsetWidth` (CSS pixels). Hover/drag/click hit wrong nodes on Retina displays.
+- **Edit from graph detail race condition**: `setTimeout(300ms)` guess for API load. Now opens modal directly with node data.
+- **NaN decay display**: `decay_score * 100` crashed on null. Defaults to 1.0.
+- **No pagination indicator**: Added "Showing X of Y" when `has_more` is true.
+- **Edit modal ignored tags**: Tags field was visible but values discarded on save. Now sends tags via API.
+- **Session memories appended duplicates**: Clicking "View" multiple times appended cards. Now replaces existing detail.
+- **Inline event handlers violated CSP**: `onmouseover`/`onmouseout` replaced with CSS `:hover`.
+
+### Added
+
+- Test: batch/single save parity test verifying structured fields (title, content_hash, memory_type) are populated identically.
+
+---
+
 ## [3.0.0] - 2026-04-15
 
 ### Theme: "Cognitive Runtime + Coding Vertical GA"

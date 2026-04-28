@@ -85,4 +85,4 @@ CONFLICT_MAX_CANDIDATES = int(os.getenv("KORE_CONFLICT_MAX_CANDIDATES", "10"))
 
 # ── Version ───────────────────────────────────────────────────────────────────
 
-VERSION = "3.0.1"
+VERSION = "3.0.2"
