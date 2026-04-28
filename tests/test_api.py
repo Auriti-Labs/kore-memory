@@ -188,6 +188,33 @@ class TestBatchSave:
         }, headers=HEADERS)
         assert r.status_code == 422
 
+    def test_batch_parity_with_single_save(self):
+        """Batch save must populate the same structured fields as single save."""
+        from kore_memory.database import get_connection
+
+        content = "PostgreSQL is better than MySQL for JSONB support and advanced queries in our backend architecture"
+        # Single save
+        r1 = client.post("/save", json={"content": content, "category": "decision"}, headers=HEADERS)
+        single_id = r1.json()["id"]
+        # Batch save
+        r2 = client.post("/save/batch", json={
+            "memories": [{"content": content + " — batch copy", "category": "decision"}]
+        }, headers=HEADERS)
+        batch_id = r2.json()["saved"][0]["id"]
+
+        with get_connection() as conn:
+            cols = "title, content_hash, memory_type, facts_json, concepts_json, narrative, metadata_json"
+            single = dict(conn.execute(f"SELECT {cols} FROM memories WHERE id = ?", (single_id,)).fetchone())
+            batch = dict(conn.execute(f"SELECT {cols} FROM memories WHERE id = ?", (batch_id,)).fetchone())
+
+        # Both must have title and content_hash populated
+        assert single["title"] is not None, "single save missing title"
+        assert batch["title"] is not None, "batch save missing title"
+        assert single["content_hash"] is not None, "single save missing content_hash"
+        assert batch["content_hash"] is not None, "batch save missing content_hash"
+        # Both must have same memory_type inference
+        assert single["memory_type"] == batch["memory_type"]
+
 
 # ── P3: Tag system ───────────────────────────────────────────────────────────
 

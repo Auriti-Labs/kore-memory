@@ -196,6 +196,7 @@ body {
   transition: border-color var(--transition);
 }
 .card:hover { border-color: var(--border-hover); }
+.growth-bar:hover { opacity: 0.7; }
 .card-title { font-weight: 600; font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
 
 /* ── Stats grid ───────────────────────────────────────────────────── */
@@ -1007,7 +1008,9 @@ function initNav() {
 }
 
 function navigate(pageId) {
+  if (graphAnim && pageId !== 'graph') { cancelAnimationFrame(graphAnim); graphAnim = null; }
   state.currentPage = pageId;
+  location.hash = pageId;
   $$('.nav-item').forEach(function(el) { el.classList.toggle('active', el.dataset.nav === pageId); });
   $$('.page').forEach(function(el) { el.classList.toggle('active', el.dataset.page === pageId); });
   var page = PAGES.find(function(p) { return p.id === pageId; });
@@ -1132,9 +1135,9 @@ function _renderMemCards(list, memories) {
       '<div class="memory-card-content">' + esc(m.content) + '</div>' +
       '<div class="memory-card-footer">' +
       '<div class="importance" title="Importance: ' + m.importance + '/5">' + importanceDots(m.importance) + '</div>' +
-      '<div style="display:flex;align-items:center;gap:4px" title="Decay: ' + (m.decay_score*100).toFixed(0) + '%">' +
-      '<div class="decay-bar"><div class="decay-bar-fill" style="width:' + (m.decay_score*100).toFixed(0) + '%;background:' + decayColor(m.decay_score) + '"></div></div>' +
-      '<span style="font-size:10px;color:var(--text-dim)">' + (m.decay_score*100).toFixed(0) + '%</span></div>' +
+      '<div style="display:flex;align-items:center;gap:4px" title="Decay: ' + ((m.decay_score != null ? m.decay_score : 1)*100).toFixed(0) + '%">' +
+      '<div class="decay-bar"><div class="decay-bar-fill" style="width:' + ((m.decay_score != null ? m.decay_score : 1)*100).toFixed(0) + '%;background:' + decayColor(m.decay_score != null ? m.decay_score : 1) + '"></div></div>' +
+      '<span style="font-size:10px;color:var(--text-dim)">' + ((m.decay_score != null ? m.decay_score : 1)*100).toFixed(0) + '%</span></div>' +
       '<span class="meta">' + fmtDate(m.created_at) + '</span>' +
       '</div></div>';
   });
@@ -1172,13 +1175,14 @@ function loadMemories(query) {
   safeRender(list, '<div class="loading-center"><div class="spinner"></div></div>');
 
   if (!q && !cat) {
-    api.get('/graph/hubs?limit=20').then(function(data) {
-      var memories = data.hubs || [];
+    api.get('/search?q=*&limit=20').then(function(data) {
+      var memories = data.results || [];
       if (!memories.length) {
         safeRender(list, '<div class="empty-state"><p>No memories yet. Save your first memory to get started.</p></div>');
         return;
       }
       _renderMemCards(list, memories);
+      if (data.has_more) list.insertAdjacentHTML('beforeend', '<div style="text-align:center;padding:12px;color:var(--text-dim);font-size:12px">Showing ' + memories.length + ' of ' + (data.total || '?') + ' memories. Use search to find specific ones.</div>');
     }).catch(function(e) { toast('Error: ' + e.message, 'error'); });
     return;
   }
@@ -1192,6 +1196,7 @@ function loadMemories(query) {
       return;
     }
     _renderMemCards(list, data.results);
+    if (data.has_more) list.insertAdjacentHTML('beforeend', '<div style="text-align:center;padding:12px;color:var(--text-dim);font-size:12px">Showing ' + data.results.length + ' of ' + (data.total || '?') + ' results.</div>');
   }).catch(function(e) {
     safeRender(list, '<div class="empty-state"><p>Error: ' + esc(e.message) + '</p></div>');
   });
@@ -1241,7 +1246,9 @@ function loadTags() {
       }
 
       /* Relations */
-      loadRelations(data.results || []);
+      api.get('/search?q=*&limit=20').then(function(res) {
+        loadRelations(res.results || []);
+      }).catch(function() { loadRelations([]); });
   }).catch(function(e) {
     toast('Error loading tags: ' + e.message, 'error');
   });
@@ -1291,9 +1298,10 @@ function screenToGraph(canvas, mx, my) {
   var rect = canvas.getBoundingClientRect();
   var sx = (mx - rect.left);
   var sy = (my - rect.top);
+  var cw = canvas.offsetWidth, ch = canvas.offsetHeight;
   return {
-    x: (sx - canvas.width/2) / graphState.zoom - graphState.panX + canvas.width/2,
-    y: (sy - canvas.height/2) / graphState.zoom - graphState.panY + canvas.height/2
+    x: (sx - cw/2) / graphState.zoom - graphState.panX + cw/2,
+    y: (sy - ch/2) / graphState.zoom - graphState.panY + ch/2
   };
 }
 
@@ -1331,6 +1339,14 @@ function _loadGraphInner() {
 
   api.get('/graph/hubs?limit=20').then(function(data) {
     var memories = data.hubs || [];
+    if (!memories.length) {
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = 'var(--text-dim)'; ctx.font = '14px ' + getComputedStyle(document.body).fontFamily;
+      ctx.textAlign = 'center';
+      ctx.fillText('No relations found. Add relations between memories to see the graph.', w/2, h/2);
+      $('#graph-info').textContent = 'Nodes: 0 — Edges: 0';
+      return;
+    }
     /* Distribute nodes in a circle for better initial layout */
     graphNodes = memories.map(function(m, i) {
       var angle = (2 * Math.PI * i) / memories.length;
@@ -1538,8 +1554,14 @@ function showGraphDetail(node) {
   var editBtn = detail.querySelector('[data-graph-edit]');
   if (editBtn) editBtn.addEventListener('click', function() {
     detail.classList.remove('open');
-    navigate('memories');
-    setTimeout(function() { openEditMemory(node.id); }, 300);
+    state.editingMemoryId = node.id;
+    $('#modal-memory-title').textContent = 'Edit memory #' + node.id;
+    $('#modal-mem-content').value = node.fullContent || '';
+    $('#modal-mem-category').value = node.category || 'general';
+    $('#modal-mem-importance').value = node.importance || 1;
+    $('#modal-mem-ttl').value = '';
+    $('#modal-mem-tags').value = '';
+    $('#modal-memory').classList.add('open');
   });
   var gotoBtn = detail.querySelector('[data-graph-goto]');
   if (gotoBtn) gotoBtn.addEventListener('click', function() {
@@ -1770,7 +1792,9 @@ function loadSessions() {
             h += '<div style="padding:8px 0;border-bottom:1px solid var(--border)"><span class="badge badge-' + esc(m.category) + '" style="margin-right:6px">' + esc(m.category) + '</span><span style="font-size:13px">' + esc(truncate(m.content, 120)) + '</span></div>';
           });
           h += '</div>';
-          list.insertAdjacentHTML('beforeend', h);
+          var existing = list.querySelector('[data-session-detail]');
+          if (existing) existing.remove();
+          list.insertAdjacentHTML('beforeend', '<div data-session-detail>' + h + '</div>');
         }).catch(function(e) { toast(e.message, 'error'); });
       });
     });
@@ -1979,7 +2003,7 @@ function loadAnalytics() {
       var gh = '';
       growth.forEach(function(g) {
         var pct = (g.count / gMax * 100).toFixed(0);
-        gh += '<div title="' + esc(g.date) + ': ' + g.count + '" style="flex:1;min-width:6px;max-width:18px;height:' + Math.max(pct, 4) + '%;background:var(--accent);border-radius:2px 2px 0 0;transition:opacity var(--transition);cursor:default" onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1"></div>';
+        gh += '<div title="' + esc(g.date) + ': ' + g.count + '" style="flex:1;min-width:6px;max-width:18px;height:' + Math.max(pct, 4) + '%;background:var(--accent);border-radius:2px 2px 0 0;transition:opacity var(--transition);cursor:default" class="growth-bar"></div>';
       });
       safeRender('#analytics-growth', gh);
     } else {
@@ -2108,6 +2132,9 @@ function initEventHandlers() {
 
     if (state.editingMemoryId) {
       api.put('/memories/' + state.editingMemoryId, { content: content, category: category, importance: importance }).then(function() {
+        if (tags.length) {
+          api.post('/memories/' + state.editingMemoryId + '/tags', { tags: tags }).catch(function() {});
+        }
         toast('Memory updated', 'success');
         $('#modal-memory').classList.remove('open');
         loadMemories();
@@ -2199,7 +2226,7 @@ function initEventHandlers() {
   });
   $('#graph-detail-close').addEventListener('click', function() {
     graphState.selectedNode = null;
-    $('#graph-detail').style.display = 'none';
+    $('#graph-detail').classList.remove('open');
   });
 
   $('#agent-select').addEventListener('change', function(e) {
@@ -2257,7 +2284,13 @@ function init() {
   initNav();
   initEventHandlers();
   loadAgentSelector();
-  loadPageData('overview');
+  var hash = location.hash.replace('#', '');
+  var startPage = PAGES.find(function(p) { return p.id === hash; }) ? hash : 'overview';
+  navigate(startPage);
+  window.addEventListener('hashchange', function() {
+    var h = location.hash.replace('#', '');
+    if (h && h !== state.currentPage && PAGES.find(function(p) { return p.id === h; })) navigate(h);
+  });
 }
 
 init();
