@@ -48,6 +48,133 @@ def _auto_title(content: str) -> str:
     return title[:120]
 
 
+def _prepare_memory(req: MemorySaveRequest) -> dict:
+    """
+    Run the full pre-INSERT pipeline on a MemorySaveRequest.
+
+    Steps: auto_score → infer_memory_type → privacy_filter → expires_at →
+    valid_from/to → provenance → content_hash → title → structured extraction →
+    serialize JSON fields.
+
+    Returns a dict with all INSERT column values EXCEPT agent_id, session_id,
+    and embedding (embedding is handled separately for batch efficiency).
+    The dict also includes 'filtered_content' for downstream embedding/entity/conflict use.
+    """
+    import json as _json
+
+    from ..models import infer_memory_type
+    from ..privacy import privacy_filter
+    from ..structured import extract_structured
+
+    importance = req.importance if req.importance is not None else auto_score(req.content, req.category)
+    memory_type = req.memory_type or infer_memory_type(req.category)
+    filtered_content = privacy_filter(req.content)
+
+    expires_at = None
+    if req.ttl_hours:
+        expires_at = (datetime.now(UTC) + timedelta(hours=req.ttl_hours)).isoformat()
+
+    _fmt = "%Y-%m-%d %H:%M:%S"
+    valid_from = req.valid_from.astimezone(UTC).strftime(_fmt) if req.valid_from else None
+    valid_to = req.valid_to.astimezone(UTC).strftime(_fmt) if req.valid_to else None
+
+    provenance_json = _json.dumps(req.provenance.model_dump()) if req.provenance else None
+    content_hash = _content_hash(filtered_content)
+    title = getattr(req, "title", None) or _auto_title(filtered_content)
+
+    auto_facts, auto_concepts, auto_narrative = extract_structured(filtered_content)
+    facts = getattr(req, "facts", None) or auto_facts
+    concepts = getattr(req, "concepts", None) or auto_concepts
+    narrative = getattr(req, "narrative", None) or auto_narrative
+
+    return {
+        "content": filtered_content,
+        "category": req.category,
+        "importance": importance,
+        "expires_at": expires_at,
+        "valid_from": valid_from,
+        "valid_to": valid_to,
+        "supersedes_id": req.supersedes_id,
+        "confidence": req.confidence,
+        "provenance": provenance_json,
+        "memory_type": memory_type,
+        "title": title,
+        "content_hash": content_hash,
+        "facts_json": _json.dumps(facts) if facts else None,
+        "concepts_json": _json.dumps(concepts) if concepts else None,
+        "narrative": narrative[:500] if narrative else None,
+        "metadata_json": _json.dumps(req.metadata) if req.metadata else None,
+        # Extra fields for post-commit steps (not INSERT columns)
+        "filtered_content": filtered_content,
+    }
+
+
+_INSERT_SQL = """
+    INSERT INTO memories (
+        agent_id, content, category, importance, embedding, expires_at, session_id,
+        valid_from, valid_to, supersedes_id, confidence, provenance, memory_type,
+        title, content_hash, facts_json, concepts_json, narrative, metadata_json
+    ) VALUES (
+        :agent_id, :content, :category, :importance, :embedding, :expires_at, :session_id,
+        :valid_from, :valid_to, :supersedes_id, :confidence, :provenance, :memory_type,
+        :title, :content_hash, :facts_json, :concepts_json, :narrative, :metadata_json
+    )
+"""
+
+
+def _update_vector_index(row_ids_and_blobs: list[tuple[int, str | None]], agent_id: str) -> None:
+    """Update vector index for a list of (row_id, embedding_blob) pairs."""
+    blobs = [(rid, b) for rid, b in row_ids_and_blobs if b is not None]
+    if not blobs:
+        return
+    from ..vector_index import get_index, has_sqlite_vec
+
+    index = get_index()
+    if has_sqlite_vec():
+        from ..embedder import deserialize
+
+        with get_connection() as conn:
+            for row_id, blob in blobs:
+                try:
+                    index.upsert(conn, row_id, agent_id, deserialize(blob))
+                except Exception:
+                    pass
+    else:
+        index.invalidate(agent_id)
+
+
+def _post_commit(row_id: int, prepared: dict, agent_id: str) -> list[str]:
+    """Run post-commit steps: emit event, entity extraction, conflict detection. Returns conflict IDs."""
+    from .. import config as _cfg
+
+    emit(MEMORY_SAVED, {"id": row_id, "agent_id": agent_id})
+
+    if _cfg.ENTITY_EXTRACTION:
+        from ..integrations.entities import auto_tag_entities
+
+        try:
+            auto_tag_entities(row_id, prepared["filtered_content"], agent_id)
+        except Exception:
+            pass
+
+    conflicts: list[str] = []
+    if _cfg.CONFLICT_SYNC:
+        try:
+            from ..conflict_detector import detect_conflicts
+
+            conflicts = detect_conflicts(
+                memory_id=row_id,
+                content=prepared["filtered_content"],
+                agent_id=agent_id,
+                valid_from=prepared["valid_from"],
+                valid_to=prepared["valid_to"],
+                confidence=prepared["confidence"],
+            )
+        except Exception:
+            pass
+    return conflicts
+
+
 def save_memory(
     req: MemorySaveRequest,
     agent_id: str = "default",
@@ -63,20 +190,11 @@ def save_memory(
     Returns (row_id, importance, conflicts_detected).
     conflicts_detected = lista di conflict IDs rilevati (lista vuota = nessun conflitto).
     """
-    importance = req.importance
-    if importance is None:
-        importance = auto_score(req.content, req.category)
+    prepared = _prepare_memory(req)
+    filtered_content = prepared["filtered_content"]
+    importance = prepared["importance"]
 
-    # Inferenza memory_type dalla category se non fornito esplicitamente
-    from ..models import infer_memory_type
-
-    memory_type = req.memory_type or infer_memory_type(req.category)
-
-    # M2: Privacy filter — MUST run before title, hash, extraction, embedding
-    from ..privacy import privacy_filter
-
-    filtered_content = privacy_filter(req.content)
-
+    # Embed single content
     embedding_blob = None
     if _embeddings_available():
         from ..embedder import embed, serialize
@@ -84,230 +202,122 @@ def save_memory(
         try:
             embedding_blob = serialize(embed(filtered_content))
         except Exception:
-            embedding_blob = None
-
-    expires_at = None
-    if req.ttl_hours:
-        expires_at = (datetime.now(UTC) + timedelta(hours=req.ttl_hours)).isoformat()
-
-    # Formato SQLite (senza T e timezone) per comparazioni corrette con datetime('now')
-    _fmt = "%Y-%m-%d %H:%M:%S"
-    valid_from = req.valid_from.astimezone(UTC).strftime(_fmt) if req.valid_from else None
-    valid_to = req.valid_to.astimezone(UTC).strftime(_fmt) if req.valid_to else None
-
-    import json as _json
-
-    provenance_json = _json.dumps(req.provenance.model_dump()) if req.provenance else None
-    now = datetime.now(UTC).isoformat()
-
-    # M1: content hash + title — derived from filtered content
-    content_hash = _content_hash(filtered_content)
-    title = getattr(req, "title", None) or _auto_title(filtered_content)
-
-    # M2: Structured extraction — derived from filtered content
-    from ..structured import extract_structured
-
-    auto_facts, auto_concepts, auto_narrative = extract_structured(filtered_content)
-    # Explicit overrides take priority
-    facts = getattr(req, "facts", None) or auto_facts
-    concepts = getattr(req, "concepts", None) or auto_concepts
-    narrative = getattr(req, "narrative", None) or auto_narrative
-    # Serialize
-    facts_json = _json.dumps(facts) if facts else None
-    concepts_json = _json.dumps(concepts) if concepts else None
-    narrative_str = narrative[:500] if narrative else None
-    metadata_json = _json.dumps(req.metadata) if req.metadata else None
+            pass
 
     # M1: dedup check (skip if supersedes_id set, KORE_DEDUP=0, or test mode)
-    from .. import config as _cfg
-
     _dedup_enabled = (
         req.supersedes_id is None and os.getenv("KORE_DEDUP", "1") != "0" and os.getenv("KORE_TEST_MODE", "0") != "1"
     )
-    if _dedup_enabled:
-        with get_connection() as conn:
+
+    now = datetime.now(UTC).isoformat()
+    with get_connection() as conn:
+        # Dedup check inside same transaction as INSERT — prevents TOCTOU race
+        if _dedup_enabled:
             dup = conn.execute(
                 "SELECT id, importance FROM memories WHERE agent_id = ? AND content_hash = ?"
                 " AND created_at > datetime('now', '-5 minutes') AND compressed_into IS NULL LIMIT 1",
-                (agent_id, content_hash),
+                (agent_id, prepared["content_hash"]),
             ).fetchone()
             if dup:
                 return dup[0], dup[1], []
 
-    with get_connection() as conn:
-        # Auto-create session se necessario
         if session_id:
-            conn.execute(
-                "INSERT OR IGNORE INTO sessions (id, agent_id) VALUES (?, ?)",
-                (session_id, agent_id),
-            )
+            conn.execute("INSERT OR IGNORE INTO sessions (id, agent_id) VALUES (?, ?)", (session_id, agent_id))
 
-        # Supersessione atomica: invalida il predecessore nella stessa transazione
         if req.supersedes_id is not None:
             conn.execute(
                 "UPDATE memories SET invalidated_at = ? WHERE id = ? AND agent_id = ? AND invalidated_at IS NULL",
                 (now, req.supersedes_id, agent_id),
             )
 
-        cursor = conn.execute(
-            """
-            INSERT INTO memories (
-                agent_id, content, category, importance, embedding, expires_at, session_id,
-                valid_from, valid_to, supersedes_id, confidence, provenance, memory_type,
-                title, content_hash, facts_json, concepts_json, narrative, metadata_json
-            )
-            VALUES (
-                :agent_id, :content, :category, :importance, :embedding, :expires_at, :session_id,
-                :valid_from, :valid_to, :supersedes_id, :confidence, :provenance, :memory_type,
-                :title, :content_hash, :facts_json, :concepts_json, :narrative, :metadata_json
-            )
-            """,
-            {
-                "agent_id": agent_id,
-                "content": filtered_content,
-                "category": req.category,
-                "importance": importance,
-                "embedding": embedding_blob,
-                "expires_at": expires_at,
-                "session_id": session_id,
-                "valid_from": valid_from,
-                "valid_to": valid_to,
-                "supersedes_id": req.supersedes_id,
-                "confidence": req.confidence,
-                "provenance": provenance_json,
-                "memory_type": memory_type,
-                "title": title,
-                "content_hash": content_hash,
-                "facts_json": facts_json,
-                "concepts_json": concepts_json,
-                "narrative": narrative_str,
-                "metadata_json": metadata_json,
-            },
-        )
+        params = {**prepared, "agent_id": agent_id, "embedding": embedding_blob, "session_id": session_id}
+        del params["filtered_content"]
+        cursor = conn.execute(_INSERT_SQL, params)
         row_id = cursor.lastrowid
 
-    # Update vector index
-    if embedding_blob:
-        from ..vector_index import get_index, has_sqlite_vec
-
-        index = get_index()
-        if has_sqlite_vec():
-            # Insert into sqlite-vec native index
-            from ..embedder import deserialize
-
-            try:
-                vec = deserialize(embedding_blob)
-                with get_connection() as conn:
-                    index.upsert(conn, row_id, agent_id, vec)
-            except Exception:
-                pass  # graceful degradation
-        else:
-            index.invalidate(agent_id)
-
-    emit(MEMORY_SAVED, {"id": row_id, "agent_id": agent_id})
-
-    # Entity extraction (optional, enabled via KORE_ENTITY_EXTRACTION=1)
-    if _cfg.ENTITY_EXTRACTION:
-        from ..integrations.entities import auto_tag_entities
-
-        try:
-            auto_tag_entities(row_id, filtered_content, agent_id)
-        except Exception:
-            pass  # graceful degradation
-
-    # Conflict detection (sincrono se KORE_CONFLICT_SYNC=true)
-    conflicts: list[str] = []
-    if _cfg.CONFLICT_SYNC:
-        try:
-            from ..conflict_detector import detect_conflicts
-
-            conflicts = detect_conflicts(
-                memory_id=row_id,
-                content=filtered_content,
-                agent_id=agent_id,
-                valid_from=valid_from,
-                valid_to=valid_to,
-                confidence=req.confidence,
-            )
-        except Exception:
-            pass  # graceful degradation — non blocca il save
-
+    _update_vector_index([(row_id, embedding_blob)], agent_id)
+    conflicts = _post_commit(row_id, prepared, agent_id)
     return row_id, importance, conflicts
 
 
-def save_memory_batch(reqs: list[MemorySaveRequest], agent_id: str = "default") -> list[tuple[int, int, list]]:
+def save_memory_batch(
+    reqs: list[MemorySaveRequest],
+    agent_id: str = "default",
+    session_id: str | None = None,
+) -> list[tuple[int, int, list]]:
     """
-    Batch save: single transaction, batch embeddings.
+    Batch save: full pipeline per item, batch embeddings, single transaction INSERT.
     Returns list of (row_id, importance, conflicts_detected) tuples.
     """
     if not reqs:
         return []
 
-    # Auto-score importances
-    importances = []
-    for req in reqs:
-        imp = req.importance
-        if imp is None:
-            imp = auto_score(req.content, req.category)
-        importances.append(imp)
+    # Run full pre-INSERT pipeline per item
+    prepared_list = [_prepare_memory(req) for req in reqs]
 
-    # Batch embed all contents at once
+    # Batch embed all filtered contents at once
     embeddings: list[str | None] = [None] * len(reqs)
     if _embeddings_available():
         from ..embedder import embed_batch, serialize
 
         try:
-            vectors = embed_batch([req.content for req in reqs])
+            vectors = embed_batch([p["filtered_content"] for p in prepared_list])
             embeddings = [serialize(v) for v in vectors]
         except Exception:
-            pass  # Fall back to no embeddings
+            pass
+
+    # Dedup check per item (before transaction)
+    _dedup_on = os.getenv("KORE_DEDUP", "1") != "0" and os.getenv("KORE_TEST_MODE", "0") != "1"
+    keep: list[tuple[dict, str | None]] = []
+    deduped: list[tuple[int, int, list]] = []
+    if _dedup_on:
+        with get_connection() as conn:
+            for i, prepared in enumerate(prepared_list):
+                if reqs[i].supersedes_id is not None:
+                    keep.append((prepared, embeddings[i]))
+                    continue
+                dup = conn.execute(
+                    "SELECT id, importance FROM memories WHERE agent_id = ? AND content_hash = ?"
+                    " AND created_at > datetime('now', '-5 minutes') AND compressed_into IS NULL LIMIT 1",
+                    (agent_id, prepared["content_hash"]),
+                ).fetchone()
+                if dup:
+                    deduped.append((dup[0], dup[1], []))
+                else:
+                    keep.append((prepared, embeddings[i]))
+    else:
+        keep = list(zip(prepared_list, embeddings))
+
+    if not keep:
+        return deduped
 
     # Single transaction for all inserts
-    results = []
+    results: list[tuple[int, int, list, dict]] = []
     with get_connection() as conn:
-        for i, req in enumerate(reqs):
-            expires_at = None
-            if req.ttl_hours:
-                expires_at = (datetime.now(UTC) + timedelta(hours=req.ttl_hours)).isoformat()
+        if session_id:
+            conn.execute("INSERT OR IGNORE INTO sessions (id, agent_id) VALUES (?, ?)", (session_id, agent_id))
 
-            cursor = conn.execute(
-                """INSERT INTO memories (agent_id, content, category, importance, embedding, expires_at)
-                   VALUES (:agent_id, :content, :category, :importance, :embedding, :expires_at)""",
-                {
-                    "agent_id": agent_id,
-                    "content": req.content,
-                    "category": req.category,
-                    "importance": importances[i],
-                    "embedding": embeddings[i],
-                    "expires_at": expires_at,
-                },
-            )
-            results.append((cursor.lastrowid, importances[i], []))
+        now = datetime.now(UTC).isoformat()
+        for prepared, emb in keep:
+            if prepared["supersedes_id"] is not None:
+                conn.execute(
+                    "UPDATE memories SET invalidated_at = ? WHERE id = ? AND agent_id = ? AND invalidated_at IS NULL",
+                    (now, prepared["supersedes_id"], agent_id),
+                )
+            params = {**prepared, "agent_id": agent_id, "embedding": emb, "session_id": session_id}
+            del params["filtered_content"]
+            cursor = conn.execute(_INSERT_SQL, params)
+            results.append((cursor.lastrowid, prepared["importance"], [], prepared))
 
-    # Emit audit event for each saved memory
-    for row_id, _, _conflicts in results:
-        emit(MEMORY_SAVED, {"id": row_id, "agent_id": agent_id})
+    # Post-commit: vector index (batch), events, entity extraction, conflict detection
+    _update_vector_index([(rid, emb) for (_, emb), (rid, *_) in zip(keep, results)], agent_id)
 
-    # Update vector index
-    if any(e is not None for e in embeddings):
-        from ..vector_index import get_index, has_sqlite_vec
+    final: list[tuple[int, int, list]] = list(deduped)
+    for row_id, importance, _, prepared in results:
+        conflicts = _post_commit(row_id, prepared, agent_id)
+        final.append((row_id, importance, conflicts))
 
-        index = get_index()
-        if has_sqlite_vec():
-            from ..embedder import deserialize
-
-            with get_connection() as conn:
-                for i, emb in enumerate(embeddings):
-                    if emb is not None:
-                        try:
-                            vec = deserialize(emb)
-                            index.upsert(conn, results[i][0], agent_id, vec)
-                        except Exception:
-                            pass
-        else:
-            index.invalidate(agent_id)
-
-    return results
+    return final
 
 
 def update_memory(memory_id: int, req: MemoryUpdateRequest, agent_id: str = "default") -> bool:

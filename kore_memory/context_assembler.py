@@ -100,9 +100,10 @@ def assemble_context(
         tokens_used += tokens_est
 
     # Verifica invariante TOKEN-BUDGET BOUNDED
-    assert tokens_used <= req.budget_tokens, (
-        f"INVARIANTE VIOLATO: budget_tokens_used ({tokens_used}) > budget_tokens ({req.budget_tokens})"
-    )
+    if tokens_used > req.budget_tokens:
+        raise ValueError(
+            f"INVARIANTE VIOLATO: budget_tokens_used ({tokens_used}) > budget_tokens ({req.budget_tokens})"
+        )
 
     # Carica conflitti tra le memorie selezionate (invariante #3)
     selected_ids = [m.id for m in selected]

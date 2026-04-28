@@ -175,7 +175,7 @@ def _rrf_fusion(
         return []
 
     # Renormalize weights
-    total_w = sum(weights)
+    total_w = sum(weights) or 1.0
     weights = [w / total_w for w in weights]
 
     scores: dict[int, float] = {}
@@ -539,7 +539,9 @@ def search_by_tag(tag: str, agent_id: str = "default", limit: int = 20) -> list[
                    m.decay_score, m.access_count, m.last_accessed,
                    m.created_at, m.updated_at, NULL AS score,
                    m.provenance, m.memory_type, m.confidence,
-                   m.valid_from, m.valid_to, m.supersedes_id, m.archived_at
+                   m.valid_from, m.valid_to, m.supersedes_id, m.archived_at,
+                   m.invalidated_at, m.compressed_into, m.title,
+                   m.facts_json, m.concepts_json, m.narrative, m.metadata_json
             FROM memories m
             JOIN memory_tags t ON m.id = t.memory_id
             WHERE t.tag = ? AND m.agent_id = ? AND m.compressed_into IS NULL

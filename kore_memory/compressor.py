@@ -362,9 +362,10 @@ def _merge_cluster(cluster: list[dict], agent_id: str = "default") -> int | None
                 WHERE target_id IN ({placeholders})""",
             [new_id, *ids],
         )
-        # Remove any self-relations created by the relink
+        # Remove any self-relations created by the relink (scoped to new_id only)
         conn.execute(
-            "DELETE FROM memory_relations WHERE source_id = target_id",
+            "DELETE FROM memory_relations WHERE source_id = ? AND target_id = ?",
+            (new_id, new_id),
         )
 
         # Mark originals as compressed
