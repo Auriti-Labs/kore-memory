@@ -148,10 +148,7 @@ def list_agent_profiles(agent_id: str) -> list[dict]:
             "SELECT profile_name, weights_json, created_at, updated_at FROM agent_ranking_profiles WHERE agent_id = ?",
             (agent_id,),
         ).fetchall()
-    return [
-        {"profile_name": r[0], "weights": json.loads(r[1]), "created_at": r[2], "updated_at": r[3]}
-        for r in rows
-    ]
+    return [{"profile_name": r[0], "weights": json.loads(r[1]), "created_at": r[2], "updated_at": r[3]} for r in rows]
 
 
 def _resolve_weights(ranking_profile: str, agent_id: str = "") -> dict[str, float]:

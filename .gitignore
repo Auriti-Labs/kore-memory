@@ -37,11 +37,13 @@ logs/
 .coverage
 htmlcov/
 
-# Piani di lavoro
-PLAN-*.md
-
-# Claude Code (local only)
+# Internal docs (local only)
 CLAUDE.md
+MIGRATION-*.md
+article-*.md
+docs/
+PLAN-*.md
+.openclaude-profile.json
 
 # SDK JS
 sdk/js/node_modules/
