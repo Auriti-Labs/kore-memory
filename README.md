@@ -16,7 +16,7 @@ Remembers what matters. Forgets what doesn't. Never calls home.
 [![License: MIT](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
 [![Zero Cloud](https://img.shields.io/badge/cloud-zero-orange?style=flat-square)]()
 [![Multilingual](https://img.shields.io/badge/languages-50%2B-purple?style=flat-square)]()
-[![Tests](https://img.shields.io/badge/tests-648-brightgreen?style=flat-square)]()
+[![Tests](https://img.shields.io/badge/tests-788-brightgreen?style=flat-square)]()
 [![Coverage](https://img.shields.io/badge/coverage-80%25-yellow?style=flat-square)]()
 
 <br/>
@@ -64,6 +64,8 @@ Every AI agent memory tool has the same problem: they remember everything foreve
 ---
 
 ## ✨ What's New in v3.0 — Cognitive Runtime
+
+> **v3.0.2** (2026-04-28) — Hardening release: 24 bug fixes including critical data integrity fix in compressor, auth bypass prevention behind reverse proxy, full pipeline parity for batch save, and 14 dashboard fixes. See [CHANGELOG.md](CHANGELOG.md).
 
 Wave 3 is complete. Kore Memory is now a full **Cognitive Runtime** for AI agents.
 
@@ -213,7 +215,7 @@ pip install 'kore-memory[semantic,mcp,watcher,nlp]'
 
 ```bash
 kore
-# → Kore Memory v3.0.0 running on http://localhost:8765
+# → Kore Memory v3.0.2 running on http://localhost:8765
 # → Dashboard: http://localhost:8765/dashboard
 # → API docs:  http://localhost:8765/docs
 ```
@@ -653,6 +655,7 @@ All configuration via environment variables. No config file needed.
 ## 🔐 Security
 
 - **API key** — auto-generated on first run, stored in `data/.api_key` (chmod 600). Override via `KORE_API_KEY`
+- **Reverse proxy detection** — when `X-Forwarded-For` or `X-Real-IP` headers are present, `LOCAL_ONLY` mode requires API key authentication (prevents auth bypass behind nginx/Caddy)
 - **Agent isolation** — all queries are scoped to `agent_id`. Agents cannot read each other's memories without explicit ACL grant
 - **Parameterized queries** — no SQL injection possible; all DB queries use placeholders
 - **Timing-safe comparison** — `secrets.compare_digest` for API key validation
@@ -688,7 +691,7 @@ All configuration via environment variables. No config file needed.
 
 **Wave 4 — In Planning**
 
-- [ ] Lifecycle Policy Engine (auto-archive rules, importance decay overrides)
+- [x] Lifecycle Policy Engine (auto-archive rules, importance decay overrides)
 - [ ] Ranking Profiles per-Agent (persistent custom weights)
 - [ ] Temporal Graph (relations with valid_from/to)
 - [ ] Explainable Graph Retrieval (graph_path in context package)
@@ -709,7 +712,7 @@ pip install -e ".[semantic,dev,mcp,watcher]"
 # Run server
 kore --reload
 
-# Run all 648 tests
+# Run all 788 tests
 pytest tests/ -v
 
 # Run with coverage
