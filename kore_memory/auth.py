@@ -64,7 +64,13 @@ def _is_local(request: Request) -> bool:
     # "testclient" only in explicit test environments
     if os.getenv("KORE_TEST_MODE", "0") == "1":
         trusted.add("testclient")
-    return client_host in trusted
+    if client_host not in trusted:
+        return False
+    # Detect reverse proxy: if X-Forwarded-For is present, the real client
+    # is NOT local — require auth even if socket peer is localhost
+    if request.headers.get("X-Forwarded-For") or request.headers.get("X-Real-IP"):
+        return False
+    return True
 
 
 def _local_only_mode() -> bool:

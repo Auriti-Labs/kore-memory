@@ -189,7 +189,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "default-src 'self'; "
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
             "font-src 'self' https://fonts.gstatic.com; "
-            f"script-src 'nonce-{nonce}' 'unsafe-inline'; "
+            f"script-src 'nonce-{nonce}'; "
             "connect-src 'self'; "
             "img-src 'self' data:; "
             "frame-ancestors 'none'"
@@ -315,7 +315,7 @@ def save_batch(
 @app.get("/search", response_model=MemorySearchResponse)
 def search(
     request: Request,
-    q: str = Query(..., min_length=1, description="Search query (any language)"),
+    q: str = Query(..., min_length=1, max_length=1000, description="Search query (any language)"),
     limit: int = Query(5, ge=1, le=20),
     cursor: str | None = Query(None, description="Opaque pagination cursor"),
     category: str | None = Query(None),
@@ -1119,7 +1119,7 @@ def shared_memories(
 @app.get("/stream/search")
 async def stream_search(
     request: Request,
-    q: str = Query(..., min_length=1, description="Search query"),
+    q: str = Query(..., min_length=1, max_length=1000, description="Search query"),
     limit: int = Query(10, ge=1, le=50),
     _: str = _Auth,
     agent_id: str = _Agent,

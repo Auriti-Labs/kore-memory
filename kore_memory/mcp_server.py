@@ -46,8 +46,20 @@ logger = logging.getLogger(__name__)
 _SERVER_START_TIME = _time.monotonic()
 _SESSION_TIMESTAMP = datetime.now().strftime("%Y%m%d-%H%M%S")
 
-# Initialize DB before any operation
-init_db()
+# DB initialized lazily on first operation (not at import time)
+_db_initialized = False
+_db_init_lock = threading.Lock()
+
+
+def _ensure_db() -> None:
+    global _db_initialized
+    if _db_initialized:
+        return
+    with _db_init_lock:
+        if not _db_initialized:
+            init_db()
+            _db_initialized = True
+
 
 mcp = FastMCP(
     "Kore Memory",
@@ -65,6 +77,7 @@ _session_lock = threading.Lock()
 
 def _get_or_create_session(agent_id: str) -> str:
     """Restituisce la session_id corrente per l'agent, creandola se necessario."""
+    _ensure_db()
     if agent_id in _agent_sessions:
         return _agent_sessions[agent_id]
     with _session_lock:
@@ -401,7 +414,7 @@ def memory_import(
     Import memories from a list of dicts. Each item must have at least 'content'.
     Optional fields: category, importance. Maximum 500 memories.
     """
-    count = import_memories(memories, agent_id=_sanitize_agent_id(agent_id))
+    count = import_memories(memories[:500], agent_id=_sanitize_agent_id(agent_id))
     return {"imported": count, "message": f"{count} memories imported"}
 
 
@@ -832,6 +845,8 @@ def _add_health_route() -> None:
 
 def main():
     import argparse
+
+    _ensure_db()
 
     parser = argparse.ArgumentParser(description="Kore MCP Server")
     parser.add_argument(
