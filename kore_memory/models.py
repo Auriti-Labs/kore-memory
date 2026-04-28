@@ -689,3 +689,30 @@ class ContextAssembleResponse(BaseModel):
         default_factory=list,
         description="Conflitti critici irrisolti tra le memorie selezionate",
     )
+
+
+# ── Ranking Profiles per-Agent (#98) ─────────────────────────────────────────
+
+
+class RankingProfileRequest(BaseModel):
+    """Request body for PUT /ranking/profiles."""
+
+    weights: dict[str, float] = Field(..., description="Weight map, e.g. {similarity: 0.5, decay_score: 0.3, ...}")
+    profile_name: str = Field("custom", description="Profile name (default: 'custom')")
+
+
+class RankingProfileResponse(BaseModel):
+    """Response for ranking profile operations."""
+
+    agent_id: str
+    profile_name: str
+    weights: dict[str, float]
+    created_at: str | None = None
+    updated_at: str | None = None
+
+
+class RankingProfileListResponse(BaseModel):
+    """Response for GET /ranking/profiles."""
+
+    profiles: list[RankingProfileResponse]
+    total: int

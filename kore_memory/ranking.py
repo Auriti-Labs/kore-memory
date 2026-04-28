@@ -64,6 +64,9 @@ _PROFILES: dict[str, dict[str, float]] = {
     "coding_v1": CODING_PROFILE,
 }
 
+# Valid weight keys (for validation)
+_VALID_WEIGHT_KEYS = set(_DEFAULT_WEIGHTS.keys())
+
 # Penalità per conflitto irrisolto
 _CONFLICT_PENALTY = 0.60
 
@@ -71,6 +74,96 @@ _CONFLICT_PENALTY = 0.60
 _FRESHNESS_WINDOW_DAYS = 365
 
 RANKING_PROFILE = "default_v1"
+
+
+# ── Agent Ranking Profiles (persistent, per-agent custom weights) ────────────
+
+
+def get_agent_profile(agent_id: str, profile_name: str = "custom") -> dict[str, float] | None:
+    """Load a custom ranking profile for an agent. Returns None if not found."""
+    import json
+
+    from .database import get_connection
+
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT weights_json FROM agent_ranking_profiles WHERE agent_id = ? AND profile_name = ?",
+            (agent_id, profile_name),
+        ).fetchone()
+    if not row:
+        return None
+    try:
+        return json.loads(row[0])
+    except (ValueError, TypeError):
+        return None
+
+
+def save_agent_profile(agent_id: str, weights: dict[str, float], profile_name: str = "custom") -> None:
+    """Save or update a custom ranking profile for an agent. Validates weight keys and values."""
+    import json
+
+    from .database import get_connection
+
+    # Validate keys
+    invalid = set(weights.keys()) - _VALID_WEIGHT_KEYS
+    if invalid:
+        raise ValueError(f"Invalid weight keys: {invalid}. Valid: {sorted(_VALID_WEIGHT_KEYS)}")
+    # Validate values
+    for k, v in weights.items():
+        if not isinstance(v, (int, float)) or v < 0:
+            raise ValueError(f"Weight '{k}' must be >= 0, got {v}")
+    total = sum(weights.values())
+    if total > 1.01:  # small epsilon for float rounding
+        raise ValueError(f"Sum of weights must be <= 1.0, got {total:.4f}")
+
+    with get_connection() as conn:
+        conn.execute(
+            """INSERT INTO agent_ranking_profiles (agent_id, profile_name, weights_json, updated_at)
+               VALUES (?, ?, ?, datetime('now'))
+               ON CONFLICT(agent_id, profile_name) DO UPDATE SET weights_json = ?, updated_at = datetime('now')""",
+            (agent_id, profile_name, json.dumps(weights), json.dumps(weights)),
+        )
+
+
+def delete_agent_profile(agent_id: str, profile_name: str = "custom") -> bool:
+    """Delete a custom ranking profile. Returns True if deleted."""
+    from .database import get_connection
+
+    with get_connection() as conn:
+        cursor = conn.execute(
+            "DELETE FROM agent_ranking_profiles WHERE agent_id = ? AND profile_name = ?",
+            (agent_id, profile_name),
+        )
+    return cursor.rowcount > 0
+
+
+def list_agent_profiles(agent_id: str) -> list[dict]:
+    """List all custom ranking profiles for an agent."""
+    import json
+
+    from .database import get_connection
+
+    with get_connection() as conn:
+        rows = conn.execute(
+            "SELECT profile_name, weights_json, created_at, updated_at FROM agent_ranking_profiles WHERE agent_id = ?",
+            (agent_id,),
+        ).fetchall()
+    return [
+        {"profile_name": r[0], "weights": json.loads(r[1]), "created_at": r[2], "updated_at": r[3]}
+        for r in rows
+    ]
+
+
+def _resolve_weights(ranking_profile: str, agent_id: str = "") -> dict[str, float]:
+    """Resolve weights: agent custom profile > built-in profile > default."""
+    if agent_id:
+        custom = get_agent_profile(agent_id, ranking_profile)
+        if custom:
+            # Merge with defaults for any missing keys
+            merged = dict(_DEFAULT_WEIGHTS)
+            merged.update(custom)
+            return merged
+    return _PROFILES.get(ranking_profile, _DEFAULT_WEIGHTS)
 
 
 # ── Score computation ────────────────────────────────────────────────────────
@@ -84,6 +177,7 @@ def compute_score(
     embedding_map: dict[int, list[float]] | None = None,
     ranking_profile: str = "default",
     explain: bool = False,
+    agent_id: str = "",
 ) -> float:
     """
     Calcola lo score composito per una memoria.
@@ -94,13 +188,14 @@ def compute_score(
         task: testo del task corrente (per task_relevance)
         task_vec: embedding pre-calcolato del task
         embedding_map: mappa id → embedding delle memorie nel result set
-        ranking_profile: profilo pesi ("default" | "coding")
+        ranking_profile: profilo pesi ("default" | "coding" | custom agent profile)
         explain: se True, popola record.explain con il breakdown
+        agent_id: agent namespace (per custom profile lookup)
 
     Returns:
         float in [0.0, 1.0]
     """
-    weights = _PROFILES.get(ranking_profile, _DEFAULT_WEIGHTS)
+    weights = _resolve_weights(ranking_profile, agent_id)
 
     similarity = _normalize_similarity(record.score)
     decay = float(record.decay_score or 1.0)
@@ -157,6 +252,7 @@ def rank_results(
     embedding_map: dict[int, list[float]] | None = None,
     ranking_profile: str = "default",
     explain: bool = False,
+    agent_id: str = "",
 ) -> list[MemoryRecord]:
     """
     Ordina una lista di MemoryRecord per score composito decrescente.
@@ -174,6 +270,7 @@ def rank_results(
             embedding_map=embedding_map,
             ranking_profile=ranking_profile,
             explain=explain,
+            agent_id=agent_id,
         )
 
     results.sort(key=lambda r: r.score or 0.0, reverse=True)

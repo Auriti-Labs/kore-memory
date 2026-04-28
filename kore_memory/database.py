@@ -449,6 +449,18 @@ def init_db() -> None:
             END;
         """)
 
+        # ── Ranking Profiles per-Agent (Wave 4, #98) ────────────────────
+        conn.executescript("""
+            CREATE TABLE IF NOT EXISTS agent_ranking_profiles (
+                agent_id     TEXT NOT NULL,
+                profile_name TEXT NOT NULL DEFAULT 'custom',
+                weights_json TEXT NOT NULL,
+                created_at   TEXT NOT NULL DEFAULT (datetime('now')),
+                updated_at   TEXT NOT NULL DEFAULT (datetime('now')),
+                PRIMARY KEY (agent_id, profile_name)
+            );
+        """)
+
 
 @contextmanager
 def get_connection():

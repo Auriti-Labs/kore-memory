@@ -65,6 +65,7 @@ from .models import (
     PluginListResponse,
     PolicyListResponse,
     PolicyToggleResponse,
+    RankingProfileRequest,
     RelationRecord,
     RelationRequest,
     RelationResponse,
@@ -831,6 +832,52 @@ def scoring_stats(
     from .auto_tuner import get_scoring_stats
 
     return ScoringStatsResponse(**get_scoring_stats(agent_id=agent_id))
+
+
+# ── Ranking Profiles per-Agent (#98) ─────────────────────────────────────────
+
+
+@app.get("/ranking/profiles")
+def ranking_profiles_list(
+    _: str = _Auth,
+    agent_id: str = _Agent,
+) -> dict:
+    """List all custom ranking profiles for the agent."""
+    from .ranking import list_agent_profiles
+
+    profiles = list_agent_profiles(agent_id)
+    return {"profiles": [{"agent_id": agent_id, **p} for p in profiles], "total": len(profiles)}
+
+
+@app.put("/ranking/profiles", status_code=200)
+def ranking_profile_save(
+    req: "RankingProfileRequest",
+    _: str = _Auth,
+    agent_id: str = _Agent,
+) -> dict:
+    """Create or update a custom ranking profile for the agent."""
+    from .ranking import save_agent_profile
+
+    try:
+        save_agent_profile(agent_id, req.weights, req.profile_name)
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e)) from None
+    return {"agent_id": agent_id, "profile_name": req.profile_name, "weights": req.weights, "message": "Profile saved"}
+
+
+@app.delete("/ranking/profiles/{profile_name}", status_code=200)
+def ranking_profile_delete(
+    profile_name: str,
+    _: str = _Auth,
+    agent_id: str = _Agent,
+) -> dict:
+    """Delete a custom ranking profile."""
+    from .ranking import delete_agent_profile
+
+    deleted = delete_agent_profile(agent_id, profile_name)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    return {"message": "Profile deleted"}
 
 
 # ── Backup / Import ──────────────────────────────────────────────────────────

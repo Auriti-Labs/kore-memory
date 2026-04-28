@@ -663,6 +663,34 @@ def memory_get_context(
 
 
 @mcp.tool()
+def memory_set_ranking_profile(
+    weights: dict,
+    profile_name: str = "custom",
+    agent_id: str = "default",
+) -> dict:
+    """
+    Save a custom ranking profile for the agent.
+    Weights control how memories are ranked during search.
+    Valid keys: similarity, decay_score, confidence, importance_n,
+    task_relevance, graph_centrality, freshness.
+    All values must be >= 0 and sum <= 1.0.
+
+    Example: memory_set_ranking_profile(
+        weights={"similarity": 0.50, "decay_score": 0.20, "confidence": 0.15, "task_relevance": 0.15},
+        profile_name="custom",
+    )
+    """
+    from .ranking import save_agent_profile
+
+    sanitized = _sanitize_agent_id(agent_id)
+    try:
+        save_agent_profile(sanitized, weights, profile_name)
+        return {"message": "Profile saved", "agent_id": sanitized, "profile_name": profile_name, "weights": weights}
+    except ValueError as e:
+        return _error(str(e))
+
+
+@mcp.tool()
 def memory_explain(
     memory_id: str,
     agent_id: str = "",

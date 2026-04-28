@@ -435,6 +435,7 @@ def search_memories(
         embedding_map=embedding_map,
         ranking_profile=ranking_profile,
         explain=explain,
+        agent_id=agent_id,
     )
 
     total_count = _count_active_memories(query, category, agent_id, include_historical=include_historical)
