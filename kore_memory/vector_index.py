@@ -209,14 +209,25 @@ class _AgentCache:
 class VectorIndex:
     """Legacy in-memory vector index with per-agent invalidation."""
 
+    _MAX_AGENTS = 20  # Max cached agents; LRU eviction when exceeded
+
     def __init__(self) -> None:
         self._caches: dict[str, _AgentCache] = {}
         self._lock = threading.Lock()
+        self._access_order: list[str] = []  # LRU tracking
 
     def get_cache(self, agent_id: str) -> _AgentCache:
         with self._lock:
             if agent_id not in self._caches:
+                # Evict LRU if at capacity
+                while len(self._caches) >= self._MAX_AGENTS and self._access_order:
+                    evict = self._access_order.pop(0)
+                    self._caches.pop(evict, None)
                 self._caches[agent_id] = _AgentCache()
+            # Update LRU order
+            if agent_id in self._access_order:
+                self._access_order.remove(agent_id)
+            self._access_order.append(agent_id)
             return self._caches[agent_id]
 
     def invalidate(self, agent_id: str) -> None:

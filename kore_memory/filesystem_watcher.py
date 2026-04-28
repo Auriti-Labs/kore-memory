@@ -62,6 +62,7 @@ class _WatcherEntry:
         self.include_extra_md = include_extra_md
         self.max_depth = max_depth
         self.observer: Any = None
+        self.handler: Any = None
         self.started_at: str = datetime.now(UTC).isoformat()
         self.events_processed: int = 0
 
@@ -103,12 +104,18 @@ class _WatcherRegistry:
             ]
 
     def stop_all(self) -> int:
-        """Ferma tutti i watcher — chiamato al shutdown del server."""
+        """Ferma tutti i watcher e cancella i timer pendenti — chiamato al shutdown del server."""
         with self._lock:
             entries = list(self._watchers.values())
             self._watchers.clear()
         count = 0
         for entry in entries:
+            # Cancel pending debounce timers to prevent post-shutdown DB operations
+            if entry.handler:
+                with entry.handler._timers_lock:
+                    for timer in entry.handler._timers.values():
+                        timer.cancel()
+                    entry.handler._timers.clear()
             if entry.observer:
                 try:
                     entry.observer.stop()
@@ -277,6 +284,7 @@ def start_watcher(
     observer.start()
 
     entry.observer = observer
+    entry.handler = handler
     _registry.add(entry)
 
     logger.info("Watcher avviato: base_path=%s agent=%s", resolved, agent_id)
