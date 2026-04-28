@@ -144,7 +144,9 @@ jobs:
           python-version: "3.12"
 
       - name: Install tools
-        run: pip install bandit pip-audit -e ".[dev]"
+        run: |
+          pip install --upgrade pip
+          pip install bandit pip-audit -e ".[dev]"
 
       - name: Run bandit (SAST)
         run: bandit -r kore_memory/ -c pyproject.toml
