@@ -701,6 +701,33 @@ All configuration via environment variables. No config file needed.
 
 ---
 
+## 🐳 Docker
+
+```bash
+# Quick start
+docker compose up -d
+
+# Or build and run manually
+docker build -t kore-memory .
+docker run -d -p 8765:8765 -v kore-data:/data \
+  -e KORE_API_KEY=$(python3 -c "import secrets; print(secrets.token_urlsafe(32))") \
+  kore-memory
+```
+
+Dashboard at `http://localhost:8765/dashboard`, API docs at `http://localhost:8765/docs`.
+
+Set `KORE_API_KEY` for authentication (required when `KORE_LOCAL_ONLY=0`). Data persists in the `kore-data` volume.
+
+To also run the MCP HTTP server, override the command:
+
+```bash
+docker run -d -p 8766:8766 -v kore-data:/data \
+  -e KORE_MCP_TOKEN=your-token \
+  kore-memory kore-mcp --transport streamable-http --host 0.0.0.0
+```
+
+---
+
 ## 🛠️ Development
 
 ```bash

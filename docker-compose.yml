@@ -1,0 +1,27 @@
+services:
+  kore:
+    build: .
+    image: ghcr.io/auriti-labs/kore-memory:latest
+    ports:
+      - "8765:8765"   # REST API + Dashboard
+      - "8766:8766"   # MCP HTTP transport (optional)
+    volumes:
+      - kore-data:/data
+    environment:
+      - KORE_LOCAL_ONLY=0
+      # Generate a key: python3 -c "import secrets; print(secrets.token_urlsafe(32))"
+      # - KORE_API_KEY=your-secret-key-here
+      # - KORE_MCP_TOKEN=your-mcp-token-here
+      # - KORE_EMBED_MODEL=paraphrase-multilingual-MiniLM-L12-v2
+      # - KORE_AUDIT_LOG=1
+      # - KORE_ENTITY_EXTRACTION=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://127.0.0.1:8765/health').raise_for_status()"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  kore-data:
