@@ -3,6 +3,7 @@ Kore — FastAPI application
 Memory layer with decay, auto-scoring, compression, semantic search, and auth.
 """
 
+import ipaddress
 import re as _re
 import secrets
 
@@ -35,6 +36,8 @@ from .models import (
     BatchSaveResponse,
     CleanupExpiredResponse,
     CompressRunResponse,
+    ConsolidateRequest,
+    ConsolidateResponse,
     ContextAssembleRequest,
     ContextAssembleResponse,
     DecayRunResponse,
@@ -132,20 +135,38 @@ def _validate_session_id(raw: str | None) -> str | None:
     return raw
 
 
+def _is_trusted_proxy(ip_str: str) -> bool:
+    """Check if an IP address belongs to a trusted proxy network."""
+    try:
+        ip = ipaddress.ip_address(ip_str)
+        for network in config.TRUSTED_PROXIES:
+            if ip in network:
+                return True
+        return False
+    except ValueError:
+        return False
+
+
 def _get_client_ip(request: Request) -> str:
-    """Extract client IP. Ignores X-Forwarded-For in local-only mode to prevent spoofing."""
-    # In local-only mode, use the raw socket IP only — prevents
-    # spoofing via X-Forwarded-For: 127.0.0.1 to bypass auth/rate-limit
+    """Extract client IP. Validates trusted proxy before reading X-Forwarded-For."""
+    client_host = request.client.host if request.client else "unknown"
+
+    # In local-only mode, always use the raw socket IP — prevents spoofing
     if config.LOCAL_ONLY:
-        return request.client.host if request.client else "unknown"
-    # Behind a trusted reverse proxy, read the first IP from the chain
-    forwarded = request.headers.get("X-Forwarded-For")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    real_ip = request.headers.get("X-Real-IP")
-    if real_ip:
-        return real_ip.strip()
-    return request.client.host if request.client else "unknown"
+        return client_host
+
+    # Behind a trusted reverse proxy, read the first IP from X-Forwarded-For
+    # Only trust the header if the immediate client is a trusted proxy
+    if _is_trusted_proxy(client_host):
+        forwarded = request.headers.get("X-Forwarded-For")
+        if forwarded:
+            return forwarded.split(",")[0].strip()
+        real_ip = request.headers.get("X-Real-IP")
+        if real_ip:
+            return real_ip.strip()
+
+    # Client is not a trusted proxy — use socket IP
+    return client_host
 
 
 def _check_rate_limit(client_ip: str, path: str) -> None:
@@ -344,17 +365,20 @@ def search(
         except Exception:
             raise HTTPException(400, "Invalid cursor format") from None
 
-    results, next_cursor, total_count, excluded = search_memories(
-        query=q,
-        limit=limit,
-        category=category,
-        semantic=semantic,
-        agent_id=agent_id,
-        cursor=cursor_tuple,
-        task=task,
-        ranking_profile=ranking_profile,
-        explain=explain,
-    )
+    try:
+        results, next_cursor, total_count, excluded = search_memories(
+            query=q,
+            limit=limit,
+            category=category,
+            semantic=semantic,
+            agent_id=agent_id,
+            cursor=cursor_tuple,
+            task=task,
+            ranking_profile=ranking_profile,
+            explain=explain,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
     # Encode next cursor
     cursor_str = None
@@ -374,7 +398,6 @@ def search(
         has_more=next_cursor is not None,
         excluded=excluded if explain else [],
         ranking_profile=_profile_display,
-        offset=offset,
     )
 
 
@@ -783,20 +806,33 @@ def compress(
     )
 
 
-@app.post("/consolidate")
+@app.post("/consolidate", response_model=ConsolidateResponse)
 def consolidate(
     request: Request,
-    body: dict | None = None,
+    req: ConsolidateRequest = None,
     _: str = _Auth,
     agent_id: str = _Agent,
-) -> dict:
+) -> ConsolidateResponse:
     """Consolidate session memories into episodic summaries."""
     _check_rate_limit(_get_client_ip(request), "/compress")
     from .consolidation import consolidate_agent, consolidate_session
 
-    if body and body.get("session_id"):
-        return consolidate_session(body["session_id"], agent_id)
-    return consolidate_agent(agent_id)
+    if req and req.session_id:
+        result = consolidate_session(req.session_id, agent_id)
+        # Result keys: consolidated, episodic_id, sources_compressed, excluded_conflicted, skipped
+        count = result.get("sources_compressed", 0) if result.get("consolidated") else 0
+        return ConsolidateResponse(
+            consolidated_count=count,
+            session_id=req.session_id,
+            agent_id=agent_id,
+        )
+    result = consolidate_agent(agent_id)
+    # Result keys: sessions_consolidated, total_episodic_created
+    count = result.get("total_episodic_created", 0)
+    return ConsolidateResponse(
+        consolidated_count=count,
+        agent_id=agent_id,
+    )
 
 
 @app.post("/cleanup", response_model=CleanupExpiredResponse)
@@ -1077,6 +1113,48 @@ def graph_hubs(
         hubs=[HubNodeRecord(**h) for h in hubs],
         total=len(hubs),
     )
+
+
+@app.get("/relations/batch", response_model=dict)
+def relations_batch(
+    ids: str = Query(..., description="Comma-separated list of memory IDs (e.g., '1,2,3')"),
+    _: str = _Auth,
+    agent_id: str = _Agent,
+) -> dict:
+    """
+    Fetch relations for multiple memories in a single query.
+    Returns {memory_id: [relations]}.
+
+    Questo endpoint ottimizza il caricamento del grafo frontend:
+    invece di N chiamate per N nodi, una sola chiamata batch.
+    """
+    from .repository.graph import get_relations_batch
+
+    memory_ids = [int(x.strip()) for x in ids.split(",") if x.strip().isdigit()]
+    if not memory_ids:
+        return {"relations": {}, "total": 0}
+
+    relations = get_relations_batch(memory_ids, agent_id=agent_id)
+    return {"relations": relations, "total": len(memory_ids)}
+
+
+@app.get("/graph/unlinked", response_model=dict)
+def graph_unlinked(
+    memory_id: int = Query(..., description="Memory ID to find unlinked references for"),
+    limit: int = Query(10, ge=1, le=50, description="Maximum number of suggestions"),
+    _: str = _Auth,
+    agent_id: str = _Agent,
+) -> dict:
+    """
+    Find semantically similar memories without explicit relations.
+
+    Uses cosine similarity on embeddings to suggest potential backlinks
+    (Obsidian-style "unlinked references").
+    """
+    from .repository.graph import find_unlinked_references
+
+    suggestions = find_unlinked_references(memory_id, agent_id=agent_id, limit=limit)
+    return {"suggestions": suggestions, "total": len(suggestions)}
 
 
 # ── Summarization ────────────────────────────────────────────────────────────
@@ -1546,7 +1624,7 @@ async def dashboard(request: Request) -> HTMLResponse:
 @app.get("/health")
 def health() -> JSONResponse:
     from .database import get_connection
-    from .repository import _embeddings_available
+    from .utils import _embeddings_available
 
     # Verify DB connectivity
     db_ok = True
