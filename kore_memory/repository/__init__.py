@@ -30,8 +30,9 @@ from .lifecycle import (
     restore_memory,
     run_decay_pass,
 )
+# Re-export _embeddings_available from utils for backward compatibility
+from ..utils import _embeddings_available
 from .memory import (
-    _embeddings_available,
     delete_memory,
     export_memories,
     get_memory,

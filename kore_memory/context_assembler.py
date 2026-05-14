@@ -41,10 +41,8 @@ def assemble_context(
     Returns:
         ContextAssembleResponse con memoria e metadati
     """
-    from .repository.memory import _embeddings_available
-    from .repository.search import (
-        search_memories,
-    )
+    from .repository.search import search_memories
+    from .utils import _embeddings_available
 
     degraded = not _embeddings_available()
 

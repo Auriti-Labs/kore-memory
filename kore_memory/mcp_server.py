@@ -798,7 +798,7 @@ def memory_consolidate(
 def health_resource() -> str:
     """Kore server health status."""
     from . import config
-    from .repository import _embeddings_available
+    from .utils import _embeddings_available
 
     return f"Kore v{config.VERSION} — semantic_search={'enabled' if _embeddings_available() else 'disabled'}"
 

@@ -69,7 +69,7 @@ def _find_candidates(
 
     Restituisce lista di dict con: id, content, valid_from, valid_to.
     """
-    from .repository.memory import _embeddings_available
+    from .utils import _embeddings_available
 
     if _embeddings_available():
         return _semantic_candidates(memory_id, content, agent_id, valid_from, valid_to)
