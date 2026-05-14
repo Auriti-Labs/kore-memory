@@ -288,3 +288,31 @@ class TestHubDetection:
         """limit parametro è rispettato."""
         r = client.get("/graph/hubs?limit=3", headers=HEADERS)
         assert len(r.json()["hubs"]) <= 3
+
+    def test_hubs_no_sqlite_deadlock_concurrent(self):
+        """
+        Regressione test #1: _count_active_nodes() usa la connessione esistente,
+        non ne apre una nuova. Verifica nessun deadlock con 10+ operazioni concorrenti.
+        """
+        import threading
+        errors = []
+
+        def worker(worker_id):
+            try:
+                # Crea 5 memorie con relazioni
+                ids = [_save(f"Concurrent worker {worker_id} memory {i}") for i in range(5)]
+                for i in range(len(ids) - 1):
+                    _relate(ids[i], ids[i + 1])
+                # Chiama get_graph_hubs (che usa _count_active_nodes)
+                r = client.get("/graph/hubs?limit=10", headers=HEADERS)
+                assert r.status_code == 200, f"Worker {worker_id}: status {r.status_code}"
+            except Exception as e:
+                errors.append(f"Worker {worker_id}: {e}")
+
+        threads = [threading.Thread(target=worker, args=(i,)) for i in range(5)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+
+        assert len(errors) == 0, f"Errori rilevati: {errors}"

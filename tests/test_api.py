@@ -69,6 +69,27 @@ class TestAuth:
         finally:
             os.environ["KORE_LOCAL_ONLY"] = "1"
 
+    def test_x_forwarded_for_spoofing_blocked(self):
+        """
+        Regressione test #2: X-Forwarded-For spoofing deve essere bloccato.
+        Un client non trusted proxy non può usare X-Forwarded-For per bypassare auth/rate-limit.
+        """
+        os.environ["KORE_LOCAL_ONLY"] = "0"
+        os.environ["KORE_TRUSTED_PROXIES"] = "10.0.0.0/8,192.168.0.0/16"  # Esclude 127.0.0.1
+        try:
+            # Simula richiesta con X-Forwarded-For spoofato da IP non trusted
+            # Il TestClient usa 'testclient' come host, che non è nei trusted proxies
+            r = client.get(
+                "/search?q=test",
+                headers={"X-Forwarded-For": "127.0.0.1"}
+            )
+            # Deve usare l'IP reale del client (testclient), non quello spoofato
+            # In modalità non-local-only senza API key, deve fallire con 401
+            assert r.status_code == 401, "X-Forwarded-For spoofato non deve essere trusted"
+        finally:
+            os.environ["KORE_LOCAL_ONLY"] = "1"
+            os.environ["KORE_TRUSTED_PROXIES"] = "127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+
 
 class TestAgentIsolation:
     def setup_method(self):
@@ -118,6 +139,51 @@ class TestCompress:
         r = client.post("/compress", headers=HEADERS)
         assert r.status_code == 200
         assert "clusters_found" in r.json()
+
+    def test_compress_agent_isolation(self):
+        """
+        Regressione test #4: la compressione deve rispettare l'agent isolation.
+        Memorie di agenti diversi non devono essere fuse nello stesso cluster.
+        """
+        # Agente A salva 2 memorie molto simili
+        a1 = client.post("/save", json={
+            "content": "Compression agent isolation test: unique phrase alpha-12345",
+            "category": "project"
+        }, headers=HEADERS).json()["id"]
+        a2 = client.post("/save", json={
+            "content": "Compression agent isolation test: unique phrase alpha-12345 duplicate",
+            "category": "project"
+        }, headers=HEADERS).json()["id"]
+
+        # Agente B salva 2 memorie molto simili (stesso contenuto)
+        b1 = client.post("/save", json={
+            "content": "Compression agent isolation test: unique phrase alpha-12345",
+            "category": "project"
+        }, headers={"X-Agent-Id": "compression-isolation-agent-B"}).json()["id"]
+        b2 = client.post("/save", json={
+            "content": "Compression agent isolation test: unique phrase alpha-12345 duplicate",
+            "category": "project"
+        }, headers={"X-Agent-Id": "compression-isolation-agent-B"}).json()["id"]
+
+        # Esegui compressione per agente A
+        r_a = client.post("/compress", headers=HEADERS)
+        assert r_a.status_code == 200
+
+        # Esegui compressione per agente B
+        r_b = client.post("/compress", headers={"X-Agent-Id": "compression-isolation-agent-B"})
+        assert r_b.status_code == 200
+
+        # Verifica che le memorie di A non siano state fuse con quelle di B
+        # Cerca memorie compresse per agente A
+        search_a = client.get("/search?q=alpha-12345", headers=HEADERS)
+        search_b = client.get("/search?q=alpha-12345", headers={"X-Agent-Id": "compression-isolation-agent-B"})
+
+        # Ogni agente deve avere i propri risultati isolati
+        ids_a = {m["id"] for m in search_a.json()["results"]}
+        ids_b = {m["id"] for m in search_b.json()["results"]}
+
+        # Nessuna sovrapposizione tra gli ID
+        assert ids_a.isdisjoint(ids_b), "Agent isolation violata nella compressione"
 
 
 class TestTimeline:
@@ -341,6 +407,66 @@ class TestRelations:
         r = client.get(f"/memories/{src}/relations", headers=HEADERS)
         assert r.json()["relations"][0]["relation"] == "related"
 
+    def test_relations_batch_endpoint(self):
+        """L'endpoint batch fetch relations per più ID in una chiamata."""
+        # Crea 3 memorie
+        r1 = client.post("/save", json={"content": "Batch test memory 1", "category": "general"}, headers=HEADERS)
+        r2 = client.post("/save", json={"content": "Batch test memory 2", "category": "general"}, headers=HEADERS)
+        r3 = client.post("/save", json={"content": "Batch test memory 3", "category": "general"}, headers=HEADERS)
+        id1, id2, id3 = r1.json()["id"], r2.json()["id"], r3.json()["id"]
+
+        # Crea relazioni: 1→2, 2→3
+        client.post(f"/memories/{id1}/relations", json={"target_id": id2}, headers=HEADERS)
+        client.post(f"/memories/{id2}/relations", json={"target_id": id3}, headers=HEADERS)
+
+        # Fetch batch
+        r = client.get(f"/relations/batch?ids={id1},{id2},{id3}", headers=HEADERS)
+        assert r.status_code == 200
+        data = r.json()
+        assert "relations" in data
+        assert data["total"] == 3
+        # Verifica che le relazioni siano presenti
+        assert len(data["relations"].get(str(id1), [])) >= 1
+        assert len(data["relations"].get(str(id2), [])) >= 1
+
+    def test_graph_unlinked_references(self):
+        """L'endpoint unlinked trova memorie simili senza relazioni."""
+        # Crea due memorie con contenuto simile
+        r1 = client.post("/save", json={"content": "Python programming language tutorial advanced", "category": "general"}, headers=HEADERS)
+        r2 = client.post("/save", json={"content": "Python programming language guide intermediate", "category": "general"}, headers=HEADERS)
+        id1, id2 = r1.json()["id"], r2.json()["id"]
+
+        # Nessuna relazione creata esplicitamente
+        # Cerca unlinked references per la prima memoria
+        r = client.get(f"/graph/unlinked?memory_id={id1}&limit=10", headers=HEADERS)
+        assert r.status_code == 200
+        data = r.json()
+        assert "suggestions" in data
+        # La seconda memoria dovrebbe essere suggerita (contenuto simile)
+        # Nota: dipende dagli embedding, quindi verifichiamo solo la struttura
+        assert isinstance(data["suggestions"], list)
+
+    def test_backlink_automatic_creation(self):
+        """I backlink [[memory_id]] nel contenuto creano relazioni automatiche."""
+        # Crea la prima memoria
+        r1 = client.post("/save", json={"content": "Original memory for backlink test", "category": "general"}, headers=HEADERS)
+        id1 = r1.json()["id"]
+
+        # Crea seconda memoria con backlink [[id1]]
+        r2 = client.post("/save", json={"content": f"Questa memoria reference la memoria [[{id1}]] per dettagli", "category": "general"}, headers=HEADERS)
+
+        # Verifica che la relazione sia stata creata automaticamente
+        r = client.get(f"/memories/{r2.json()['id']}/relations", headers=HEADERS)
+        assert r.status_code == 200
+        # La relazione dovrebbe esistere (potrebbe essere async, quindi wait breve)
+        import time
+        time.sleep(0.1)
+        r = client.get(f"/memories/{r2.json()['id']}/relations", headers=HEADERS)
+        relations = r.json()["relations"]
+        # Verifica che almeno una relazione punti a id1
+        target_ids = [rel.get("target_id") for rel in relations] + [rel.get("source_id") for rel in relations]
+        assert id1 in target_ids
+
 
 # ── P3: TTL / Cleanup ────────────────────────────────────────────────────────
 
@@ -520,27 +646,39 @@ class TestPagination:
                 "importance": 3,
             }, headers=HEADERS)
 
-    def test_search_pagination_offset(self):
-        """La ricerca con offset salta i primi risultati."""
+    def test_search_cursor_pagination(self):
+        """La ricerca usa cursor-based pagination (offset deprecated)."""
         r_full = client.get("/search?q=PGNX&limit=10&semantic=false", headers=HEADERS)
-        r_offset = client.get("/search?q=PGNX&limit=3&offset=2&semantic=false", headers=HEADERS)
-        assert r_offset.status_code == 200
-        data = r_offset.json()
-        assert data["offset"] == 2
-        assert len(data["results"]) <= 3
+        # First page
+        r_page1 = client.get("/search?q=PGNX&limit=3&semantic=false", headers=HEADERS)
+        assert r_page1.status_code == 200
+        data1 = r_page1.json()
+        assert "cursor" in data1
+        assert len(data1["results"]) <= 3
+
+        # Second page using cursor
+        if data1.get("cursor"):
+            r_page2 = client.get(f"/search?q=PGNX&limit=3&cursor={data1['cursor']}&semantic=false", headers=HEADERS)
+            assert r_page2.status_code == 200
+            data2 = r_page2.json()
+            assert len(data2["results"]) <= 3
+            # Verify different page
+            if data1["results"] and data2["results"]:
+                assert data1["results"][0]["id"] != data2["results"][0]["id"]
 
     def test_search_has_more_flag(self):
         """has_more è True quando ci sono più risultati oltre la pagina."""
-        r = client.get("/search?q=PGNX&limit=2&offset=0&semantic=false", headers=HEADERS)
+        r = client.get("/search?q=PGNX&limit=2&semantic=false", headers=HEADERS)
         data = r.json()
         if data["total"] > 2:
             assert data["has_more"] is True
 
-    def test_timeline_pagination(self):
-        """La timeline supporta offset."""
-        r = client.get("/timeline?subject=PGNX&limit=2&offset=1", headers=HEADERS)
+    def test_timeline_cursor_pagination(self):
+        """La timeline usa cursor-based pagination (offset deprecated)."""
+        r = client.get("/timeline?subject=PGNX&limit=2", headers=HEADERS)
         assert r.status_code == 200
-        assert r.json()["offset"] == 1
+        data = r.json()
+        assert "cursor" in data
 
 
 # ── Archive (soft-delete) ─────────────────────────────────────────────────────

@@ -102,12 +102,12 @@ class TestRankingProfileIntegration:
         assert r.status_code == 200
         assert r.json()["ranking_profile"] == "custom"
 
-    def test_fallback_to_default(self):
-        """Search with non-existent profile falls back to default."""
+    def test_invalid_profile_returns_400(self):
+        """Search with non-existent profile returns 400 error (no silent fallback)."""
         self._save("Fallback test memory for default ranking profile")
         r = client.get("/search?q=fallback+default&ranking_profile=nonexistent", headers=HEADERS)
-        assert r.status_code == 200
-        assert r.json()["ranking_profile"] == "nonexistent"  # name preserved in response
+        assert r.status_code == 400  # ValueError raised for invalid profile
+        assert "not found" in r.json()["detail"].lower()
 
     def test_agent_isolation(self):
         """Profiles are scoped to agent_id."""

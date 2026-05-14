@@ -217,14 +217,19 @@ class TestAsyncKoreClientCore:
             assert result.total >= 1
 
     @pytest.mark.anyio
-    async def test_search_con_offset(self):
+    async def test_search_con_cursor(self):
+        """SDK async client usa cursor pagination (offset deprecated rimosso)."""
         async with _make_async_client() as kore:
             for i in range(4):
                 await kore.save(f"SDK async pagination item {i} marker ASDKPG")
-            result = await kore.search("ASDKPG", limit=2, offset=1, semantic=False)
+            result = await kore.search("ASDKPG", limit=2, semantic=False)
             assert isinstance(result, MemorySearchResponse)
-            with pytest.deprecated_call(match="deprecated"):
-                assert result.offset == 1
+            assert result.cursor is not None
+            assert len(result.results) == 2
+            # Second page con cursor
+            if result.cursor:
+                result2 = await kore.search("ASDKPG", limit=2, cursor=result.cursor, semantic=False)
+                assert len(result2.results) <= 2
 
     @pytest.mark.anyio
     async def test_timeline_ritorna_modello(self):

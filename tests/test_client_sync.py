@@ -245,15 +245,19 @@ class TestSyncSearch:
         assert isinstance(result, MemorySearchResponse)
         assert result.total >= 1
 
-    def test_search_con_offset_deprecated(self):
-        """search() con offset restituisce il campo offset nella risposta."""
+    def test_search_con_cursor_pagination(self):
+        """search() usa cursor-based pagination (offset deprecated rimosso)."""
         kore = _make_sync_client(agent_id="sync-search-off")
         for i in range(3):
-            kore.save(f"Memoria offset sincrono {i} SYNCOFF1")
-        result = kore.search("SYNCOFF1", offset=1, semantic=False)
+            kore.save(f"Memoria cursor sincrono {i} SYNCCURSOR")
+        result = kore.search("SYNCCURSOR", limit=2, semantic=False)
         assert isinstance(result, MemorySearchResponse)
-        with pytest.deprecated_call(match="deprecated"):
-            assert result.offset == 1
+        assert result.cursor is not None
+        assert len(result.results) <= 2
+        # Second page con cursor
+        if result.cursor:
+            result2 = kore.search("SYNCCURSOR", limit=2, cursor=result.cursor, semantic=False)
+            assert len(result2.results) <= 2
 
 
 # ── Test: timeline() ──────────────────────────────────────────────────────────
