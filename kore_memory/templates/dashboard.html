@@ -628,6 +628,23 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible) { outline: none; }
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/></svg>
           Center
         </button>
+        <select class="select" id="graph-category-filter" style="width:auto;min-width:100px" title="Filter by category">
+          <option value="">All categories</option>
+          <option value="general">general</option>
+          <option value="project">project</option>
+          <option value="trading">trading</option>
+          <option value="finance">finance</option>
+          <option value="person">person</option>
+          <option value="preference">preference</option>
+          <option value="task">task</option>
+          <option value="decision">decision</option>
+        </select>
+        <select class="select" id="graph-min-degree" style="width:auto;min-width:90px" title="Minimum degree">
+          <option value="1">Min degree: 1</option>
+          <option value="2">Min degree: 2</option>
+          <option value="3">Min degree: 3</option>
+          <option value="5">Min degree: 5</option>
+        </select>
         <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text-muted);cursor:pointer">
           <input type="checkbox" id="graph-show-labels" checked> Labels
         </label>
@@ -1337,7 +1354,15 @@ function _loadGraphInner() {
   graphState.dragNode = null; graphState.hoveredNode = null;
   graphState.selectedNode = null; graphState.settled = false; graphState.iteration = 0;
 
-  api.get('/graph/hubs?limit=20').then(function(data) {
+  /* Fetch filters */
+  var category = $('#graph-category-filter').value;
+  var minDegree = parseInt($('#graph-min-degree').value) || 1;
+
+  /* Build query params */
+  var params = 'limit=50&min_degree=' + minDegree;
+  if (category) params += '&category=' + encodeURIComponent(category);
+
+  api.get('/graph/hubs?' + params).then(function(data) {
     var memories = data.hubs || [];
     if (!memories.length) {
       ctx.clearRect(0, 0, w, h);
@@ -1738,6 +1763,13 @@ function animateGraph(ctx, canvas) {
   });
 
   ctx.restore();
+
+  /* Stop animation when settled (no drag interaction) */
+  if (cooling <= 0 && !graphState.dragNode) {
+    graphAnim = null;
+    return;
+  }
+
   graphAnim = requestAnimationFrame(function() { animateGraph(ctx, canvas); });
 }
 
@@ -2210,7 +2242,12 @@ function initEventHandlers() {
     var relation = $('#rel-type').value.trim() || 'related';
     if (!source || !target) { toast('Enter source and target ID', 'error'); return; }
     api.post('/memories/' + source + '/relations', { target_id: target, relation: relation }).then(function() {
-      toast('Relation created', 'success'); loadTags();
+      toast('Relation created', 'success');
+      loadTags();
+      /* Reload graph if visible — keeps graph in sync after relation changes */
+      if (state.currentPage === 'graph') {
+        loadGraph();
+      }
     }).catch(function(e) { toast(e.message, 'error'); });
   });
 
@@ -2227,6 +2264,18 @@ function initEventHandlers() {
   $('#graph-detail-close').addEventListener('click', function() {
     graphState.selectedNode = null;
     $('#graph-detail').classList.remove('open');
+  });
+
+  /* Graph filters — reload graph when filters change */
+  $('#graph-category-filter').addEventListener('change', function() {
+    if (state.currentPage === 'graph') {
+      loadGraph();
+    }
+  });
+  $('#graph-min-degree').addEventListener('change', function() {
+    if (state.currentPage === 'graph') {
+      loadGraph();
+    }
   });
 
   $('#agent-select').addEventListener('change', function(e) {
@@ -2258,14 +2307,21 @@ function initEventHandlers() {
       el.style.display = el.textContent.toLowerCase().indexOf(q) >= 0 ? '' : 'none';
     });
   });
+
+  /* Graph resize — reload canvas when window is resized */
+  window.addEventListener('resize', function() {
+    if (state.currentPage === 'graph') {
+      loadGraph();
+    }
+  });
 }
 
 /* ── Load agent list in selector ──────────────────────────────────── */
 function loadAgentSelector() {
-  api.get('/agents').then(function(res) {
+  return api.get('/agents').then(function(res) {
     var agents = res.agents || res;
     var select = $('#agent-select');
-    var current = select.value;
+    var current = select.value || state.agentId;
     var html = '';
     (agents || []).forEach(function(a) {
       html += '<option value="' + esc(a.agent_id) + '">' + esc(a.agent_id) + ' (' + a.memory_count + ')</option>';
@@ -2275,7 +2331,10 @@ function loadAgentSelector() {
       select.insertAdjacentHTML('afterbegin', '<option value="default">default</option>');
     }
     select.value = current || 'default';
-  }).catch(function() { /* keep default */ });
+    state.agentId = select.value;
+  }).catch(function() {
+    state.agentId = 'default';
+  });
 }
 
 /* ── Initialization ────────────────────────────────────────────────── */
@@ -2283,10 +2342,11 @@ function init() {
   applyTheme();
   initNav();
   initEventHandlers();
-  loadAgentSelector();
-  var hash = location.hash.replace('#', '');
-  var startPage = PAGES.find(function(p) { return p.id === hash; }) ? hash : 'overview';
-  navigate(startPage);
+  loadAgentSelector().then(function() {
+    var hash = location.hash.replace('#', '');
+    var startPage = PAGES.find(function(p) { return p.id === hash; }) ? hash : 'overview';
+    navigate(startPage);
+  });
   window.addEventListener('hashchange', function() {
     var h = location.hash.replace('#', '');
     if (h && h !== state.currentPage && PAGES.find(function(p) { return p.id === h; })) navigate(h);
