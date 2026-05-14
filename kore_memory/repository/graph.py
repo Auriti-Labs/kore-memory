@@ -135,6 +135,63 @@ def get_relations(memory_id: int, agent_id: str = "default") -> list[dict]:
     return [dict(r) for r in rows]
 
 
+def get_relations_batch(memory_ids: list[int], agent_id: str = "default") -> dict[int, list[dict]]:
+    """
+    Fetch relations for multiple memories in a single query.
+    Returns a dict mapping memory_id → list of relations.
+
+    Questo evita N chiamate API separate per il grafo (O(N) → O(1)).
+    """
+    if not memory_ids:
+        return {}
+
+    # Verifica che tutte le memorie appartengano all'agent
+    with get_connection() as conn:
+        placeholders = ",".join("?" * len(memory_ids))
+        valid_ids = set()
+        rows = conn.execute(
+            f"SELECT id FROM memories WHERE id IN ({placeholders}) AND agent_id = ? AND archived_at IS NULL",
+            [*memory_ids, agent_id],
+        ).fetchall()
+        valid_ids = {row[0] for row in rows}
+
+    if not valid_ids:
+        return {}
+
+    # Fetch tutte le relazioni in una query
+    with get_connection() as conn:
+        placeholders = ",".join("?" * len(valid_ids))
+        rows = conn.execute(
+            f"""
+            SELECT r.source_id, r.target_id, r.relation,
+                   r.strength, r.confidence, r.created_at, r.updated_at,
+                   m.content AS related_content
+            FROM memory_relations r
+            JOIN memories m ON m.id = CASE
+                WHEN r.source_id IN ({placeholders}) THEN r.target_id
+                ELSE r.source_id
+            END
+            WHERE (r.source_id IN ({placeholders}) OR r.target_id IN ({placeholders}))
+              AND m.agent_id = ? AND m.archived_at IS NULL
+            ORDER BY r.strength DESC, r.created_at DESC
+            """,
+            [*valid_ids, *valid_ids, *valid_ids, agent_id],
+        ).fetchall()
+
+    # Organizza risultati per memory_id
+    result: dict[int, list[dict]] = {mid: [] for mid in valid_ids}
+    for row in rows:
+        source_id = row["source_id"]
+        target_id = row["target_id"]
+        # Aggiungi sia al source che al target (relazioni bidirezionali)
+        if source_id in result:
+            result[source_id].append(dict(row))
+        if target_id in result and target_id != source_id:
+            result[target_id].append(dict(row))
+
+    return result
+
+
 def traverse_graph(
     start_id: int,
     agent_id: str = "default",
@@ -390,7 +447,7 @@ def get_degree_centrality(
             (agent_id, min_degree, limit),
         ).fetchall()
 
-    total_nodes = _count_active_nodes(conn if False else None, agent_id)
+        total_nodes = _count_active_nodes(conn, agent_id)
 
     return [
         {
@@ -412,11 +469,18 @@ def get_degree_centrality(
 
 def _count_active_nodes(conn, agent_id: str) -> int:
     """Conta i nodi attivi (non archiviati, non compressi) per un agente."""
-    with get_connection() as c:
-        row = c.execute(
+    # Usa la connessione esistente se fornita, altrimenti aprine una temporanea
+    if conn is not None:
+        row = conn.execute(
             "SELECT COUNT(*) FROM memories WHERE agent_id = ? AND archived_at IS NULL AND compressed_into IS NULL",
             (agent_id,),
         ).fetchone()
+    else:
+        with get_connection() as c:
+            row = c.execute(
+                "SELECT COUNT(*) FROM memories WHERE agent_id = ? AND archived_at IS NULL AND compressed_into IS NULL",
+                (agent_id,),
+            ).fetchone()
     return row[0] if row else 1
 
 
@@ -425,3 +489,78 @@ def _normalized_centrality(degree: int, total_nodes: int) -> float:
     if total_nodes <= 1:
         return 0.0
     return round(degree / (total_nodes - 1), 4)
+
+
+def find_unlinked_references(memory_id: int, agent_id: str = "default", limit: int = 10) -> list[dict]:
+    """
+    Trova memorie correlate per similarità di contenuto che non hanno relazioni.
+
+    Usa cosine similarity sugli embedding per trovare memorie semanticamente
+    simili ma non ancora collegate da relazioni esplicite.
+
+    Returns: lista di {id, content, similarity} ordinata per similarità DESC.
+    """
+    from ..database import get_connection
+    from ..vector_index import get_index, has_sqlite_vec
+
+    with get_connection() as conn:
+        # Verifica che la memory esista e ottieni il suo embedding
+        source = conn.execute(
+            "SELECT id, embedding FROM memories WHERE id = ? AND agent_id = ? AND archived_at IS NULL",
+            (memory_id, agent_id),
+        ).fetchone()
+        if not source:
+            return []
+
+        # Trova memorie simili tramite vector index
+        if has_sqlite_vec():
+            # Usa sqlite-vec per similarità cosine
+            import json as _json
+
+            source_emb = source["embedding"]
+            if not source_emb:
+                return []
+
+            # Deserializza embedding da JSON blob (può essere stringa o bytes)
+            try:
+                if isinstance(source_emb, bytes):
+                    source_emb = source_emb.decode("utf-8")
+                emb_array = _json.loads(source_emb)
+            except (_json.JSONDecodeError, UnicodeDecodeError):
+                return []
+
+            # Query per similarità con tutte le memorie dello stesso agent
+            # Esclude la memory stessa e quelle già collegate
+            rows = conn.execute(
+                """
+                SELECT m.id, m.content, m.category, m.importance,
+                       vec_distance_cosine(m.embedding, ?) AS similarity
+                FROM memories m
+                WHERE m.agent_id = ?
+                  AND m.id != ?
+                  AND m.archived_at IS NULL
+                  AND m.embedding IS NOT NULL
+                  AND m.id NOT IN (
+                      SELECT target_id FROM memory_relations WHERE source_id = ?
+                      UNION
+                      SELECT source_id FROM memory_relations WHERE target_id = ?
+                  )
+                ORDER BY similarity DESC
+                LIMIT ?
+                """,
+                (_json.dumps(emb_array), agent_id, memory_id, memory_id, memory_id, limit),
+            ).fetchall()
+
+            return [
+                {
+                    "id": r["id"],
+                    "content": r["content"],
+                    "category": r["category"],
+                    "similarity": 1.0 - r["similarity"],  # Convert distance to similarity
+                }
+                for r in rows
+                if r["similarity"] < 0.5  # Threshold: similarity > 0.5
+            ]
+        else:
+            # Fallback: nessuna similarità senza vector index
+            return []
