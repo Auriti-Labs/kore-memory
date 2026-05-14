@@ -400,16 +400,23 @@ tr:hover td { background: var(--bg-tertiary); }
 .graph-tooltip {
   position: absolute; pointer-events: none;
   background: var(--bg-secondary); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 10px 14px;
+  border-radius: var(--radius); padding: 12px 14px;
   box-shadow: var(--shadow-lg); font-size: 12px;
-  max-width: 300px; z-index: 30; display: none;
+  max-width: 320px; z-index: 30; display: none;
   transition: opacity 0.15s ease; opacity: 0;
 }
 .graph-tooltip.visible { display: block; opacity: 1; }
+.graph-tooltip .tt-header { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
 .graph-tooltip .tt-id { color: var(--accent); font-family: var(--font-mono); font-weight: 600; }
-.graph-tooltip .tt-cat { margin-left: 6px; }
-.graph-tooltip .tt-content { margin-top: 4px; color: var(--text); line-height: 1.4; }
-.graph-tooltip .tt-relations { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 11px; }
+.graph-tooltip .tt-cat { margin-left: auto; }
+.graph-tooltip .tt-content { margin-bottom: 8px; color: var(--text); line-height: 1.4; }
+.graph-tooltip .tt-meta { display: flex; gap: 12px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.graph-tooltip .tt-tags, .graph-tooltip .tt-backlinks { display: flex; align-items: center; gap: 4px; color: var(--text-muted); font-size: 11px; }
+.graph-tooltip .tt-tags svg, .graph-tooltip .tt-backlinks svg { opacity: 0.7; }
+.graph-tooltip .tt-tags-names { display: none; margin-bottom: 8px; padding: 6px 8px; background: var(--bg-tertiary); border-radius: 4px; font-size: 10px; color: var(--text-muted); line-height: 1.4; }
+.graph-tooltip .tt-relations { margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); color: var(--text-dim); font-size: 11px; }
+.graph-tooltip .tt-actions { display: flex; gap: 6px; }
+.graph-tooltip .tt-actions button { pointer-events: auto; cursor: pointer; }
 
 /* Node detail panel */
 .graph-detail {
@@ -628,6 +635,15 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible) { outline: none; }
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/></svg>
           Center
         </button>
+        <button class="btn btn-secondary" id="btn-graph-zoom-in" title="Zoom in (Ctrl + +)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+        </button>
+        <button class="btn btn-secondary" id="btn-graph-zoom-out" title="Zoom out (Ctrl + -)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+        </button>
+        <button class="btn btn-secondary" id="btn-graph-zoom-reset" title="Reset zoom (Ctrl + 0)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21l-4.35-4.35"/><path d="M19 13H13"/><path d="M13 19V13"/><path d="M5 5v4H1"/><path d="M5 9v4"/><path d="M9 5h4"/><path d="M5 5h4"/></svg>
+        </button>
         <select class="select" id="graph-category-filter" style="width:auto;min-width:100px" title="Filter by category">
           <option value="">All categories</option>
           <option value="general">general</option>
@@ -656,9 +672,17 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible) { outline: none; }
       <div class="graph-container">
         <canvas id="graph-canvas"></canvas>
         <div class="graph-tooltip" id="graph-tooltip">
-          <div><span class="tt-id"></span><span class="tt-cat badge"></span></div>
+          <div class="tt-header"><span class="tt-id"></span><span class="tt-cat badge"></span></div>
           <div class="tt-content"></div>
+          <div class="tt-meta">
+            <span class="tt-tags"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg><span class="tt-tags-count">0</span></span>
+            <span class="tt-backlinks"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span class="tt-backlinks-count">0</span></span>
+          </div>
           <div class="tt-relations"></div>
+          <div class="tt-actions">
+            <button class="btn btn-sm btn-secondary" id="tt-center-node">Center</button>
+            <button class="btn btn-sm btn-secondary" id="tt-view-details">Details</button>
+          </div>
         </div>
         <div class="graph-detail" id="graph-detail">
           <button class="btn-ghost graph-detail-close" id="graph-detail-close" aria-label="Close">
@@ -1472,6 +1496,30 @@ function initGraphInteractions(canvas) {
       catBadge.textContent = node.category;
       catBadge.className = 'tt-cat badge badge-' + node.category;
       tooltip.querySelector('.tt-content').textContent = truncate(node.fullContent, 120);
+
+      /* Fetch tags and backlinks for tooltip */
+      api.get('/memories/' + node.id + '/tags').then(function(r) {
+        var tags = r.tags || [];
+        tooltip.querySelector('.tt-tags-count').textContent = tags.length;
+        /* Show tag names in tooltip if present */
+        if (tags.length > 0) {
+          var tagsContainer = tooltip.querySelector('.tt-tags-names');
+          if (!tagsContainer) {
+            tagsContainer = document.createElement('div');
+            tagsContainer.className = 'tt-tags-names';
+            tooltip.querySelector('.tt-meta').insertAdjacentElement('afterend', tagsContainer);
+          }
+          tagsContainer.textContent = tags.slice(0, 5).join(', ') + (tags.length > 5 ? '...' : '');
+          tagsContainer.style.display = 'block';
+        }
+      }).catch(function() {
+        tooltip.querySelector('.tt-tags-count').textContent = '0';
+      });
+
+      /* Count backlinks (incoming relations) */
+      var backlinks = graphEdges.filter(function(ed) { return ed.target === node.id; });
+      tooltip.querySelector('.tt-backlinks-count').textContent = backlinks.length;
+
       /* Node relations */
       var rels = graphEdges.filter(function(ed) { return ed.source === node.id || ed.target === node.id; });
       if (rels.length) {
@@ -1482,8 +1530,12 @@ function initGraphInteractions(canvas) {
       tooltip.style.left = Math.min(sx + 15, canvas.offsetWidth - 310) + 'px';
       tooltip.style.top = Math.min(sy - 10, canvas.offsetHeight - 80) + 'px';
       tooltip.classList.add('visible');
+
+      /* Store current node for tooltip actions */
+      tooltip._currentNode = node;
     } else {
       tooltip.classList.remove('visible');
+      tooltip._currentNode = null;
     }
   });
 
@@ -1535,12 +1587,44 @@ function initGraphInteractions(canvas) {
     }
   });
 
-  /* ── Wheel: zoom ─────────────────────────────────────── */
+  /* ── Wheel: zoom with cursor pivot ─────────────────────────────────────── */
   canvas.addEventListener('wheel', function(e) {
     e.preventDefault();
     var delta = e.deltaY > 0 ? 0.9 : 1.1;
-    graphState.zoom = Math.max(0.2, Math.min(5, graphState.zoom * delta));
+    var rect = canvas.getBoundingClientRect();
+    var mx = e.clientX - rect.left;
+    var my = e.clientY - rect.top;
+
+    /* Get graph coordinates before zoom */
+    var beforeX = (mx - canvas.offsetWidth/2) / graphState.zoom - graphState.panX + canvas.offsetWidth/2;
+    var beforeY = (my - canvas.offsetHeight/2) / graphState.zoom - graphState.panY + canvas.offsetHeight/2;
+
+    /* Apply zoom */
+    var newZoom = Math.max(0.2, Math.min(5, graphState.zoom * delta));
+
+    /* Adjust pan to keep cursor position fixed in graph space */
+    graphState.panX = (mx - canvas.offsetWidth/2) / newZoom - beforeX + canvas.offsetWidth/2;
+    graphState.panY = (my - canvas.offsetHeight/2) / newZoom - beforeY + canvas.offsetHeight/2;
+    graphState.zoom = newZoom;
   }, { passive: false });
+
+  /* ── Tooltip actions ─────────────────────────────────── */
+  /* Center button in tooltip */
+  tooltip.addEventListener('click', function(e) {
+    if (e.target.id === 'tt-center-node' && tooltip._currentNode) {
+      var node = tooltip._currentNode;
+      /* Center on node with zoom reset */
+      graphState.panX = (canvas.offsetWidth/2) - (node.x - canvas.offsetWidth/2) * graphState.zoom;
+      graphState.panY = (canvas.offsetHeight/2) - (node.y - canvas.offsetHeight/2) * graphState.zoom;
+      graphState.zoom = 1.5;
+      tooltip.classList.remove('visible');
+    } else if (e.target.id === 'tt-view-details' && tooltip._currentNode) {
+      var node = tooltip._currentNode;
+      graphState.selectedNode = node;
+      showGraphDetail(node);
+      tooltip.classList.remove('visible');
+    }
+  });
 }
 
 function showGraphDetail(node) {
@@ -2254,6 +2338,32 @@ function initEventHandlers() {
   $('#btn-graph-reload').addEventListener('click', loadGraph);
   $('#btn-graph-center').addEventListener('click', function() {
     graphState.zoom = 1; graphState.panX = 0; graphState.panY = 0;
+  });
+  /* Zoom buttons */
+  $('#btn-graph-zoom-in').addEventListener('click', function() {
+    graphState.zoom = Math.min(5, graphState.zoom * 1.2);
+  });
+  $('#btn-graph-zoom-out').addEventListener('click', function() {
+    graphState.zoom = Math.max(0.2, graphState.zoom / 1.2);
+  });
+  $('#btn-graph-zoom-reset').addEventListener('click', function() {
+    graphState.zoom = 1; graphState.panX = 0; graphState.panY = 0;
+  });
+  /* Keyboard shortcuts for zoom */
+  document.addEventListener('keydown', function(e) {
+    if (state.currentPage !== 'graph') return;
+    if (e.ctrlKey || e.metaKey) {
+      if (e.key === '+' || e.key === '=') {
+        e.preventDefault();
+        graphState.zoom = Math.min(5, graphState.zoom * 1.2);
+      } else if (e.key === '-' || e.key === '_') {
+        e.preventDefault();
+        graphState.zoom = Math.max(0.2, graphState.zoom / 1.2);
+      } else if (e.key === '0') {
+        e.preventDefault();
+        graphState.zoom = 1; graphState.panX = 0; graphState.panY = 0;
+      }
+    }
   });
   $('#graph-show-labels').addEventListener('change', function(e) {
     graphState.showLabels = e.target.checked;
