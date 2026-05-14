@@ -152,7 +152,11 @@ def list_agent_profiles(agent_id: str) -> list[dict]:
 
 
 def _resolve_weights(ranking_profile: str, agent_id: str = "") -> dict[str, float]:
-    """Resolve weights: agent custom profile > built-in profile > default."""
+    """Resolve weights: agent custom profile > built-in profile > default.
+
+    Raises ValueError if profile does not exist (neither built-in né custom agent profile).
+    """
+    # First check for agent custom profile
     if agent_id:
         custom = get_agent_profile(agent_id, ranking_profile)
         if custom:
@@ -160,7 +164,16 @@ def _resolve_weights(ranking_profile: str, agent_id: str = "") -> dict[str, floa
             merged = dict(_DEFAULT_WEIGHTS)
             merged.update(custom)
             return merged
-    return _PROFILES.get(ranking_profile, _DEFAULT_WEIGHTS)
+
+    # Check built-in profiles
+    if ranking_profile in _PROFILES:
+        return _PROFILES[ranking_profile]
+
+    # Profile not found — raise error
+    available = list(_PROFILES.keys())
+    raise ValueError(
+        f"Ranking profile '{ranking_profile}' not found. Available profiles: {available}"
+    )
 
 
 # ── Score computation ────────────────────────────────────────────────────────
