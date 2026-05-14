@@ -14,20 +14,7 @@ from ..database import _get_db_path, get_connection
 from ..events import MEMORY_DELETED, MEMORY_SAVED, MEMORY_UPDATED, emit
 from ..models import MemoryRecord, MemorySaveRequest, MemoryUpdateRequest
 from ..scorer import auto_score
-
-_EMBEDDINGS_AVAILABLE: bool | None = None
-
-
-def _embeddings_available() -> bool:
-    global _EMBEDDINGS_AVAILABLE
-    if _EMBEDDINGS_AVAILABLE is None:
-        try:
-            import sentence_transformers  # noqa: F401
-
-            _EMBEDDINGS_AVAILABLE = True
-        except ImportError:
-            _EMBEDDINGS_AVAILABLE = False
-    return _EMBEDDINGS_AVAILABLE
+from ..utils import _embeddings_available
 
 
 # ── M1: Dedup + Title helpers ────────────────────────────────────────────────
@@ -143,8 +130,41 @@ def _update_vector_index(row_ids_and_blobs: list[tuple[int, str | None]], agent_
         index.invalidate(agent_id)
 
 
+def _auto_create_backlinks(memory_id: int, content: str, agent_id: str) -> None:
+    """
+    Crea relazioni automatiche per backlink [[memory_id]] nel contenuto.
+
+    Esempio: "Come descritto in [[123]], il sistema..." → relazione da memory_id a 123.
+    """
+    import re as _re
+
+    # Pattern: [[number]] — solo ID numerici per evitare falsi positivi
+    pattern = _re.compile(r"\[\[(\d+)\]\]")
+    mentioned_ids = [int(x) for x in pattern.findall(content)]
+
+    if not mentioned_ids:
+        return
+
+    # Verifica che le memorie menzionate esistano e appartengano allo stesso agent
+    with get_connection() as conn:
+        existing = conn.execute(
+            "SELECT id FROM memories WHERE id IN (" + ",".join("?" * len(mentioned_ids)) + ") AND agent_id = ? AND archived_at IS NULL",
+            [*mentioned_ids, agent_id],
+        ).fetchall()
+        valid_ids = {row[0] for row in existing}
+
+    # Crea relazioni solo per ID validi (stesso agent, non archiviati)
+    for target_id in valid_ids:
+        if target_id != memory_id:  # Evita auto-relazioni
+            try:
+                from .graph import add_relation
+                add_relation(memory_id, target_id, "references", agent_id=agent_id)
+            except Exception:
+                pass  # Silenzioso — relazione potrebbe già esistere
+
+
 def _post_commit(row_id: int, prepared: dict, agent_id: str) -> list[str]:
-    """Run post-commit steps: emit event, entity extraction, conflict detection. Returns conflict IDs."""
+    """Run post-commit steps: emit event, entity extraction, backlink auto-creation, conflict detection. Returns conflict IDs."""
     from .. import config as _cfg
 
     emit(MEMORY_SAVED, {"id": row_id, "agent_id": agent_id})
@@ -156,6 +176,9 @@ def _post_commit(row_id: int, prepared: dict, agent_id: str) -> list[str]:
             auto_tag_entities(row_id, prepared["filtered_content"], agent_id)
         except Exception:
             pass
+
+    # Backlink automatici: parsing [[memory_id]] nel contenuto → creazione relazioni
+    _auto_create_backlinks(row_id, prepared["filtered_content"], agent_id)
 
     conflicts: list[str] = []
     if _cfg.CONFLICT_SYNC:
@@ -374,22 +397,12 @@ def update_memory(memory_id: int, req: MemoryUpdateRequest, agent_id: str = "def
         if cursor.rowcount == 0:
             return False
 
-    # Update vector index
-    if req.content is not None:
-        from ..vector_index import get_index, has_sqlite_vec
+    # Update vector index — invalida SEMPRE la cache dopo update
+    # Anche se solo category/importance cambia, la search per category deve essere aggiornata
+    from ..vector_index import get_index
 
-        index = get_index()
-        if has_sqlite_vec() and _embeddings_available():
-            from ..embedder import embed
-
-            try:
-                vec = embed(req.content)
-                with get_connection() as conn:
-                    index.upsert(conn, memory_id, agent_id, vec)
-            except Exception:
-                pass
-        else:
-            index.invalidate(agent_id)
+    index = get_index()
+    index.invalidate(agent_id)
 
     emit(MEMORY_UPDATED, {"id": memory_id, "agent_id": agent_id})
     return True
