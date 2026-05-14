@@ -93,7 +93,7 @@ def _load_compressible_memories(agent_id: str = "default") -> list[dict]:
     with get_connection() as conn:
         rows = conn.execute(
             """
-            SELECT id, content, category, importance, embedding
+            SELECT id, content, category, importance, embedding, agent_id
             FROM memories
             WHERE compressed_into IS NULL AND archived_at IS NULL AND embedding IS NOT NULL AND agent_id = ?
             """,
@@ -308,6 +308,16 @@ def _merge_cluster(cluster: list[dict], agent_id: str = "default") -> int | None
     Returns the id of the new merged record, or None on failure.
     """
     if not cluster:
+        return None
+
+    # Sicurezza: verifica agent isolation nel cluster (difesa in profondità)
+    cluster_agent_ids = {m.get("agent_id") for m in cluster if "agent_id" in m}
+    if len(cluster_agent_ids) > 1:
+        # Cluster cross-agent rilevato — skip per sicurezza
+        print(
+            f"[COMPRESSIONE] WARNING: cluster cross-agent rilevato: {cluster_agent_ids}. "
+            f"Skip per sicurezza."
+        )
         return None
 
     # Build merged content: combine unique sentences
