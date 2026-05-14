@@ -3,6 +3,7 @@ Kore — Centralized configuration
 All environment variables and constants in a single place.
 """
 
+import ipaddress
 import os
 from pathlib import Path
 
@@ -23,6 +24,28 @@ API_KEY_FILE = DATA_DIR / ".api_key"
 HOST = os.getenv("KORE_HOST", "127.0.0.1")
 PORT = int(os.getenv("KORE_PORT", "8765"))
 LOCAL_ONLY = os.getenv("KORE_LOCAL_ONLY", "1") == "1"
+
+# ── Trusted Proxies ───────────────────────────────────────────────────────────
+
+# Lista di IP/subnet attendibili per X-Forwarded-For (default: RFC1918 + localhost)
+TRUSTED_PROXIES_RAW = os.getenv("KORE_TRUSTED_PROXIES", "127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16")
+
+
+def _parse_trusted_proxies(raw: str) -> list[ipaddress.IPv4Network | ipaddress.IPv6Network]:
+    """Parse comma-separated list of IP networks into ipaddress objects."""
+    networks = []
+    for item in raw.split(","):
+        item = item.strip()
+        if not item:
+            continue
+        try:
+            networks.append(ipaddress.ip_network(item, strict=False))
+        except ValueError:
+            pass  # Skip invalid entries
+    return networks
+
+
+TRUSTED_PROXIES = _parse_trusted_proxies(TRUSTED_PROXIES_RAW)
 
 # ── CORS ──────────────────────────────────────────────────────────────────────
 
