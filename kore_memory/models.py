@@ -6,7 +6,7 @@ Request/response schemas with validation.
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 Category = Literal[
     # Categorie generali
@@ -124,8 +124,9 @@ class MemoryUpdateRequest(BaseModel):
 
 
 class MemoryRecord(BaseModel):
-    model_config = {
-        "json_schema_extra": {
+    model_config = ConfigDict(
+        populate_by_name=True,
+        json_schema_extra={
             "examples": [
                 {
                     "id": 42,
@@ -143,8 +144,8 @@ class MemoryRecord(BaseModel):
                     "explain": None,
                 }
             ]
-        }
-    }
+        },
+    )
 
     id: int
     content: str
@@ -163,11 +164,11 @@ class MemoryRecord(BaseModel):
     valid_to: datetime | None = None
     supersedes_id: int | None = None
     provenance: dict | None = None
-    # M2: structured fields
-    facts: list[str] | None = None
-    concepts: list[str] | None = None
-    narrative: str | None = None
-    metadata: dict | None = None
+    # M2: structured fields (alias allineati ai nomi colonna DB: *_json)
+    facts: list[str] | None = Field(default=None, alias="facts_json")
+    concepts: list[str] | None = Field(default=None, alias="concepts_json")
+    narrative: str | None = Field(default=None, alias="narrative")
+    metadata: dict | None = Field(default=None, alias="metadata_json")
     # Stato derivato (non persistito) — calcolato da _compute_memory_status()
     status: str = "active"
     conditions: list[str] = Field(default_factory=list)
@@ -195,8 +196,6 @@ class MemorySearchResponse(BaseModel):
     ranking_profile: str = "default_v1"
     # Memorie escluse dal retrieval (popolate solo con explain=true, issue #015)
     excluded: list[dict] = Field(default_factory=list)
-    # Deprecated fields kept for backwards compatibility
-    offset: int = Field(0, deprecated=True, description="Deprecated: use cursor instead")
 
 
 class MemoryImportRequest(BaseModel):
@@ -716,3 +715,20 @@ class RankingProfileListResponse(BaseModel):
 
     profiles: list[RankingProfileResponse]
     total: int
+
+
+# ── Consolidate Endpoint ─────────────────────────────────────────────────────
+
+
+class ConsolidateRequest(BaseModel):
+    """Request model for /consolidate endpoint."""
+
+    session_id: str | None = Field(None, description="Session ID to consolidate (optional)")
+
+
+class ConsolidateResponse(BaseModel):
+    """Response model for /consolidate endpoint."""
+
+    consolidated_count: int = Field(..., description="Number of memories consolidated")
+    session_id: str | None = Field(None, description="Session ID if session consolidation")
+    agent_id: str = Field(..., description="Agent namespace")
