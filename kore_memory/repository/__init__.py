@@ -10,7 +10,9 @@ The monolithic repository.py has been split into:
 - sessions.py  — Session management
 """
 
+# Re-export _embeddings_available from utils for backward compatibility
 # ruff: noqa: F401 — re-exports for backward compatibility
+from ..utils import _embeddings_available
 from .graph import (
     add_relation,
     add_tags,
@@ -30,8 +32,6 @@ from .lifecycle import (
     restore_memory,
     run_decay_pass,
 )
-# Re-export _embeddings_available from utils for backward compatibility
-from ..utils import _embeddings_available
 from .memory import (
     delete_memory,
     export_memories,
