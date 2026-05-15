@@ -11,6 +11,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.0.4] - 2026-05-15
+
+### Theme: "CI Fixes"
+
+Bug-fix release for CI pipeline: lint errors and test failures on GitHub Actions.
+
+### Fixed
+
+- **Lint errors**: Fixed import sorting in `main.py`, `repository/__init__.py`, `repository/memory.py`
+- **Unused imports**: Removed `get_index` unused import in `repository/graph.py`
+- **Format errors**: Applied `ruff format` to 5 files (`cache.py`, `compressor.py`, `main.py`, `ranking.py`, `repository/memory.py`)
+- **Test failures**: Fixed `test_compressor.py` to use `pytest.importorskip("numpy")` for optional dependency
+
+### Changed
+
+- Version bumped to 3.0.4 across `pyproject.toml`, `config.py`, and `sdk/js/package.json`
+
+---
+
 ## [3.0.3] - 2026-05-15
 
 ### Theme: "Redis Caching Layer"

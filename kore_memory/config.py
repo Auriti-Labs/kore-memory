@@ -123,4 +123,4 @@ REDIS_ANALYTICS_TTL = int(os.getenv("KORE_REDIS_ANALYTICS_TTL", "300"))
 
 # ── Version ───────────────────────────────────────────────────────────────────
 
-VERSION = "3.0.3"
+VERSION = "3.0.4"
