@@ -21,7 +21,14 @@ from starlette.responses import Response, StreamingResponse
 
 from . import config
 from .auth import get_agent_id, require_auth
-from .cache import AnalyticsCache, GraphCache, SearchCache, invalidate_on_compress, invalidate_on_delete, invalidate_on_save
+from .cache import (
+    AnalyticsCache,
+    GraphCache,
+    SearchCache,
+    invalidate_on_compress,
+    invalidate_on_delete,
+    invalidate_on_save,
+)
 from .dashboard import get_dashboard_html
 from .database import init_db
 from .models import (
@@ -140,10 +147,7 @@ def _is_trusted_proxy(ip_str: str) -> bool:
     """Check if an IP address belongs to a trusted proxy network."""
     try:
         ip = ipaddress.ip_address(ip_str)
-        for network in config.TRUSTED_PROXIES:
-            if ip in network:
-                return True
-        return False
+        return any(ip in network for network in config.TRUSTED_PROXIES)
     except ValueError:
         return False
 
@@ -369,9 +373,6 @@ def search(
             cursor_tuple = tuple(json.loads(decoded))
         except Exception:
             raise HTTPException(400, "Invalid cursor format") from None
-
-    # Costruisci cache key univoca per i parametri di search
-    cache_key_base = f"{q}:{limit}:{category}:{semantic}:{task}:{ranking_profile}:{explain}"
 
     # Tenta di recuperare dalla cache (solo se explain=False e senza cursor)
     cached_results = None

@@ -4,7 +4,9 @@ Test compression logic: chunked similarity, clustering, merge.
 """
 
 import pytest
-import numpy as np
+
+# Numpy è opzionale (solo in [semantic]) — skip se non disponibile
+np = pytest.importorskip("numpy")
 
 from kore_memory.compressor import (
     _find_clusters_numpy,

@@ -16,7 +16,6 @@ from ..models import MemoryRecord, MemorySaveRequest, MemoryUpdateRequest
 from ..scorer import auto_score
 from ..utils import _embeddings_available
 
-
 # ── M1: Dedup + Title helpers ────────────────────────────────────────────────
 
 
@@ -146,11 +145,10 @@ def _auto_create_backlinks(memory_id: int, content: str, agent_id: str) -> None:
         return
 
     # Verifica che le memorie menzionate esistano e appartengano allo stesso agent
+    placeholders = ",".join("?" * len(mentioned_ids))
+    query = f"SELECT id FROM memories WHERE id IN ({placeholders}) AND agent_id = ? AND archived_at IS NULL"
     with get_connection() as conn:
-        existing = conn.execute(
-            "SELECT id FROM memories WHERE id IN (" + ",".join("?" * len(mentioned_ids)) + ") AND agent_id = ? AND archived_at IS NULL",
-            [*mentioned_ids, agent_id],
-        ).fetchall()
+        existing = conn.execute(query, [*mentioned_ids, agent_id]).fetchall()
         valid_ids = {row[0] for row in existing}
 
     # Crea relazioni solo per ID validi (stesso agent, non archiviati)
@@ -164,7 +162,11 @@ def _auto_create_backlinks(memory_id: int, content: str, agent_id: str) -> None:
 
 
 def _post_commit(row_id: int, prepared: dict, agent_id: str) -> list[str]:
-    """Run post-commit steps: emit event, entity extraction, backlink auto-creation, conflict detection. Returns conflict IDs."""
+    """Run post-commit steps: emit event, entity extraction, backlink auto-creation, conflict detection.
+
+    Returns:
+        List of conflict IDs detected.
+    """
     from .. import config as _cfg
 
     emit(MEMORY_SAVED, {"id": row_id, "agent_id": agent_id})
