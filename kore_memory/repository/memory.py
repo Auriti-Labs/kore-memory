@@ -156,6 +156,7 @@ def _auto_create_backlinks(memory_id: int, content: str, agent_id: str) -> None:
         if target_id != memory_id:  # Evita auto-relazioni
             try:
                 from .graph import add_relation
+
                 add_relation(memory_id, target_id, "references", agent_id=agent_id)
             except Exception:
                 pass  # Silenzioso — relazione potrebbe già esistere

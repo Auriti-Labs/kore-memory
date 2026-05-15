@@ -171,9 +171,7 @@ def _resolve_weights(ranking_profile: str, agent_id: str = "") -> dict[str, floa
 
     # Profile not found — raise error
     available = list(_PROFILES.keys())
-    raise ValueError(
-        f"Ranking profile '{ranking_profile}' not found. Available profiles: {available}"
-    )
+    raise ValueError(f"Ranking profile '{ranking_profile}' not found. Available profiles: {available}")
 
 
 # ── Score computation ────────────────────────────────────────────────────────

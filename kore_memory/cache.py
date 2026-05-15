@@ -91,6 +91,7 @@ def _key(name: str) -> str:
 
 def _serialize(value: Any) -> str:
     """Serialize value to JSON string, handling Pydantic models."""
+
     def _default(o):
         # Handle Pydantic v2 models
         if hasattr(o, "model_dump"):
@@ -99,6 +100,7 @@ def _serialize(value: Any) -> str:
             # Pydantic v1 fallback
             return o.dict()
         return str(o)
+
     return json.dumps(value, default=_default)
 
 

@@ -314,10 +314,7 @@ def _merge_cluster(cluster: list[dict], agent_id: str = "default") -> int | None
     cluster_agent_ids = {m.get("agent_id") for m in cluster if "agent_id" in m}
     if len(cluster_agent_ids) > 1:
         # Cluster cross-agent rilevato — skip per sicurezza
-        print(
-            f"[COMPRESSIONE] WARNING: cluster cross-agent rilevato: {cluster_agent_ids}. "
-            f"Skip per sicurezza."
-        )
+        print(f"[COMPRESSIONE] WARNING: cluster cross-agent rilevato: {cluster_agent_ids}. Skip per sicurezza.")
         return None
 
     # Build merged content: combine unique sentences

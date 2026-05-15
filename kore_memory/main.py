@@ -384,6 +384,7 @@ def search(
         results_dicts = cached_results
         # Ricostruisci MemoryRecord dai dict cacheati
         from kore_memory.models import MemoryRecord
+
         results = [MemoryRecord(**r) for r in results_dicts]
         next_cursor_tuple = None  # La cache non include cursor
         total_count = len(results_dicts)  # Stima approssimativa
