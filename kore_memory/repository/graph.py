@@ -501,7 +501,7 @@ def find_unlinked_references(memory_id: int, agent_id: str = "default", limit: i
     Returns: lista di {id, content, similarity} ordinata per similarità DESC.
     """
     from ..database import get_connection
-    from ..vector_index import get_index, has_sqlite_vec
+    from ..vector_index import has_sqlite_vec
 
     with get_connection() as conn:
         # Verifica che la memory esista e ottieni il suo embedding
