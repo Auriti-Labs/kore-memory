@@ -5,9 +5,12 @@ Verifica che /dashboard risponda correttamente e che l'HTML contenga le sezioni 
 
 import httpx
 import pytest
+from unittest.mock import patch
+from pathlib import Path
 
 from kore_memory.database import init_db
 from kore_memory.main import app
+from kore_memory import dashboard
 
 
 @pytest.fixture(autouse=True)
@@ -100,3 +103,39 @@ async def test_dashboard_contains_js_api_helpers(client):
     assert "function loadOverview(" in html
     assert "function loadGraph(" in html
     assert "function loadAnalytics(" in html
+
+
+# ── Test funzioni dashboard.py ────────────────────────────────────────────────
+
+
+def test_get_dashboard_html_returns_string():
+    """get_dashboard_html() ritorna una stringa non vuota."""
+    html = dashboard.get_dashboard_html()
+    assert isinstance(html, str)
+    assert len(html) > 0
+    assert "<!DOCTYPE html>" in html
+
+
+def test_load_template_file_exists():
+    """Il template file esiste e viene caricato."""
+    assert dashboard._TEMPLATE_PATH.exists(), f"Template non trovato: {dashboard._TEMPLATE_PATH}"
+
+
+def test_load_template_fallback_on_missing():
+    """Se il template manca, viene usato il fallback."""
+    with patch.object(dashboard, '_TEMPLATE_PATH', Path('/nonexistent/path/dashboard.html')):
+        # Simula FileNotFoundError
+        with patch.object(Path, 'read_text', side_effect=FileNotFoundError):
+            html = dashboard._load_template()
+            assert isinstance(html, str)
+            assert "Dashboard template file not found" in html
+
+
+def test_load_template_handles_os_error():
+    """Se c'è un OSError, viene usato il fallback."""
+    with patch.object(dashboard, '_TEMPLATE_PATH', Path('/error/path/dashboard.html')):
+        # Simula OSError
+        with patch.object(Path, 'read_text', side_effect=OSError("Permission denied")):
+            html = dashboard._load_template()
+            assert isinstance(html, str)
+            assert "Dashboard template file not found" in html or "Kore" in html

@@ -143,3 +143,23 @@ def run_post_delete(memory_id: int, agent_id: str) -> None:
             plugin.post_delete(memory_id, agent_id)
         except Exception:
             logger.exception("Plugin %s post_delete error", plugin.name)
+
+
+def run_pre_compress(agent_id: str) -> bool:
+    """Run all pre_compress hooks. Returns False if any plugin blocks compression."""
+    for plugin in _plugins.values():
+        try:
+            if not plugin.pre_compress(agent_id):
+                return False
+        except Exception:
+            logger.exception("Plugin %s pre_compress error", plugin.name)
+    return True
+
+
+def run_post_compress(clusters_found: int, merged: int, agent_id: str) -> None:
+    """Run all post_compress hooks."""
+    for plugin in _plugins.values():
+        try:
+            plugin.post_compress(clusters_found, merged, agent_id)
+        except Exception:
+            logger.exception("Plugin %s post_compress error", plugin.name)

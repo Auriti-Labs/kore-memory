@@ -11,6 +11,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.0.3] - 2026-05-15
+
+### Theme: "Redis Caching Layer"
+
+Optional Redis caching for improved performance on repeated queries. Fully backward compatible — disabled by default.
+
+### Added — Caching
+
+- **Optional Redis cache layer** (`kore_memory/cache.py`): Lazy-loaded client, graceful degradation if Redis unavailable
+- **SearchCache**: Caches `/search` results (queries without cursor pagination)
+- **GraphCache**: Caches `/graph/traverse`, `/graph/subgraph`, `/graph/hubs` responses
+- **AnalyticsCache**: Caches `/analytics` endpoint
+- **Automatic invalidation**: Cache invalidated on save, delete, archive, restore, compress
+- **Configuration**: `KORE_REDIS_ENABLED`, `KORE_REDIS_HOST`, `KORE_REDIS_PORT`, `KORE_REDIS_PREFIX`, `KORE_REDIS_TTL`, `KORE_REDIS_SEARCH_TTL`, `KORE_REDIS_GRAPH_TTL`, `KORE_REDIS_ANALYTICS_TTL`
+
+### Changed
+
+- Search endpoint skips cache when cursor provided (preserves pagination correctness)
+- Archive/restore endpoints invalidate cache appropriately
+
+### Tests
+
+- 53 new tests in `tests/test_cache.py` (with and without Redis)
+- All 925 tests pass with Redis enabled
+
+### Technical
+
+- Pydantic model serialization in cache (handles nested models)
+- No hard dependency on redis-py (imported lazily)
+
+---
+
 ## [3.0.2] - 2026-04-28
 
 ### Theme: "Hardening & Bug Sweep"

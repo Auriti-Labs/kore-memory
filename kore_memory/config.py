@@ -106,6 +106,21 @@ CONFLICT_SYNC = os.getenv("KORE_CONFLICT_SYNC", "true").lower() == "true"
 # Numero massimo di memorie candidate da scansionare
 CONFLICT_MAX_CANDIDATES = int(os.getenv("KORE_CONFLICT_MAX_CANDIDATES", "10"))
 
+# ── Redis Cache (opzionale) ──────────────────────────────────────────────────
+
+REDIS_ENABLED = os.getenv("KORE_REDIS_ENABLED", "0") == "1"
+REDIS_HOST = os.getenv("KORE_REDIS_HOST", "localhost")
+REDIS_PORT = int(os.getenv("KORE_REDIS_PORT", "6379"))
+REDIS_DB = int(os.getenv("KORE_REDIS_DB", "0"))
+REDIS_PASSWORD = os.getenv("KORE_REDIS_PASSWORD", "")
+REDIS_PREFIX = os.getenv("KORE_REDIS_PREFIX", "kore:")
+# TTL default in secondi (0 = nessun expiry)
+REDIS_TTL = int(os.getenv("KORE_REDIS_TTL", "300"))
+# TTL specifici per tipo di cache
+REDIS_SEARCH_TTL = int(os.getenv("KORE_REDIS_SEARCH_TTL", "60"))
+REDIS_GRAPH_TTL = int(os.getenv("KORE_REDIS_GRAPH_TTL", "120"))
+REDIS_ANALYTICS_TTL = int(os.getenv("KORE_REDIS_ANALYTICS_TTL", "300"))
+
 # ── Version ───────────────────────────────────────────────────────────────────
 
-VERSION = "3.0.2"
+VERSION = "3.0.3"

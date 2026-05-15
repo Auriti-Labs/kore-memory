@@ -16,13 +16,21 @@ from kore_memory.mcp_server import (  # noqa: E402
     memory_add_relation,
     memory_add_tags,
     memory_cleanup,
+    memory_consolidate,
     memory_delete,
+    memory_explain,
     memory_export,
+    memory_get_context,
+    memory_get_runbook,
     memory_import,
+    memory_log_regression,
+    memory_log_root_cause,
     memory_save,
     memory_save_batch,
+    memory_save_decision,
     memory_search,
     memory_search_by_tag,
+    memory_set_ranking_profile,
     memory_timeline,
     memory_update,
 )
@@ -626,3 +634,102 @@ class TestBearerAuthMiddleware:
         import kore_memory.config as cfg
         importlib.reload(cfg)
         assert cfg.MCP_TOKEN == ""
+
+
+class TestMemoryConsolidate:
+    def test_consolidate_returns_count(self):
+        result = memory_consolidate(agent_id="mcp-consolidate-test")
+        assert "sessions_consolidated" in result
+        assert result["sessions_consolidated"] >= 0
+
+
+class TestMemorySetRankingProfile:
+    def test_set_ranking_profile_valid_weights(self):
+        result = memory_set_ranking_profile(
+            weights={"similarity": 0.6, "decay_score": 0.2, "confidence": 0.2},
+            profile_name="test-profile",
+            agent_id="mcp-ranking-test",
+        )
+        assert result["message"] == "Profile saved"
+        assert result["profile_name"] == "test-profile"
+
+    def test_set_ranking_profile_rejects_invalid_sum(self):
+        result = memory_set_ranking_profile(
+            weights={"similarity": 0.8, "decay_score": 0.8},
+            profile_name="invalid-profile",
+            agent_id="mcp-ranking-test",
+        )
+        assert result["error"] is not None
+        assert "sum" in result["error"].lower()
+
+
+class TestMemoryGetRunbook:
+    def test_get_runbook_empty(self):
+        result = memory_get_runbook(trigger="deploy failed", agent_id="mcp-runbook-test")
+        assert "results" in result
+        assert isinstance(result["results"], list)
+
+
+class TestMemoryExplain:
+    def test_explain_nonexistent_memory(self):
+        result = memory_explain(memory_id=999999, agent_id="mcp-explain-test")
+        assert result["error"] is not None
+        assert "not found" in result["error"].lower()
+
+
+class TestMemoryGetContext:
+    def test_get_context_basic(self):
+        result = memory_get_context(
+            task="test task for context assembly",
+            budget_tokens=1000,
+            agent_id="mcp-context-test",
+        )
+        assert "task" in result
+        assert "budget_tokens_requested" in result
+        assert "budget_tokens_used" in result
+        assert result["budget_tokens_used"] <= result["budget_tokens_requested"]
+
+
+class TestMemoryCleanup:
+    def test_cleanup_returns_deleted_count(self):
+        result = memory_cleanup(agent_id="mcp-cleanup-test")
+        assert "removed" in result or "deleted" in result
+
+
+class TestMemorySaveDecision:
+    def test_save_decision_returns_id(self):
+        result = memory_save_decision(
+            content="Usiamo PostgreSQL invece di MySQL",
+            rationale="Supporto migliore per JSONB",
+            alternatives_considered="MySQL, SQLite",
+            decided_by="team-backend",
+            repo="test-repo",
+            agent_id="mcp-decision-test",
+        )
+        assert "id" in result or "memory_id" in result
+
+
+class TestMemoryLogRegression:
+    def test_log_regression_returns_id(self):
+        result = memory_log_regression(
+            content="Race condition nel pool di connessioni",
+            introduced_in="v1.2.0",
+            fixed_in="v1.2.1",
+            test_ref="tests/test_db.py",
+            repo="test-repo",
+            agent_id="mcp-regression-test",
+        )
+        assert "id" in result or "memory_id" in result
+
+
+class TestMemoryLogRootCause:
+    def test_log_root_cause_returns_id(self):
+        result = memory_log_root_cause(
+            content="Il watcher non cancellava i timer pendenti",
+            symptom="CPU spike al riavvio",
+            affected_component="filesystem_watcher",
+            fix_applied="Aggiunto cancel() dei timer",
+            repo="test-repo",
+            agent_id="mcp-rootcause-test",
+        )
+        assert "id" in result or "memory_id" in result

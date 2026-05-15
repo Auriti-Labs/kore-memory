@@ -21,6 +21,7 @@ from starlette.responses import Response, StreamingResponse
 
 from . import config
 from .auth import get_agent_id, require_auth
+from .cache import AnalyticsCache, GraphCache, SearchCache, invalidate_on_compress, invalidate_on_delete, invalidate_on_save
 from .dashboard import get_dashboard_html
 from .database import init_db
 from .models import (
@@ -312,6 +313,8 @@ def save(
     _check_rate_limit(_get_client_ip(request), "/save")
     session_id = _validate_session_id(request.headers.get("X-Session-Id"))
     memory_id, importance, conflicts = save_memory(req, agent_id=agent_id, session_id=session_id)
+    # Invalida cache search e analytics per l'agente
+    invalidate_on_save(agent_id)
     return MemorySaveResponse(
         id=memory_id,
         importance=importance,
@@ -330,6 +333,8 @@ def save_batch(
     """Save multiple memories in a single request (max 100). Uses batch embedding."""
     _check_rate_limit(_get_client_ip(request), "/save")
     results = save_memory_batch(req.memories, agent_id=agent_id)
+    # Invalida cache search e analytics per l'agente
+    invalidate_on_save(agent_id)
     saved = [MemorySaveResponse(id=mid, importance=imp) for mid, imp, *_ in results]
     return BatchSaveResponse(saved=saved, total=len(saved))
 
@@ -365,28 +370,58 @@ def search(
         except Exception:
             raise HTTPException(400, "Invalid cursor format") from None
 
-    try:
-        results, next_cursor, total_count, excluded = search_memories(
-            query=q,
-            limit=limit,
-            category=category,
-            semantic=semantic,
-            agent_id=agent_id,
-            cursor=cursor_tuple,
-            task=task,
-            ranking_profile=ranking_profile,
-            explain=explain,
-        )
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e)) from e
+    # Costruisci cache key univoca per i parametri di search
+    cache_key_base = f"{q}:{limit}:{category}:{semantic}:{task}:{ranking_profile}:{explain}"
+
+    # Tenta di recuperare dalla cache (solo se explain=False e senza cursor)
+    cached_results = None
+    if not explain and cursor_tuple is None:
+        cached_results = SearchCache.get(query=q, agent_id=agent_id, semantic=semantic, limit=limit)
+
+    if cached_results is not None:
+        # Cache hit - usa i risultati cacheati (SearchCache.get ritorna list[dict])
+        results_dicts = cached_results
+        # Ricostruisci MemoryRecord dai dict cacheati
+        from kore_memory.models import MemoryRecord
+        results = [MemoryRecord(**r) for r in results_dicts]
+        next_cursor_tuple = None  # La cache non include cursor
+        total_count = len(results_dicts)  # Stima approssimativa
+        excluded = []
+    else:
+        # Cache miss - esegui search e cachea il risultato
+        try:
+            results, next_cursor, total_count, excluded = search_memories(
+                query=q,
+                limit=limit,
+                category=category,
+                semantic=semantic,
+                agent_id=agent_id,
+                cursor=cursor_tuple,
+                task=task,
+                ranking_profile=ranking_profile,
+                explain=explain,
+            )
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+
+        # Cachea i risultati (solo se explain=False e senza cursor)
+        if not explain and cursor_tuple is None:
+            SearchCache.set(
+                query=q,
+                agent_id=agent_id,
+                semantic=semantic,
+                limit=limit,
+                results=[r.model_dump() for r in results],
+            )
+        next_cursor_tuple = next_cursor
 
     # Encode next cursor
     cursor_str = None
-    if next_cursor:
+    if next_cursor_tuple:
         import base64
         import json
 
-        cursor_str = base64.b64encode(json.dumps(next_cursor).encode("utf-8")).decode("utf-8")
+        cursor_str = base64.b64encode(json.dumps(next_cursor_tuple).encode("utf-8")).decode("utf-8")
 
     # Normalizza il nome del profilo per il response (default → default_v1)
     _profile_display = "default_v1" if ranking_profile in ("default", "default_v1") else ranking_profile
@@ -395,7 +430,7 @@ def search(
         results=results,
         total=total_count,
         cursor=cursor_str,
-        has_more=next_cursor is not None,
+        has_more=next_cursor_tuple is not None,
         excluded=excluded if explain else [],
         ranking_profile=_profile_display,
     )
@@ -616,6 +651,8 @@ def delete(
     """Delete a memory. Agents can only delete their own memories."""
     if not delete_memory(memory_id, agent_id=agent_id):
         raise HTTPException(status_code=404, detail="Memory not found")
+    # Invalida cache search, analytics e graph
+    invalidate_on_delete(agent_id)
 
 
 # ── Tag endpoints ─────────────────────────────────────────────────────────────
@@ -799,6 +836,8 @@ def compress(
     from .compressor import run_compression
 
     result = run_compression(agent_id=agent_id)
+    # Invalida tutte le cache dopo la compressione
+    invalidate_on_compress(agent_id)
     return CompressRunResponse(
         clusters_found=result.clusters_found,
         memories_merged=result.memories_merged,
@@ -947,6 +986,8 @@ def import_data(
 def archive(memory_id: int, _: str = _Auth, agent_id: str = _Agent) -> ArchiveResponse:
     if not archive_memory(memory_id, agent_id=agent_id):
         raise HTTPException(404, "Memory not found or already archived")
+    # Invalida cache search e analytics
+    invalidate_on_delete(agent_id)
     return ArchiveResponse(success=True, message="Memory archived")
 
 
@@ -954,6 +995,8 @@ def archive(memory_id: int, _: str = _Auth, agent_id: str = _Agent) -> ArchiveRe
 def restore(memory_id: int, _: str = _Auth, agent_id: str = _Agent) -> ArchiveResponse:
     if not restore_memory(memory_id, agent_id=agent_id):
         raise HTTPException(404, "Memory not found or not archived")
+    # Invalida cache search e analytics
+    invalidate_on_save(agent_id)
     return ArchiveResponse(success=True, message="Memory restored")
 
 
@@ -1072,7 +1115,13 @@ def graph_traverse(
     agent_id: str = _Agent,
 ) -> GraphTraverseResponse:
     """Multi-hop graph traversal using recursive CTE. Returns connected memories up to N hops."""
+    # Tenta cache
+    cached = GraphCache.get(kind="traverse", start_id=start_id, depth=depth, relation_type=relation_type or "all")
+    if cached:
+        return GraphTraverseResponse(**cached)
+    # Cache miss - esegui e cachea
     result = traverse_graph(start_id, agent_id=agent_id, depth=depth, relation_type=relation_type)
+    GraphCache.set(kind="traverse", data=result, start_id=start_id, depth=depth, relation_type=relation_type or "all")
     return GraphTraverseResponse(**result)
 
 
@@ -1093,7 +1142,16 @@ def graph_subgraph(
         memory_ids = []
     if not memory_ids:
         return SubgraphResponse(total_nodes=0, total_edges=0)
+
+    # Tenta cache
+    cache_key = f"{','.join(sorted(str(i) for i in memory_ids))}:{expand}"
+    cached = GraphCache.get(kind="subgraph", ids=cache_key)
+    if cached:
+        return SubgraphResponse(**cached)
+
+    # Cache miss - esegui e cachea
     result = extract_subgraph(memory_ids, agent_id=agent_id, expand_depth=expand)
+    GraphCache.set(kind="subgraph", data=result, ids=cache_key)
     return SubgraphResponse(**result)
 
 
@@ -1108,11 +1166,19 @@ def graph_hubs(
     Rileva gli hub del grafo per l'agente usando il degree centrality.
     Restituisce i nodi ordinati per grado decrescente (in_degree + out_degree).
     """
+    # Tenta cache
+    cached = GraphCache.get(kind="hubs", agent_id=agent_id, limit=limit, min_degree=min_degree)
+    if cached:
+        return HubDetectionResponse(**cached)
+
+    # Cache miss - esegui e cachea
     hubs = get_degree_centrality(agent_id=agent_id, limit=limit, min_degree=min_degree)
-    return HubDetectionResponse(
-        hubs=[HubNodeRecord(**h) for h in hubs],
-        total=len(hubs),
-    )
+    result = {
+        "hubs": [HubNodeRecord(**h) for h in hubs],
+        "total": len(hubs),
+    }
+    GraphCache.set(kind="hubs", data=result, agent_id=agent_id, limit=limit, min_degree=min_degree)
+    return HubDetectionResponse(**result)
 
 
 @app.get("/relations/batch", response_model=dict)
@@ -1313,7 +1379,15 @@ def analytics(
     """Comprehensive analytics: categories, decay, tags, access patterns, growth."""
     from .analytics import get_analytics
 
-    return AnalyticsResponse(**get_analytics(agent_id=agent_id))
+    # Tenta cache
+    cached = AnalyticsCache.get(agent_id=agent_id, kind="full")
+    if cached:
+        return AnalyticsResponse(**cached)
+
+    # Cache miss - esegui e cachea
+    result = get_analytics(agent_id=agent_id)
+    AnalyticsCache.set(agent_id=agent_id, kind="full", data=result)
+    return AnalyticsResponse(**result)
 
 
 # ── GDPR / Right to Erasure ──────────────────────────────────────────────────
